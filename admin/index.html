@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Tickets - LA MUBI</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    
+    <!-- Google Fonts - Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary: #bb1175;
+            --secondary: #f43cb8;
+            --accent: #f361e5;
+            --black: #000000;
+            --white: #FFFFFF;
+            --gray: #666666;
+            --dark-gray: #1a1a1a;
+            --success: #11bb75;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --info: #2196f3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: var(--white);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--white);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--gray);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .btn-logout {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: var(--danger);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout:hover {
+            background: rgba(244, 67, 54, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Layout */
+        .admin-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.03);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 0;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            color: var(--gray);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--white);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: rgba(187, 17, 117, 0.1);
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Section Headers */
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(187, 17, 117, 0.3);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+        }
+
+        .stat-change.positive {
+            background: rgba(17, 187, 117, 0.2);
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--danger);
+        }
+
+        /* Sections */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(187, 17, 117, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 1rem 0;
+            }
+            
+            .nav-menu {
+                display: flex;
+                overflow-x: auto;
+                padding: 0 1rem;
+            }
+            
+            .nav-item {
+                margin: 0;
+                white-space: nowrap;
+            }
+            
+            .nav-link {
+                padding: 0.75rem 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="logo-text">LA MUBI Tickets</div>
+            </div>
+            
+            <div class="user-info">
+                <div>
+                    <div class="user-name" id="userName">Admin User</div>
+                    <div class="user-role" id="userRole">Tickets Admin</div>
+                </div>
+                <button class="btn-logout" onclick="AdminLogin.logout()">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt nav-icon"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="verification">
+                            <i class="fas fa-check-circle nav-icon"></i>
+                            <span>Verificación</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="tickets">
+                            <i class="fas fa-ticket-alt nav-icon"></i>
+                            <span>Tickets</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="config">
+                            <i class="fas fa-cog nav-icon"></i>
+                            <span>Configuración</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="section-header">
+                    <h1 class="section-title">Dashboard</h1>
+                    <p class="section-subtitle">Resumen general del sistema de tickets</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-value" id="totalUsers">-</div>
+                        <div class="stat-label">Usuarios con Tickets</div>
+                        <div class="stat-change positive">+12%</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-value" id="totalPurchases">-</div>
+                        <div class="stat-label">Compras Totales</div>
+                        <div class="stat-change positive">+8%</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-value" id="pendingVerification">-</div>
+                        <div class="stat-label">Pendientes Verificación</div>
+                        <div class="stat-change negative">+3</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-value" id="dollarRate">-</div>
+                        <div class="stat-label">Tasa Dólar</div>
+                        <div class="stat-change positive">Actual</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Actividad Reciente</h3>
+                        <button class="btn btn-secondary" onclick="loadDashboardData()">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
+                    <div id="recentActivity">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Cargando actividad reciente...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Verification Section -->
+            <section id="verification" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">Verificación de Pagos</h1>
+                    <p class="section-subtitle">Revisa y aprueba los comprobantes de pago</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pagos Pendientes</h3>
+                        <button class="btn btn-secondary" onclick="loadPendingPurchases()">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
+                    <div id="pendingPurchases">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Cargando pagos pendientes...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tickets Section -->
+            <section id="tickets" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">Gestión de Tickets</h1>
+                    <p class="section-subtitle">Visualiza y gestiona todos los tickets generados</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Todos los Tickets</h3>
+                        <button class="btn btn-secondary" onclick="loadAllTickets()">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
+                    <div id="allTickets">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Cargando tickets...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Config Section -->
+            <section id="config" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">Configuración</h1>
+                    <p class="section-subtitle">Ajusta la tasa del dólar y otras configuraciones</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Tasa del Dólar</h3>
+                    </div>
+                    <div id="dollarConfig">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Cargando configuración...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../config.js"></script>
+    <script src="login.js"></script>
+    <script src="admin-panel.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+nohup: no se tendrá en cuenta la entrada
+127.0.0.1 - - [01/Feb/2026 17:39:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:39:41] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:39:51] "HEAD /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:42:16] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [01/Feb/2026 17:42:16] "GET /LaMubiMCBOLogo1.png HTTP/1.1" 304 -
+127.0.0.1 - - [01/Feb/2026 17:42:56] "GET /comprar.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:43:29] "GET /pago.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:43:34] "GET /verificacion.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:43:34] "GET /user-detection-api.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:43:34] "GET /validacion-campos.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:43:34] "GET /verificacion-upload.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:43:34] "GET /tasa-dolar-verificacion.js HTTP/1.1" 304 -
+127.0.0.1 - - [01/Feb/2026 17:43:34] "GET /config.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:45:13] "HEAD /admin/ HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:55:09] "GET /admin/ HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:55:09] "GET /admin/admin-panel.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:55:09] "GET /admin/login.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:55:09] "GET /admin/login.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:55:10] "GET /favicon.svg HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:57:28] "GET /admin/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Feb/2026 17:57:46] "GET /verificacion.html HTTP/1.1" 304 -
+127.0.0.1 - - [01/Feb/2026 17:58:04] "GET /verificacion.html HTTP/1.1" 304 -

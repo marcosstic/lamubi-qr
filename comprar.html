@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COMPRAR ENTRADA - LA MUBI</title>
+    
+    <!-- Google Fonts - Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #bb1175;
+            --secondary: #f43cb8;
+            --accent: #f361e5;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            padding: 1.5rem 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-small {
+            height: 40px;
+            filter: drop-shadow(0 0 10px var(--primary));
+        }
+
+        .back-button {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(187, 17, 117, 0.4);
+        }
+
+        /* Main Container */
+        .main-container {
+            margin-top: 100px;
+            padding: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 3rem;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(244, 60, 184, 0.3);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--black);
+            border: 3px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        /* Form Container */
+        .form-container {
+            background: linear-gradient(135deg, rgba(187, 17, 117, 0.1), rgba(244, 60, 184, 0.05));
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.3;
+            animation: borderGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes borderGlow {
+            from {
+                opacity: 0.3;
+            }
+            to {
+                opacity: 0.6;
+            }
+        }
+
+        .form-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-subtitle {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(244, 60, 184, 0.3);
+            border-radius: 15px;
+            color: var(--white);
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.7);
+            transform: perspective(1000px) rotateX(5deg) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(187, 17, 117, 0.3);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Radio Buttons for Gender */
+        .radio-group {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .radio-option {
+            position: relative;
+            flex: 1;
+        }
+
+        .radio-input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .radio-label {
+            display: block;
+            padding: 1.2rem 2rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(244, 60, 184, 0.3);
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .radio-input:checked + .radio-label {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-color: var(--primary);
+            transform: perspective(1000px) rotateX(5deg) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(187, 17, 117, 0.3);
+        }
+
+        .radio-label:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* Submit Button */
+        .submit-button {
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--white);
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .submit-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-button:hover::before {
+            left: 100%;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(187, 17, 117, 0.5);
+        }
+
+        /* Error Messages */
+        .error-message {
+            color: #ff4444;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .form-group.error .form-input {
+            border-color: #ff4444;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+                margin-top: 80px;
+            }
+            
+            .form-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .form-title {
+                font-size: 2rem;
+            }
+            
+            .radio-group {
+                gap: 1rem;
+            }
+            
+            .progress-labels {
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 414px) {
+            .form-container {
+                padding: 1.5rem 1rem;
+            }
+            
+            .form-title {
+                font-size: 1.8rem;
+            }
+            
+            .form-subtitle {
+                font-size: 1rem;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <img src="LaMubiMCBOLogo1.png" alt="LA MUBI" class="logo-small">
+            <a href="index.html" class="back-button">← VOLVER</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-step active">1</div>
+                <div class="progress-step">2</div>
+                <div class="progress-step">3</div>
+                <div class="progress-step">4</div>
+            </div>
+            <div class="progress-labels">
+                <span>DATOS</span>
+                <span>PAGO</span>
+                <span>VERIFICACIÓN</span>
+                <span>CONFIRMACIÓN</span>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <h1 class="form-title">COMPLETA TUS DATOS</h1>
+            <p class="form-subtitle">Reserva tu entrada para la experiencia La Mubi</p>
+
+            <form id="ticket-form">
+                <!-- Nombre Completo -->
+                <div class="form-group">
+                    <label for="nombre" class="form-label">Nombre Completo *</label>
+                    <input type="text" id="nombre" name="nombre" class="form-input" placeholder="Escribe tu nombre completo" required>
+                    <div class="error-message">Por favor, ingresa tu nombre completo (mínimo 3 caracteres)</div>
+                </div>
+
+                <!-- Cédula/Pasaporte -->
+                <div class="form-group">
+                    <label for="documento" class="form-label">Cédula/Pasaporte *</label>
+                    <input type="text" id="documento" name="documento" class="form-input" placeholder="V-12345678 o 123456789" required>
+                    <div class="error-message">Formato inválido. Ej: V-12345678</div>
+                </div>
+
+                <!-- Edad -->
+                <div class="form-group">
+                    <label for="edad" class="form-label">Edad *</label>
+                    <input type="number" id="edad" name="edad" class="form-input" placeholder="18" min="18" max="99" required>
+                    <div class="error-message">Debes ser mayor de 18 años</div>
+                </div>
+
+                <!-- Género -->
+                <div class="form-group">
+                    <label class="form-label">Género *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="masculino" name="genero" value="masculino" class="radio-input" required>
+                            <label for="masculino" class="radio-label">Masculino</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="femenino" name="genero" value="femenino" class="radio-input" required>
+                            <label for="femenino" class="radio-label">Femenino</label>
+                        </div>
+                    </div>
+                    <div class="error-message">Por favor, selecciona una opción</div>
+                </div>
+
+                <!-- Correo -->
+                <div class="form-group">
+                    <label for="correo" class="form-label">Correo Electrónico *</label>
+                    <input type="email" id="correo" name="correo" class="form-input" placeholder="correo@ejemplo.com" required>
+                    <div class="error-message">Correo electrónico inválido</div>
+                </div>
+
+                <!-- Teléfono -->
+                <div class="form-group">
+                    <label for="telefono" class="form-label">Número de Teléfono *</label>
+                    <input type="tel" id="telefono" name="telefono" class="form-input" placeholder="+58 414 123 4567" required>
+                    <div class="error-message">Formato inválido. Ej: +58 414 123 4567</div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-button">CONTINUAR AL PAGO</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Form validation
+        document.getElementById('ticket-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let isValid = true;
+            
+            // Reset all errors
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.remove('error');
+            });
+            
+            // Validate Nombre
+            const nombre = document.getElementById('nombre');
+            if (nombre.value.trim().length < 3) {
+                nombre.closest('.form-group').classList.add('error');
+                isValid = false;
+            }
+            
+            // Validate Documento
+            const documento = document.getElementById('documento');
+            const docPattern = /^[V]-?\d{7,8}$|^\d{8,9}$/;
+            if (!docPattern.test(documento.value.replace(/\s/g, '').toUpperCase())) {
+                documento.closest('.form-group').classList.add('error');
+                isValid = false;
+            }
+            
+            // Validate Edad
+            const edad = document.getElementById('edad');
+            if (edad.value < 18 || edad.value > 99) {
+                edad.closest('.form-group').classList.add('error');
+                isValid = false;
+            }
+            
+            // Validate Género
+            const genero = document.querySelector('input[name="genero"]:checked');
+            if (!genero) {
+                document.querySelector('.radio-group').closest('.form-group').classList.add('error');
+                isValid = false;
+            }
+            
+            // Validate Correo
+            const correo = document.getElementById('correo');
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(correo.value)) {
+                correo.closest('.form-group').classList.add('error');
+                isValid = false;
+            }
+            
+            // Validate Teléfono
+            const telefono = document.getElementById('telefono');
+            const phonePattern = /^\+58\s?\d{3}\s?\d{3}\s?\d{4}$/;
+            if (!phonePattern.test(telefono.value.replace(/\s/g, ''))) {
+                telefono.closest('.form-group').classList.add('error');
+                isValid = false;
+            }
+            
+            if (isValid) {
+                // Store form data
+                const formData = {
+                    nombre: nombre.value,
+                    documento: documento.value,
+                    edad: edad.value,
+                    genero: genero.value,
+                    correo: correo.value,
+                    telefono: telefono.value
+                };
+                
+                localStorage.setItem('lamubi-form-data', JSON.stringify(formData));
+                
+                // Redirect to payment page
+                window.location.href = 'pago.html';
+            }
+        });
+
+        // Remove error on input
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.closest('.form-group').classList.remove('error');
+            });
+        });
+
+        // Remove error on radio change
+        document.querySelectorAll('.radio-input').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelector('.radio-group').closest('.form-group').classList.remove('error');
+            });
+        });
+
+        // Auto-format phone number
+        document.getElementById('telefono').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            if (value.startsWith('+58')) {
+                value = value.substring(3);
+            }
+            if (value.length >= 10) {
+                value = '+58 ' + value.substring(0, 3) + ' ' + value.substring(3, 6) + ' ' + value.substring(6, 10);
+                e.target.value = value;
+            }
+        });
+
+        // Auto-format document
+        document.getElementById('documento').addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase().replace(/\s/g, '');
+            if (value.startsWith('V') && !value.includes('-')) {
+                value = value.substring(0, 1) + '-' + value.substring(1);
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Tickets - LA MUBI</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    
+    <!-- Google Fonts - Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary: #bb1175;
+            --secondary: #f43cb8;
+            --accent: #f361e5;
+            --black: #000000;
+            --white: #FFFFFF;
+            --gray: #666666;
+            --dark-gray: #1a1a1a;
+            --success: #11bb75;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(187, 17, 117, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 20px 40px rgba(187, 17, 117, 0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--white);
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-subtitle {
+            color: var(--gray);
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--white);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: var(--white);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(187, 17, 117, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 10px;
+            color: var(--white);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(187, 17, 117, 0.4);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-login:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: var(--danger);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .success-message {
+            background: rgba(17, 187, 117, 0.1);
+            border: 1px solid rgba(17, 187, 117, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: var(--success);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        .dev-info {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .dev-info strong {
+            color: var(--accent);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 1rem;
+                padding: 2rem;
+            }
+            
+            .login-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <h1 class="login-title">Admin Tickets</h1>
+            <p class="login-subtitle">Panel de Administración LA MUBI</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="errorText">Error de autenticación</span>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i>
+            <span id="successText">Login correcto</span>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="form-label" for="email">
+                    <i class="fas fa-envelope"></i> Correo Electrónico
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    class="form-input" 
+                    placeholder="admin@lamubi.com"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">
+                    <i class="fas fa-lock"></i> Contraseña
+                </label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="form-input" 
+                    placeholder="Tu contraseña"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                <span id="btnText">Iniciar Sesión</span>
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Verificando credenciales...</p>
+        </div>
+
+        <div class="dev-info">
+            <strong>Desarrollo:</strong> Usa las credenciales de la base de datos
+            <br>Roles disponibles: super_admin, tickets_admin, marketing_admin
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../config.js"></script>
+    <script>
+        // Esperar a que config.js cargue completamente
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar que LAMUBI_UTILS esté disponible
+            if (typeof window.LAMUBI_UTILS === 'undefined') {
+                console.error('❌ LAMUBI_UTILS no está disponible. Verifica que config.js se cargue correctamente.');
+                return;
+            }
+            
+            // Cargar login.js solo después de que config.js esté listo
+            const script = document.createElement('script');
+            script.src = 'login.js';
+            script.onload = function() {
+                console.log('✅ login.js cargado correctamente');
+            };
+            script.onerror = function() {
+                console.error('❌ Error cargando login.js');
+            };
+            document.head.appendChild(script);
+        });
+    </script>
+</body>
+</html>

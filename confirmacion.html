@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎫 TU TICKET - LA MUBI</title>
+    
+    <!-- Google Fonts - Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- html2canvas for download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #bb1175;
+            --secondary: #f43cb8;
+            --accent: #f361e5;
+            --black: #000000;
+            --white: #FFFFFF;
+            --gray: #666666;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 1.5rem 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .logo-small {
+            height: 40px;
+            filter: drop-shadow(0 0 10px var(--primary));
+        }
+
+        .main-container {
+            margin-top: 100px;
+            padding: 2rem;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .success-container {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .success-icon {
+            font-size: 6rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .success-title {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .success-subtitle {
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        .ticket-container {
+            background: linear-gradient(135deg, rgba(187, 17, 117, 0.1), rgba(244, 60, 184, 0.05));
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .ticket-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid rgba(244, 60, 184, 0.3);
+        }
+
+        .ticket-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .ticket-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .ticket-info, .qr-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(244, 60, 184, 0.2);
+        }
+
+        .info-title, .qr-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .info-item {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: var(--white);
+            font-weight: 700;
+        }
+
+        .qr-container {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        #qrcode {
+            width: 200px !important;
+            height: 200px !important;
+        }
+
+        .qr-instructions {
+            font-size: 0.9rem;
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: var(--black);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .action-button {
+            padding: 1.5rem 2rem;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .primary-button {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--white);
+        }
+
+        .secondary-button {
+            background: transparent;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(187, 17, 117, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--accent);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(244, 60, 184, 0.3);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .ticket-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .success-title {
+                font-size: 2rem;
+            }
+            
+            #qrcode {
+                width: 150px !important;
+                height: 150px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <img src="LaMubiMCBOLogo1.png" alt="LA MUBI" class="logo-small">
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Success Animation -->
+        <div class="success-container">
+            <div class="success-icon">🎉</div>
+            <h1 class="success-title">¡Compra Confirmada!</h1>
+            <p class="success-subtitle">Tu ticket digital está listo</p>
+        </div>
+
+        <!-- Status Badge -->
+        <div style="text-align: center;">
+            <div class="status-badge">
+                ⏳ PENDIENTE DE VERIFICACIÓN
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Generando tu ticket digital...</p>
+        </div>
+
+        <!-- Ticket Container (Hidden initially) -->
+        <div class="ticket-container" id="ticket-container" style="display: none;">
+            <!-- Ticket Header -->
+            <div class="ticket-header">
+                <h2 class="ticket-title">🎫 LA MUBI EXPERIENCE</h2>
+                <p>TICKET DIGITAL - ENTRADA GENERAL</p>
+            </div>
+
+            <!-- Ticket Content -->
+            <div class="ticket-content">
+                <!-- Ticket Info -->
+                <div class="ticket-info">
+                    <h3 class="info-title">📋 DATOS DEL COMPRADOR</h3>
+                    <div class="info-item">
+                        <span class="info-label">Nombre:</span>
+                        <span class="info-value" id="ticket-name">Cargando...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value" id="ticket-email">Cargando...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Teléfono:</span>
+                        <span class="info-value" id="ticket-phone">Cargando...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Método:</span>
+                        <span class="info-value" id="ticket-method">Cargando...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Monto:</span>
+                        <span class="info-value" id="ticket-amount">Cargando...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ID Ticket:</span>
+                        <span class="info-value" id="ticket-id">Cargando...</span>
+                    </div>
+                </div>
+
+                <!-- QR Code Section -->
+                <div class="qr-section">
+                    <h3 class="qr-title">📱 CÓDIGO QR DE ACCESO</h3>
+                    <div class="qr-container">
+                        <div id="qrcode"></div>
+                    </div>
+                    <p class="qr-instructions">
+                        📸 Escanea este código en la entrada<br>
+                        🎫 No compartas tu ticket con otras personas<br>
+                        🚪 Presenta este código el día del evento
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="index.html" class="action-button primary-button">
+                🏠 Volver al Inicio
+            </a>
+            <button class="action-button secondary-button" onclick="downloadTicket()">
+                📥 Descargar Ticket
+            </button>
+            <button class="action-button secondary-button" onclick="window.print()">
+                🖨️ Imprimir Ticket
+            </button>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script>
+        // Global variables
+        let verificationData = null;
+        let ticketId = null;
+
+        // Load verification data
+        async function loadVerificationData() {
+            try {
+                // Get verification ID from localStorage
+                const savedVerification = localStorage.getItem('lamubi-verification-id');
+                
+                if (savedVerification) {
+                    // Load from Supabase
+                    const { data, error } = await window.LAMUBI_UTILS.supabase
+                        .from('verificaciones_pagos')
+                        .select('*')
+                        .eq('id', savedVerification)
+                        .single();
+                    
+                    if (error) throw error;
+                    
+                    verificationData = data;
+                } else {
+                    // Load from localStorage (fallback)
+                    const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
+                    verificationData = formData || {};
+                }
+                
+                ticketId = window.LAMUBI_UTILS.generateTicketId();
+                updateTicketDisplay();
+                generateQRCode();
+                
+                // Show ticket, hide loading
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('ticket-container').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading verification data:', error);
+                showError('Error cargando datos del ticket');
+            }
+        }
+
+        // Update ticket display
+        function updateTicketDisplay() {
+            const formData = verificationData.datos_compra?.formData || verificationData;
+            
+            document.getElementById('ticket-name').textContent = formData.nombre || 'No disponible';
+            document.getElementById('ticket-email').textContent = formData.correo || 'No disponible';
+            document.getElementById('ticket-phone').textContent = formData.telefono || 'No disponible';
+            
+            // Payment method
+            const methodNames = {
+                'pago-movil': 'PAGO MÓVIL',
+                'zelle': 'ZELLE'
+            };
+            document.getElementById('ticket-method').textContent = 
+                methodNames[verificationData.metodo_pago] || 'No disponible';
+            
+            // Amount
+            const amount = verificationData.monto;
+            if (verificationData.metodo_pago === 'pago-movil') {
+                document.getElementById('ticket-amount').textContent = `Bs. ${amount.toLocaleString('de-DE')}`;
+            } else {
+                document.getElementById('ticket-amount').textContent = `$${amount}`;
+            }
+            
+            // Ticket ID
+            document.getElementById('ticket-id').textContent = ticketId;
+        }
+
+        // Generate QR Code
+        function generateQRCode() {
+            const qrData = {
+                ticketId: ticketId,
+                verificationId: verificationData.id,
+                name: verificationData.datos_compra?.formData?.nombre || 'No disponible',
+                email: verificationData.email_temporal || verificationData.datos_compra?.formData?.correo,
+                method: verificationData.metodo_pago,
+                amount: verificationData.monto,
+                timestamp: new Date().toISOString(),
+                event: 'LA MUBI EXPERIENCE',
+                type: 'ENTRADA GENERAL'
+            };
+            
+            // Clear existing QR
+            document.getElementById('qrcode').innerHTML = '';
+            
+            // Generate new QR
+            new QRCode(document.getElementById('qrcode'), {
+                text: JSON.stringify(qrData),
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        // Download ticket
+        function downloadTicket() {
+            // Create canvas from ticket
+            html2canvas(document.querySelector('.ticket-container')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `ticket-lamubi-${ticketId}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('loading-state').innerHTML = `
+                <div style="color: #ff6b6b; font-size: 1.2rem; font-weight: 700;">
+                    ❌ ${message}
+                </div>
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for LAMUBI_UTILS to be ready
+            if (window.LAMUBI_UTILS && window.LAMUBI_UTILS.supabase) {
+                loadVerificationData();
+            } else {
+                // Fallback timeout
+                setTimeout(() => {
+                    if (window.LAMUBI_UTILS && window.LAMUBI_UTILS.supabase) {
+                        loadVerificationData();
+                    } else {
+                        showError('Error de conexión con Supabase');
+                    }
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

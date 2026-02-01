@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VERIFICACIÓN DE PAGO - LA MUBI</title>
+    
+    <!-- Google Fonts - Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS - CRÍTICO PARA INICIALIZACIÓN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #bb1175;
+            --secondary: #f43cb8;
+            --accent: #f361e5;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            padding: 1.5rem 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-small {
+            height: 40px;
+            filter: drop-shadow(0 0 10px var(--primary));
+        }
+
+        .back-button {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(187, 17, 117, 0.4);
+        }
+
+        /* Main Container */
+        .main-container {
+            margin-top: 100px;
+            padding: 2rem;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 3rem;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(244, 60, 184, 0.3);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .progress-step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--black);
+            border: 3px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .progress-step.completed {
+            background: var(--secondary);
+            border-color: var(--secondary);
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        /* Verification Container */
+        .verification-container {
+            background: linear-gradient(135deg, rgba(187, 17, 117, 0.1), rgba(244, 60, 184, 0.05));
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verification-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.3;
+            animation: borderGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes borderGlow {
+            from {
+                opacity: 0.3;
+            }
+            to {
+                opacity: 0.6;
+            }
+        }
+
+        .verification-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .verification-subtitle {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .payment-method-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 1px solid rgba(244, 60, 184, 0.3);
+        }
+
+        .payment-method-label {
+            color: var(--secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-method-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Form Sections */
+        .form-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(244, 60, 184, 0.3);
+            border-radius: 15px;
+            color: var(--white);
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.7);
+            transform: perspective(1000px) rotateX(5deg) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(187, 17, 117, 0.3);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* File Upload */
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 1.2rem 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px dashed rgba(244, 60, 184, 0.3);
+            border-radius: 15px;
+            color: var(--accent);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary);
+            background: rgba(187, 17, 117, 0.1);
+        }
+
+        .file-upload-label.has-file {
+            border-color: var(--secondary);
+            background: rgba(244, 60, 184, 0.1);
+            color: var(--secondary);
+        }
+
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-upload-text {
+            font-size: 0.9rem;
+        }
+
+        .file-name {
+            margin-top: 0.5rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* Submit Button */
+        .submit-button {
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--white);
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .submit-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-button:hover::before {
+            left: 100%;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(187, 17, 117, 0.5);
+        }
+
+        /* Error Messages */
+        .error-message {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Valid State */
+        .form-group.valid .form-input {
+            border-color: var(--success);
+            box-shadow: 0 0 10px rgba(17, 187, 117, 0.3);
+            animation: validPulse 0.5s ease;
+        }
+
+        /* Success Message */
+        .success-message {
+            color: var(--success);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .form-group.valid .success-message {
+            display: block;
+        }
+
+        /* Animaciones LA MUBI */
+        @keyframes validPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group.error .form-input {
+            border-color: var(--error);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+                margin-top: 80px;
+            }
+            
+            .verification-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .verification-title {
+                font-size: 2rem;
+            }
+            
+            .progress-labels {
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 414px) {
+            .verification-container {
+                padding: 1.5rem 1rem;
+            }
+            
+            .verification-title {
+                font-size: 1.8rem;
+            }
+            
+            .verification-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <img src="LaMubiMCBOLogo1.png" alt="LA MUBI" class="logo-small">
+            <a href="pago.html" class="back-button">← VOLVER</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-step completed">✓</div>
+                <div class="progress-step completed">✓</div>
+                <div class="progress-step active">3</div>
+                <div class="progress-step">4</div>
+            </div>
+            <div class="progress-labels">
+                <span>DATOS</span>
+                <span>PAGO</span>
+                <span>VERIFICACIÓN</span>
+                <span>CONFIRMACIÓN</span>
+            </div>
+        </div>
+
+        <!-- Verification Container -->
+        <div class="verification-container">
+            <h1 class="verification-title">VERIFICA TU PAGO</h1>
+            <p class="verification-subtitle">Sube el comprobante para confirmar tu transacción</p>
+
+            <!-- Payment Method Display -->
+            <div class="payment-method-display">
+                <div class="payment-method-label">Método seleccionado:</div>
+                <div class="payment-method-name" id="payment-method-name">Cargando...</div>
+            </div>
+
+            <!-- Tasa Dólar y Monto a Transferir - Sección Dinámica -->
+            <div class="tasa-display" id="tasa-dinamica" style="background: rgba(187, 17, 117, 0.1); border: 1px solid rgba(187, 17, 117, 0.3); border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem;">
+                
+                <!-- Contenido para Pago Móvil -->
+                <div id="contenido-pago-movil" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.9rem; color: #999; margin-bottom: 0.25rem;">Tasa del dólar actual:</div>
+                            <div style="font-size: 1.2rem; font-weight: 600; color: #fff;" id="tasa-dolar-actual">Cargando...</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.9rem; color: #999; margin-bottom: 0.25rem;">Monto a transferir:</div>
+                            <div style="font-size: 1.2rem; font-weight: 600; color: #11bb75;" id="monto-bolivares">Cargando...</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">
+                        <i class="fas fa-info-circle"></i> El ticket tiene un costo de $5.00 USD
+                    </div>
+                </div>
+
+                <!-- Contenido para Zelle -->
+                <div id="contenido-zelle" style="display: none;">
+                    <div style="text-align: center; padding: 1rem 0;">
+                        <div style="font-size: 1.1rem; color: #999; margin-bottom: 0.5rem;">Monto a transferir:</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #11bb75; margin-bottom: 0.5rem;">$5.00 USD</div>
+                        <div style="font-size: 0.8rem; color: #666;">
+                            <i class="fas fa-info-circle"></i> Transferencia instantánea desde EE.UU.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <form id="verification-form">
+                <!-- Pago Móvil Section -->
+                <div class="form-section" id="pago-movil-section">
+                    <div class="form-group">
+                        <label for="referencia" class="form-label">Número de Referencia *</label>
+                        <input type="text" id="referencia" name="referencia" class="form-input" placeholder="Ej: 1234567890" required>
+                        <div class="error-message">Debe tener 8-12 dígitos numéricos. Ej: 1234567890</div>
+                        <div class="success-message">✅ Referencia válida</div>
+                    </div>
+
+                    <input type="hidden" id="fecha-pago" name="fecha-pago">
+
+                    <div class="form-group">
+                        <label for="monto-pago" class="form-label">Monto Transferido (Bs.) *</label>
+                        <input type="text" id="monto-pago" name="monto-pago" class="form-input" placeholder="Ej: 2.500,00" required>
+                        <div class="error-message">Monto incorrecto. Debe ser exactamente: Bs. 2.500,00</div>
+                        <div class="success-message">✅ Monto válido</div>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">
+                            💡 Monto a pagar: <span id="monto-sugerido" style="color: #11bb75; font-weight: 600;">Calculando...</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Captura de Pantalla del Comprobante *</label>
+                        <div class="file-upload">
+                            <input type="file" id="comprobante-pago-movil" name="comprobante-pago-movil" class="file-upload-input" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic" required>
+                            <label for="comprobante-pago-movil" class="file-upload-label" id="label-pago-movil">
+                                <div class="file-upload-icon">📷</div>
+                                <div class="file-upload-text">Haz clic para subir la captura</div>
+                                <div class="file-name" id="file-name-pago-movil"></div>
+                            </label>
+                        </div>
+                        <div class="error-message">Sube una imagen del comprobante (JPG, PNG, WebP, HEIC - Máx 5MB)</div>
+                    </div>
+                </div>
+
+                <!-- Zelle Section -->
+                <div class="form-section" id="zelle-section">
+                    <div class="form-group">
+                        <label for="confirmacion-zelle" class="form-label">Número de Confirmación Zelle *</label>
+                        <input type="text" id="confirmacion-zelle" name="confirmacion-zelle" class="form-input" placeholder="Ej: ZEL123456789" required>
+                        <div class="error-message">Ingresa el número de confirmación</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email-remitente" class="form-label">Email del Remitente *</label>
+                        <input type="email" id="email-remitente" name="email-remitente" class="form-input" placeholder="tu@email.com" required>
+                        <div class="error-message">Ingresa un email válido</div>
+                    </div>
+
+                    <input type="hidden" id="fecha-zelle" name="fecha-zelle">
+
+                    <div class="form-group">
+                        <label class="form-label">Captura del Comprobante Zelle *</label>
+                        <div class="file-upload">
+                            <input type="file" id="comprobante-zelle" name="comprobante-zelle" class="file-upload-input" accept="image/*" required>
+                            <label for="comprobante-zelle" class="file-upload-label" id="label-zelle">
+                                <div class="file-upload-icon">📷</div>
+                                <div class="file-upload-text">Haz clic para subir el comprobante</div>
+                                <div class="file-name" id="file-name-zelle"></div>
+                            </label>
+                        </div>
+                        <div class="error-message">Sube una imagen del comprobante</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-button">VERIFICAR PAGO</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Load payment method from localStorage
+        function loadPaymentMethod() {
+            const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
+            if (formData && formData.paymentMethod) {
+                const methodNames = {
+                    'pago-movil': 'PAGO MÓVIL',
+                    'zelle': 'ZELLE'
+                };
+                
+                document.getElementById('payment-method-name').textContent = methodNames[formData.paymentMethod];
+                
+                // Mostrar contenido dinámico según método
+                mostrarContenidoMetodo(formData.paymentMethod);
+                
+                // Show corresponding section
+                document.querySelectorAll('.form-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                const activeSection = document.getElementById(formData.paymentMethod + '-section');
+                if (activeSection) {
+                    activeSection.classList.add('active');
+                }
+                
+                // Remove required from all inputs first
+                document.querySelectorAll('.form-input, .file-upload-input').forEach(input => {
+                    input.removeAttribute('required');
+                });
+                
+                // Add required only to active section inputs
+                activeSection.querySelectorAll('.form-input, .file-upload-input').forEach(input => {
+                    input.setAttribute('required', 'required');
+                });
+            }
+        }
+
+        // Mostrar contenido dinámico según método de pago
+        function mostrarContenidoMetodo(metodo) {
+            console.log(`🎯 Mostrando contenido para método: ${metodo}`);
+            
+            // Ocultar todos los contenidos
+            document.getElementById('contenido-pago-movil').style.display = 'none';
+            document.getElementById('contenido-zelle').style.display = 'none';
+            
+            // Mostrar contenido correspondiente
+            if (metodo === 'pago-movil') {
+                document.getElementById('contenido-pago-movil').style.display = 'block';
+                console.log('✅ Contenido Pago Móvil mostrado');
+            } else if (metodo === 'zelle') {
+                document.getElementById('contenido-zelle').style.display = 'block';
+                console.log('✅ Contenido Zelle mostrado');
+            }
+        }
+
+        // File upload handlers
+        function setupFileUpload(inputId, labelId, fileNameId) {
+            const input = document.getElementById(inputId);
+            const label = document.getElementById(labelId);
+            const fileName = document.getElementById(fileNameId);
+            
+            input.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileName.textContent = this.files[0].name;
+                    label.classList.add('has-file');
+                } else {
+                    fileName.textContent = '';
+                    label.classList.remove('has-file');
+                }
+            });
+        }
+
+        // Form validation
+        document.getElementById('verification-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            console.log('Formulario enviado - Iniciando validación');
+            
+            let isValid = true;
+            
+            // Reset all errors
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.remove('error');
+            });
+            
+            // Get current payment method
+            const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
+            const paymentMethod = formData ? formData.paymentMethod : null;
+            
+            console.log('Método de pago detectado:', paymentMethod);
+            
+            if (!paymentMethod) {
+                console.error('No se encontró método de pago en localStorage');
+                alert('Error: No se encontró método de pago. Por favor regresa y selecciona un método.');
+                return;
+            }
+            
+            if (paymentMethod === 'pago-movil') {
+                // Validate Pago Móvil fields
+                const referencia = document.getElementById('referencia');
+                if (referencia.value.trim().length < 5) {
+                    referencia.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                const fechaPago = document.getElementById('fecha-pago');
+                console.log('Valor de fecha-pago:', fechaPago.value);
+                if (!fechaPago.value || fechaPago.value.trim() === '') {
+                    console.log('Error: fecha-pago está vacío');
+                    fechaPago.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                const monto = document.getElementById('monto-pago');
+                // Convertir formato venezolano a número
+                const montoNumerico = parseFloat(monto.value.replace(/\./g, '').replace(',', '.'));
+                console.log('Valor de monto:', monto.value, 'Convertido:', montoNumerico);
+                
+                // Obtener tasa actual
+                const tasaActual = parseFloat(window.TASA_DOLAR_UTILS?.tasaActual || 450);
+                const montoEsperado = tasaActual * 5; // 5 USD * tasa
+                console.log('Tasa actual:', tasaActual, 'Monto esperado:', montoEsperado);
+                
+                if (montoNumerico !== montoEsperado) {
+                    console.log('Error: monto no coincide con tasa * 5');
+                    monto.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                const comprobante = document.getElementById('comprobante-pago-movil');
+                console.log('Archivo comprobante:', comprobante.files, 'Hay archivo:', !!(comprobante.files && comprobante.files[0]));
+                if (!comprobante.files || !comprobante.files[0]) {
+                    console.log('Error: no hay comprobante');
+                    comprobante.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                console.log('Estado final de isValid para pago-movil:', isValid);
+                
+            } else if (paymentMethod === 'zelle') {
+                // Validate Zelle fields
+                const confirmacion = document.getElementById('confirmacion-zelle');
+                if (confirmacion.value.trim().length < 5) {
+                    confirmacion.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                const email = document.getElementById('email-remitente');
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email.value)) {
+                    email.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                const comprobante = document.getElementById('comprobante-zelle');
+                if (!comprobante.files || !comprobante.files[0]) {
+                    comprobante.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+            } else if (paymentMethod === 'efectivo') {
+                // Validate Efectivo fields
+                const codigo = document.getElementById('codigo-verificacion');
+                if (codigo.value.trim().length < 5) {
+                    codigo.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                const nombre = document.getElementById('nombre-recibio');
+                if (nombre.value.trim().length < 3) {
+                    nombre.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+            } else if (paymentMethod === 'qr') {
+                // Validate QR fields
+                const idTransaccion = document.getElementById('id-transaccion');
+                if (idTransaccion.value.trim().length < 5) {
+                    idTransaccion.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                const codigoQR = document.getElementById('codigo-qr');
+                if (codigoQR.value.trim().length < 5) {
+                    codigoQR.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+                
+                const comprobante = document.getElementById('comprobante-qr');
+                if (!comprobante.files || !comprobante.files[0]) {
+                    comprobante.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+            } else {
+                // Método no reconocido
+                isValid = false;
+            }
+            
+            if (isValid) {
+                console.log('Validación exitosa - Guardando datos...');
+                
+                // Store verification data
+                const verificationData = {
+                    paymentMethod: paymentMethod,
+                    verified: true,
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('Datos de verificación:', verificationData);
+                
+                // Add form data based on payment method
+                if (paymentMethod === 'pago-movil') {
+                    verificationData.referencia = document.getElementById('referencia').value;
+                    verificationData.fechaPago = document.getElementById('fecha-pago').value;
+                    verificationData.monto = document.getElementById('monto-pago').value;
+                } else if (paymentMethod === 'zelle') {
+                    verificationData.confirmacionZelle = document.getElementById('confirmacion-zelle').value;
+                    verificationData.emailRemitente = document.getElementById('email-remitente').value;
+                    verificationData.fechaZelle = document.getElementById('fecha-zelle').value;
+                }
+                
+                // Guardar en base de datos en lugar de localStorage
+                guardarVerificacionEnBD(verificationData).then(resultado => {
+                    if (resultado.success) {
+                        console.log('✅ Verificación guardada en BD:', resultado.data);
+                        
+                        // Guardar ID para usar en confirmación
+                        localStorage.setItem('lamubi-verification-id', resultado.data.id);
+                        
+                        // Redirect to confirmation page
+                        window.location.href = 'confirmacion.html';
+                    } else {
+                        console.error('❌ Error guardando verificación:', resultado.error);
+                        alert('Error al guardar la verificación. Intenta nuevamente.');
+                    }
+                }).catch(error => {
+                    console.error('❌ Error en guardado:', error);
+                    alert('Error al procesar la verificación. Intenta nuevamente.');
+                });
+            } else {
+                console.log('Validación fallida - Corrige los errores');
+            }
+        });
+
+        // 🎯 Guardar verificación en base de datos
+        async function guardarVerificacionEnBD(verificationData) {
+            try {
+                console.log('🎯 Guardando verificación en BD...', verificationData);
+                
+                // Obtener datos del formulario
+                const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
+                const paymentMethod = formData?.paymentMethod;
+                
+                // Detectar si el usuario está registrado
+                let userId = null;
+                let emailTemporal = null;
+                
+                // Obtener email del formulario para usuarios no registrados
+                const emailUsuario = formData?.correo || formData?.email || 'usuario@temporal.com';
+                
+                if (paymentMethod === 'zelle' && verificationData.emailRemitente) {
+                    // Para Zelle, detectar si el email está registrado
+                    const resultadoDeteccion = await window.UserDetectionAPI?.detectarUsuario(verificationData.emailRemitente);
+                    
+                    if (resultadoDeteccion?.encontrado) {
+                        userId = resultadoDeteccion.usuario.id;
+                        console.log('✅ Usuario detectado:', resultadoDeteccion.usuario.nombre);
+                    } else {
+                        emailTemporal = verificationData.emailRemitente;
+                        console.log('📝 Email temporal para no registrado:', emailTemporal);
+                    }
+                } else {
+                    // Para Pago Móvil, usar email del formulario como temporal
+                    emailTemporal = emailUsuario;
+                    console.log('📝 Email temporal para Pago Móvil:', emailTemporal);
+                }
+                
+                // 📅 Función para convertir fecha a formato ISO
+                function formatFechaParaBD(fechaString) {
+                    try {
+                        // Si la fecha viene como "30/01/2026, 19:14:58"
+                        const [fecha, hora] = fechaString.split(', ');
+                        const [dia, mes, anio] = fecha.split('/');
+                        // Retorna "2026-01-30 HH:mm:ss"
+                        return `${anio}-${mes}-${dia} ${hora}`;
+                    } catch (e) {
+                        console.error("Error formateando fecha:", e);
+                        return new Date().toISOString(); // Fallback a ISO actual
+                    }
+                }
+                
+                // 📋 Preparar datos para inserción
+                let comprobanteUrl = null;
+                let comprobanteNombre = null;
+                
+                // Subir comprobante si existe
+                const comprobanteElement = document.getElementById('comprobante-pago-movil') || 
+                                         document.getElementById('comprobante-zelle');
+                
+                if (comprobanteElement && comprobanteElement.files && comprobanteElement.files[0]) {
+                    const comprobanteFile = comprobanteElement.files[0];
+                    const uploadResult = await window.VERIFICACION_UPLOAD.subirComprobante(
+                        comprobanteFile,
+                        paymentMethod,
+                        verificationData.referencia || 'sin_referencia'
+                    );
+                    
+                    if (uploadResult.success) {
+                        comprobanteUrl = uploadResult.url;
+                        comprobanteNombre = uploadResult.fileName;
+                        console.log('✅ Comprobante subido:', uploadResult.url);
+                    } else {
+                        console.error('❌ Error subiendo comprobante:', uploadResult.error);
+                        // Continuar sin comprobante pero registrar el error
+                    }
+                } else {
+                    console.log('📝 No se encontró archivo de comprobante para subir');
+                }
+                
+                const datosVerificacion = {
+                    user_id: userId,
+                    email_temporal: emailTemporal,
+                    metodo_pago: paymentMethod,
+                    monto: paymentMethod === 'pago-movil' ? 
+                        parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
+                        5.00, // $5 USD para Zelle
+                    tasa_dolar: parseFloat(window.TASA_DOLAR_UTILS?.tasaActual || 450),
+                    referencia: verificationData.referencia || null,
+                    confirmacion_zelle: verificationData.confirmacionZelle || null,
+                    email_remitente: verificationData.emailRemitente || null,
+                    fecha_pago: paymentMethod === 'pago-movil' ? 
+                        formatFechaParaBD(verificationData.fechaPago) : 
+                        formatFechaParaBD(verificationData.fechaZelle),
+                    comprobante_url: comprobanteUrl,
+                    comprobante_nombre: comprobanteNombre,
+                    datos_compra: {
+                        ...verificationData,
+                        formData: formData,
+                        userAgent: navigator.userAgent,
+                        timestamp: new Date().toISOString()
+                    },
+                    metadata: {
+                        ip: await obtenerIP(),
+                        origen: 'formulario_verificacion',
+                        version: '1.0.0'
+                    }
+                };
+                
+                console.log('📋 Datos preparados para BD:', datosVerificacion);
+                
+                // Insertar en base de datos
+                const { data, error } = await window.supabaseClient
+                    .from('verificaciones_pagos')
+                    .insert([datosVerificacion])
+                    .select()
+                    .single();
+                
+                if (error) {
+                    console.error('❌ Error insertando en BD:', error);
+                    throw error;
+                }
+                
+                console.log('✅ Verificación guardada exitosamente:', data);
+                
+                return {
+                    success: true,
+                    data: data,
+                    message: 'Verificación guardada correctamente'
+                };
+                
+            } catch (error) {
+                console.error('❌ Error en guardarVerificacionEnBD:', error);
+                return {
+                    success: false,
+                    error: error.message,
+                    message: 'Error al guardar la verificación'
+                };
+            }
+        }
+        
+        // 📡 Obtener IP del usuario
+        async function obtenerIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                console.error('Error obteniendo IP:', error);
+                return 'unknown';
+            }
+        }
+
+        // Remove error on input
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.closest('.form-group').classList.remove('error');
+            });
+        });
+
+        // Initialize
+        loadPaymentMethod();
+        setupFileUpload('comprobante-pago-movil', 'label-pago-movil', 'file-name-pago-movil');
+        setupFileUpload('comprobante-zelle', 'label-zelle', 'file-name-zelle');
+        
+        // Cargar tasa dólar y monto a transferir
+        // No llamar aquí, se llamará después de cargar scripts
+    </script>
+
+    <!-- Scripts de Tasa Dólar - ORDEN CORRECTO -->
+    <script src="config.js"></script>
+    <script src="user-detection-api.js"></script>
+    <script>
+        // 🔧 FORZAR INICIALIZACIÓN DE SUPABASE
+        console.log('🔧 Forzando inicialización de Supabase...');
+        
+        // Esperar a que config.js cargue completamente
+        setTimeout(() => {
+            if (window.supabaseClient) {
+                console.log('✅ supabaseClient encontrado:', window.supabaseClient);
+                
+                // Asegurar que esté en LAMUBI_UTILS
+                if (window.LAMUBI_UTILS) {
+                    window.LAMUBI_UTILS.supabase = window.supabaseClient;
+                    console.log('✅ Supabase asignado a LAMUBI_UTILS:', window.LAMUBI_UTILS.supabase);
+                } else {
+                    console.error('❌ LAMUBI_UTILS no encontrado');
+                }
+            } else {
+                console.error('❌ supabaseClient no encontrado');
+                console.log('🔍 Variables disponibles:', {
+                    LAMUBI_UTILS: window.LAMUBI_UTILS,
+                    supabaseClient: window.supabaseClient,
+                    supabase: window.supabase
+                });
+            }
+        }, 200); // Aumentado a 200ms
+    </script>
+    
+    <script src="tasa-dolar-verificacion.js"></script>
+    <script src="verificacion-upload.js"></script>
+    <script src="validacion-campos.js"></script>
+    
+    <!-- Script de inicialización - DESPUÉS de cargar todo -->
+    <script>
+        // Función para inicializar tasa dólar en verificación
+        window.cargarTasaDolarVerificacion = async function() {
+            try {
+                console.log('🎯 Iniciando carga de tasa dólar...');
+                
+                // Esperar a que config.js cargue
+                if (typeof window.LAMUBI_UTILS === 'undefined') {
+                    console.log('⏳ Esperando config.js...');
+                    setTimeout(window.cargarTasaDolarVerificacion, 100);
+                    return;
+                }
+                
+                // Esperar a que tasa-dolar-verificacion.js cargue
+                if (typeof window.TASA_DOLAR_UTILS === 'undefined') {
+                    console.log('⏳ Esperando tasa-dolar-verificacion.js...');
+                    setTimeout(window.cargarTasaDolarVerificacion, 100);
+                    return;
+                }
+                
+                console.log('✅ Scripts cargados, obteniendo tasa dólar...');
+                
+                // Cargar información de pago
+                const infoPago = await window.TASA_DOLAR_UTILS.mostrarInformacionPago(5.00);
+                
+                console.log('🎯 Información de pago cargada:', infoPago);
+                
+            } catch (error) {
+                console.error('❌ Error cargando tasa dólar:', error);
+                
+                // Mostrar valores por defecto en caso de error
+                document.getElementById('tasa-dolar-actual').textContent = 'Bs. 1.234,56';
+                document.getElementById('monto-bolivares').textContent = 'Bs. 6.172,80';
+                document.getElementById('monto-sugerido').textContent = '6.172,80';
+            }
+        };
+        
+        // Función para establecer hora local de Venezuela
+        function establecerHoraVenezuela() {
+            // Obtener fecha y hora actual UTC
+            const ahora = new Date();
+            
+            // Venezuela es UTC-4, así que restamos 4 horas
+            const horaVenezuela = new Date(ahora.getTime() - (4 * 3600000));
+            
+            // Formatear para datetime-local (YYYY-MM-DDTHH:MM)
+            const año = horaVenezuela.getUTCFullYear();
+            const mes = String(horaVenezuela.getUTCMonth() + 1).padStart(2, '0');
+            const día = String(horaVenezuela.getUTCDate()).padStart(2, '0');
+            const horas = String(horaVenezuela.getUTCHours()).padStart(2, '0');
+            const minutos = String(horaVenezuela.getUTCMinutes()).padStart(2, '0');
+            
+            const formatoDateTime = `${año}-${mes}-${día}T${horas}:${minutos}`;
+            
+            console.log('🕐 Hora UTC actual:', ahora.toISOString());
+            console.log('🕐 Hora Venezuela establecida:', formatoDateTime);
+            console.log('🕐 Diferencia aplicada: -4 horas (UTC-4)');
+            
+            // Establecer en todos los campos de fecha/hora
+            const camposFecha = ['fecha-pago'];
+            camposFecha.forEach(id => {
+                const campo = document.getElementById(id);
+                if (campo) {
+                    campo.value = formatoDateTime;
+                    console.log(`✅ Campo ${id} actualizado:`, formatoDateTime);
+                }
+            });
+        }
+
+        // Iniciar carga cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 DOM listo, iniciando carga de tasa dólar...');
+            
+            // Establecer hora de Venezuela primero
+            establecerHoraVenezuela();
+            
+            // Pequeña espera para asegurar que los objetos globales estén listos
+            setTimeout(() => {
+                if (typeof window.cargarTasaDolarVerificacion === 'function') {
+                    window.cargarTasaDolarVerificacion();
+                } else {
+                    console.error("❌ Error: cargarTasaDolarVerificación aún no está definida");
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

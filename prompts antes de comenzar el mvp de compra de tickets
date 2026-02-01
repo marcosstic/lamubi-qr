@@ -1,0 +1,35 @@
+prompts antes de comenzar el mvp de compra de tickets basado
+en el factor tiempo de 4 dias
+
+hay una consultas que tu medijise que hiciera y eso no esta en la documentacion bd que acabas de revisar, te pasare el historia de consultas de supabase -- Permitir uploads
+CREATE POLICY "Allow uploads" ON storage.objects
+FOR INSERT WITH CHECK (bucket_id = 'lamubi-comprobantes');
+
+-- Permitir lectura pública  
+CREATE POLICY "Allow public read" ON storage.objects
+FOR SELECT USING (bucket_id = 'lamubi-comprobantes'); -- Tamaño de las tablas
+SELECT 
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size,
+    pg_total_relation_size(schemaname||'.'||tablename) as size_bytes
+FROM pg_tables 
+WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+
+-- Estadísticas de uso de tablas
+SELECT 
+    schemaname,
+    relname,
+    seq_scan,
+    seq_tup_read,
+    idx_scan,
+    idx_tup_fetch,
+    n_tup_ins,
+    n_tup_upd,
+    n_tup_del,
+    n_live_tup,
+    n_dead_tup
+FROM pg_stat_user_tables 
+WHERE schemaname = 'public'
+ORDER BY n_live_tup DESC;  revisa si esas ultimas 2 consultas estan en la documentacion guardada en el explorador.   quiero que planifiquemos todas las mejoras a partir de la base actual, quiero que tomes en cuenta solo lo que hay en la documentacion guardada en el explorador, y lo que te voy diciendo a partir de ahora.  ya que hay tablas nuevas creadas en supabase y no se si haran falta, hay que borrarlas o se pueden mejorar.   lo principal que quiero es mejora la pagina de verificacion, ya que quiero que se pueda escribir en bolivares el monto, y que exista un panel admin de tickes en donde el admin pueda establecer la tasa del dolar, y el usuario pueda ver esa informacion en la pagina de verificacion calculada de forma automatica, es decir 5 dolares a la tasa que establacio el admin, para que el usuario escriba el monto. tambien te recuerdo que configaromos un bucket de supabes para almacenar imagenes comprimidas para no sobrepasar el limite de supabase de 1gb.  planifiquemos primero antes de implementar, me interesa saber si me entiendes todo.  quiero correrir los errores de forma logica y ordenadad para evitar estar modifcando codigo mas adelantes, el fin sera implentar compra de tickes digital con qr, para un mvp basado en la entrega de 4 dias, tomando en cuenta la filosofia de diseno de la mubi, planifiquemos

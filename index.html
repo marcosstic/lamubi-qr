@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LA MUBI - EXPERIENCIA DJ</title>
+    
+    <!-- Google Fonts - Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #bb1175;
+            --secondary: #f43cb8;
+            --accent: #f361e5;
+            --black: #000000;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Partículas 3D */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-20px) translateX(10px) scale(1.5);
+                opacity: 1;
+            }
+        }
+
+        /* Logo */
+        .logo-container {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 2rem;
+        }
+
+        .logo-img {
+            max-width: 400px;
+            height: auto;
+            filter: drop-shadow(0 0 20px var(--primary)) 
+                    drop-shadow(0 0 40px var(--secondary)) 
+                    drop-shadow(0 0 60px var(--accent));
+            animation: logoGlow 2s ease-in-out infinite alternate;
+            transition: all 0.3s ease;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 30px var(--primary)) 
+                    drop-shadow(0 0 50px var(--secondary)) 
+                    drop-shadow(0 0 70px var(--accent));
+        }
+
+        @keyframes logoGlow {
+            from {
+                filter: drop-shadow(0 0 20px var(--primary)) 
+                        drop-shadow(0 0 40px var(--secondary)) 
+                        drop-shadow(0 0 60px var(--accent));
+                transform: translateY(0);
+            }
+            to {
+                filter: drop-shadow(0 0 30px var(--primary)) 
+                        drop-shadow(0 0 50px var(--secondary)) 
+                        drop-shadow(0 0 70px var(--accent));
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Subtítulo */
+        .subtitle {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 1rem;
+            z-index: 10;
+            position: relative;
+            text-align: center;
+        }
+
+        /* Countdown */
+        .countdown {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            z-index: 10;
+            position: relative;
+            padding: 0 1rem;
+        }
+
+        .countdown-item {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 1rem;
+            border-radius: 12px;
+            min-width: 70px;
+            box-shadow: 0 8px 20px rgba(187, 17, 117, 0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: all 0.3s ease;
+        }
+
+        .countdown-item:hover {
+            transform: perspective(1000px) rotateX(0deg) translateY(-5px);
+            box-shadow: 0 15px 40px rgba(187, 17, 117, 0.5);
+        }
+
+        .countdown-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            display: block;
+        }
+
+        .countdown-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        /* Main CTA Container */
+        .main-cta-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            z-index: 10;
+            position: relative;
+        }
+
+        .availability-counter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: rgba(187, 17, 117, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 50px;
+            animation: counterGlow 2s ease-in-out infinite alternate;
+        }
+
+        .counter-label {
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .counter-number {
+            color: var(--primary);
+            font-weight: 900;
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        .counter-total {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        @keyframes counterGlow {
+            from {
+                box-shadow: 0 0 20px rgba(187, 17, 117, 0.3);
+            }
+            to {
+                box-shadow: 0 0 30px rgba(187, 17, 117, 0.6);
+            }
+        }
+
+        /* Main CTA Button */
+        .main-cta-button {
+            position: relative;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 1.5rem 4rem;
+            font-size: 1.4rem;
+            font-weight: 900;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 40px rgba(187, 17, 117, 0.5);
+            z-index: 10;
+        }
+
+        .cta-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 50%;
+            animation: intensePulse 1.5s ease-out infinite;
+        }
+
+        @keyframes intensePulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .main-cta-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(187, 17, 117, 0.7);
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+        }
+
+        .main-cta-button:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /* Sección de Experiencia */
+        .experience {
+            padding: 5rem 2rem;
+            background: linear-gradient(180deg, var(--black), #0a0a0a);
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Cards 3D */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .card-3d {
+            background: linear-gradient(135deg, rgba(187, 17, 117, 0.2), rgba(244, 60, 184, 0.1));
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+            overflow: hidden;
+        }
+
+        .card-3d::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-3d:hover::before {
+            opacity: 1;
+        }
+
+        .card-3d:hover {
+            transform: rotateY(10deg) rotateX(-10deg) scale(1.05);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .card-description {
+            color: var(--white);
+            line-height: 1.6;
+        }
+
+        
+        /* Tickets Section */
+        .tickets {
+            padding: 5rem 2rem;
+            background: linear-gradient(180deg, #0a0a0a, var(--black));
+        }
+
+        .tickets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .ticket-card {
+            background: linear-gradient(135deg, rgba(187, 17, 117, 0.1), rgba(244, 60, 184, 0.2));
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.4s ease;
+        }
+
+        .ticket-card:hover {
+            transform: rotateY(15deg) translateY(-10px);
+            box-shadow: 0 25px 50px rgba(187, 17, 117, 0.5);
+        }
+
+        .ticket-type {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .ticket-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+
+        .ticket-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .ticket-features li {
+            padding: 0.5rem 0;
+            color: var(--white);
+            opacity: 0.9;
+        }
+
+        .ticket-button {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .ticket-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(187, 17, 117, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo-img {
+                max-width: 280px;
+            }
+            
+            .countdown {
+                gap: 0.5rem;
+                padding: 0 0.5rem;
+            }
+            
+            .countdown-item {
+                min-width: 65px;
+                padding: 0.8rem;
+            }
+            
+            .countdown-number {
+                font-size: 1.8rem;
+            }
+            
+            .countdown-label {
+                font-size: 0.7rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+                padding: 0 1rem;
+            }
+            
+            .main-cta-container {
+                gap: 1rem;
+                margin-top: 1.5rem;
+                padding: 0 1rem;
+            }
+            
+            .availability-counter {
+                padding: 0.8rem 1.5rem;
+            }
+            
+            .counter-label {
+                font-size: 0.7rem;
+            }
+            
+            .counter-number {
+                font-size: 1.4rem;
+            }
+            
+            .counter-total {
+                font-size: 1rem;
+            }
+            
+            .main-cta-button {
+                padding: 1.2rem 3rem;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* iPhone XS específico */
+        @media (max-width: 414px) {
+            .hero {
+                padding: 1rem;
+            }
+            
+            .logo-img {
+                max-width: 240px;
+            }
+            
+            .countdown {
+                gap: 0.3rem;
+                padding: 0 0.3rem;
+            }
+            
+            .countdown-item {
+                min-width: 60px;
+                padding: 0.6rem;
+                border-radius: 8px;
+            }
+            
+            .countdown-number {
+                font-size: 1.5rem;
+            }
+            
+            .countdown-label {
+                font-size: 0.6rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .main-cta-container {
+                gap: 0.8rem;
+                margin-top: 1rem;
+                padding: 0 0.5rem;
+            }
+            
+            .availability-counter {
+                padding: 0.6rem 1rem;
+                gap: 0.3rem;
+            }
+            
+            .counter-label {
+                font-size: 0.6rem;
+            }
+            
+            .counter-number {
+                font-size: 1.2rem;
+            }
+            
+            .counter-total {
+                font-size: 0.9rem;
+            }
+            
+            .main-cta-button {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .tickets-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="particles" id="particles"></div>
+        
+        <div class="logo-container">
+            <img src="LaMubiMCBOLogo1.png" alt="LA MUBI" class="logo-img">
+        </div>
+        
+        <p class="subtitle">EXPERIENCIA DJ INOLVIDABLE</p>
+        
+        <div class="countdown">
+            <div class="countdown-item">
+                <span class="countdown-number" id="days">15</span>
+                <span class="countdown-label">DÍAS</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="hours">12</span>
+                <span class="countdown-label">HORAS</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="minutes">34</span>
+                <span class="countdown-label">MIN</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="seconds">56</span>
+                <span class="countdown-label">SEG</span>
+            </div>
+        </div>
+        
+        <div class="main-cta-container">
+            <div class="availability-counter">
+                <span class="counter-label">ENTRADAS DISPONIBLES</span>
+                <span class="counter-number" id="available-tickets">47</span>
+                <span class="counter-total">/ 100</span>
+            </div>
+            <button class="main-cta-button" onclick="window.location.href='comprar.html'">
+                <span class="cta-text">COMPRAR ENTRADA GENERAL - $5</span>
+                <div class="cta-pulse"></div>
+            </button>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section class="experience">
+        <div class="container">
+            <h2 class="section-title">LA EXPERIENCIA</h2>
+            
+            <div class="cards-grid">
+                <div class="card-3d">
+                    <h3 class="card-title">DJ ÉLITE</h3>
+                    <p class="card-description">Los mejores DJs de la escena electrónica creando una atmósfera inigualable con mezclas únicas y energía contagiosa.</p>
+                </div>
+                
+                <div class="card-3d">
+                    <h3 class="card-title">ILUMINACIÓN INMERSIVA</h3>
+                    <p class="card-description">Espectáculo de luces de última generación sincronizado con la música para una experiencia visual impactante.</p>
+                </div>
+                
+                <div class="card-3d">
+                    <h3 class="card-title">SONIDO PROFESIONAL</h3>
+                    <p class="card-description">Sistema de audio de alta fidelidad que hará vibrar cada rincón del espacio con calidad de estudio.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- Tickets Section -->
+    <section class="tickets">
+        <div class="container">
+            <h2 class="section-title">ENTRADAS</h2>
+            
+            <div class="tickets-grid">
+                <div class="ticket-card">
+                    <h3 class="ticket-type">GENERAL</h3>
+                    <div class="ticket-price">$5</div>
+                    <ul class="ticket-features">
+                        <li>✓ Acceso General</li>
+                        <li>✓ Bar disponible</li>
+                        <li>✓ Zona principal</li>
+                        <li>✓ Experiencia completa La Mubi</li>
+                    </ul>
+                    <button class="ticket-button" onclick="window.location.href='comprar.html'">COMPRAR ENTRADA</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Crear partículas dinámicas
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                
+                // Variar colores entre acento y secundario
+                particle.style.background = Math.random() > 0.5 ? 'var(--accent)' : 'var(--secondary)';
+                particle.style.boxShadow = `0 0 ${Math.random() * 15 + 5}px ${Math.random() > 0.5 ? 'var(--accent)' : 'var(--secondary)'}`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Countdown dinámico
+        function updateCountdown() {
+            const eventDate = new Date();
+            eventDate.setDate(eventDate.getDate() + 15); // 15 días desde hoy
+            
+            setInterval(() => {
+                const now = new Date();
+                const diff = eventDate - now;
+                
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+            }, 1000);
+        }
+
+        // Efecto parallax suave al scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const particles = document.querySelector('.particles');
+            particles.style.transform = `translateY(${scrolled * 0.5}px)`;
+        });
+
+        // Efecto 3D en las cards con el mouse
+        document.querySelectorAll('.card-3d').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 10;
+                const rotateY = (centerX - x) / 10;
+                
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'rotateX(0) rotateY(0) scale(1)';
+            });
+        });
+
+        // Contador dinámico de entradas
+        function updateTicketCounter() {
+            const availableTickets = 47;
+            const totalTickets = 100;
+            
+            // Simular reducción de entradas cada 30 segundos
+            setInterval(() => {
+                const currentAvailable = parseInt(document.getElementById('available-tickets').textContent);
+                if (currentAvailable > 10) {
+                    document.getElementById('available-tickets').textContent = currentAvailable - 1;
+                    
+                    // Efecto de alerta cuando quedan pocas entradas
+                    if (currentAvailable <= 20) {
+                        document.querySelector('.availability-counter').style.animation = 'counterGlow 0.5s ease-in-out infinite alternate';
+                        document.querySelector('.availability-counter').style.borderColor = 'var(--secondary)';
+                    }
+                }
+            }, 30000); // Cada 30 segundos
+        }
+
+        // Efecto de pulsación intensa al hacer clic en CTA
+        document.getElementById('main-cta').addEventListener('click', function() {
+            this.style.transform = 'translateY(-2px) scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = 'translateY(-5px) scale(1.05)';
+            }, 150);
+        });
+
+        // Inicializar
+        createParticles();
+        updateCountdown();
+        updateTicketCounter();
+    </script>
+</body>
+</html>
