@@ -85,34 +85,35 @@ class ValidacionCampos {
             mensajeError = estandar.mensaje;
         }
 
-        // Validación especial para monto
+        // Validación especial para monto - DESACTIVADO formateo
         if (campoId === 'monto-pago' && esValido && valor) {
-            // Formatear el monto
-            const montoFormateado = this.formatearMontoVenezolano(valor);
+            // NO formatear el monto - mantener como entero
+            // const montoFormateado = this.formatearMontoVenezolano(valor);
             
-            // Actualizar valor formateado si es diferente
-            if (montoFormateado !== campo.value) {
+            // Actualizar valor limpio si es diferente
+            if (valor !== campo.value) {
+                // Guardar posición del cursor
                 const start = campo.selectionStart;
                 const end = campo.selectionEnd;
-                campo.value = montoFormateado;
-                const nuevaPosicion = this.ajustarPosicionCursor(start, valor, montoFormateado);
-                campo.setSelectionRange(nuevaPosicion, nuevaPosicion);
+                
+                // Actualizar valor
+                campo.value = valor;
+                
+                // Restaurar posición del cursor
+                campo.setSelectionRange(start, end);
             }
             
-            // Validación asíncrona con debounce para evitar múltiples llamadas
-            clearTimeout(this.debounceTimeout);
-            this.debounceTimeout = setTimeout(() => {
-                this.validarExactitudMonto(montoFormateado).then(resultadoValidacion => {
-                    esValido = resultadoValidacion.esExacto;
-                    if (!resultadoValidacion.esExacto) {
-                        mensajeError = resultadoValidacion.mensaje;
-                    }
-                    this.actualizarUI(campo, esValido, mensajeError, estandar.ejemplo);
-                }).catch(error => {
-                    console.error('❌ Error en validación asíncrona:', error);
-                    this.actualizarUI(campo, false, 'Error al validar monto', estandar.ejemplo);
-                });
-            }, 500); // 500ms de debounce
+            // Validar exactitud del monto
+            this.validarExactitudMonto(valor).then(resultadoValidacion => {
+                esValido = resultadoValidacion.esExacto;
+                if (!resultadoValidacion.esExacto) {
+                    mensajeError = resultadoValidacion.mensaje;
+                }
+                this.actualizarUI(campo, esValido, mensajeError, estandar.ejemplo);
+            }).catch(error => {
+                console.error('❌ Error en validación asíncrona:', error);
+                this.actualizarUI(campo, false, 'Error al validar monto', estandar.ejemplo);
+            });
         }
 
         // Actualizar UI
@@ -138,8 +139,8 @@ class ValidacionCampos {
                 const montoEsperadoStr = window.ultimoResultadoPago.montoBolivares.replace(/[^0-9.,]/g, '');
                 montoEsperado = parseFloat(montoEsperadoStr.replace(/\./g, '').replace(/,/g, '.'));
             } else {
-                // Valor por defecto basado en tasa 500
-                montoEsperado = 2500;
+                // Valor por defecto basado en tasa real
+                montoEsperado = 6173;
             }
         }
         
@@ -173,7 +174,7 @@ class ValidacionCampos {
     async actualizarCacheMontoEsperado() {
         try {
             // Siempre obtener tasa fresca de Supabase
-            let tasaDolar = 500; // Valor por defecto
+            let tasaDolar = 1234.56; // Valor real
             
             if (window.LAMUBI_UTILS && window.LAMUBI_UTILS.supabase) {
                 const { data, error } = await window.LAMUBI_UTILS.supabase
@@ -184,14 +185,18 @@ class ValidacionCampos {
                     .single();
                 
                 if (!error && data) {
-                    tasaDolar = parseFloat(data.valor.replace(/[^0-9.]/g, ''));
-                    console.log('📈 Tasa dólar actualizada de Supabase:', tasaDolar);
+                    // Limpiar formato venezolano: 1.234,56 → 1234.56
+                    const tasaLimpia = data.valor.toString()
+                        .replace(/\./g, '')  // Quitar puntos de miles
+                        .replace(',', '.');  // Cambiar coma decimal por punto
+                    tasaDolar = parseFloat(tasaLimpia);
+                    console.log('📈 Tasa dólar procesada correctamente:', tasaDolar);
                 }
             }
             
-            // Calcular monto esperado (5 USD * tasa)
-            const montoEsperado = 5 * tasaDolar;
-            console.log('💰 Monto esperado actualizado:', montoEsperado);
+            // Calcular monto esperado (5 USD * tasa) y redondear a entero
+            const montoEsperado = Math.round(5 * tasaDolar);
+            console.log('💰 Monto esperado actualizado y redondeado:', montoEsperado);
             
             // Actualizar cache inmediatamente
             this.cacheMontoEsperado = {
@@ -203,23 +208,10 @@ class ValidacionCampos {
             return montoEsperado;
             
         } catch (error) {
-            console.error('❌ Error actualizando cache de monto esperado:', error);
-            return 2500; // Valor por defecto (5 USD * 500)
-        }
-    }
-
-    // Validar monto vs tasa dólar
-    async validarMontoVsTasa(montoStr) {
-        console.log('💰 Validando monto vs tasa dólar:', montoStr);
-        
-        // Formatear y convertir monto a número (formato venezolano)
-        const montoFormateado = this.formatearMontoVenezolano(montoStr);
-        const montoUsuario = parseFloat(montoFormateado.replace(/[^0-9.]/g, ''));
-        
-        if (isNaN(montoUsuario)) {
+            console.error('❌ Error calculando monto esperado:', error);
             return {
                 esValido: false,
-                mensaje: 'Formato inválido. Usa: 1.800,00 (miles con punto, decimales con coma)',
+                mensaje: 'Error al calcular monto esperado',
                 montoUsuario: 0,
                 montoEsperado: 0,
                 diferencia: 0,
@@ -243,7 +235,7 @@ class ValidacionCampos {
 
         // Si todavía no hay monto esperado, usar valor por defecto
         if (montoEsperado === 0) {
-            montoEsperado = 2500; // Valor por defecto (5 USD * 500 tasa)
+            montoEsperado = 6173; // Valor real (5 * 1234.56)
             console.log('📊 Usando monto por defecto:', montoEsperado);
         }
 
@@ -291,7 +283,7 @@ class ValidacionCampos {
             }
             
             // Obtener tasa dólar actual
-            let tasaDolar = 500; // Valor por defecto
+            let tasaDolar = 1234.56; // Valor real
             
             // Intentar obtener de Supabase
             if (window.LAMUBI_UTILS && window.LAMUBI_UTILS.supabase) {
@@ -303,14 +295,18 @@ class ValidacionCampos {
                     .single();
                 
                 if (!error && data) {
-                    tasaDolar = parseFloat(data.valor.replace(/[^0-9.]/g, ''));
-                    console.log('📈 Tasa dólar obtenida de Supabase:', tasaDolar);
+                    // Limpiar formato venezolano: 1.234,56 → 1234.56
+                    const tasaLimpia = data.valor.toString()
+                        .replace(/\./g, '')  // Quitar puntos de miles
+                        .replace(',', '.');  // Cambiar coma decimal por punto
+                    tasaDolar = parseFloat(tasaLimpia);
+                    console.log('📈 Tasa dólar procesada correctamente:', tasaDolar);
                 }
             }
             
-            // Calcular monto esperado (5 USD * tasa)
-            const montoEsperado = 5 * tasaDolar;
-            console.log('💰 Monto esperado calculado:', montoEsperado);
+            // Calcular monto esperado (5 USD * tasa) y redondear a entero
+            const montoEsperado = Math.round(5 * tasaDolar);
+            console.log('💰 Monto esperado calculado y redondeado:', montoEsperado);
             
             // Actualizar cache
             this.cacheMontoEsperado = {
@@ -323,40 +319,20 @@ class ValidacionCampos {
             
         } catch (error) {
             console.error('❌ Error calculando monto esperado:', error);
-            return 2500; // Valor por defecto (5 USD * 500)
+            return 6173; // Valor real
         }
     }
 
-    // Formatear monto estilo venezolano
+    // Formatear monto estilo venezolano - DESACTIVADO para mantener enteros
     formatearMontoVenezolano(valor) {
-        // Limpiar: dejar solo números, puntos y comas
-        let limpio = valor.replace(/[^0-9.,]/g, '');
+        // Solo limpiar y devolver como entero sin formato
+        let limpio = valor.replace(/[^0-9]/g, '');
         
         // Si está vacío, retornar vacío
         if (!limpio) return '';
         
-        // Separar parte decimal (después de la última coma)
-        let partes = limpio.split(',');
-        let entera = partes[0];
-        let decimal = partes[1] || '';
-        
-        // Limpiar parte entera: remover todos los puntos
-        entera = entera.replace(/\./g, '');
-        
-        // Agregar puntos cada 3 dígitos (miles)
-        if (entera.length > 3) {
-            entera = entera.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        }
-        
-        // Limitar decimales a 2 dígitos
-        decimal = decimal.substring(0, 2);
-        
-        // Construir resultado - SIEMPRE con decimales si hay algo o si es un número completo
-        if (decimal || entera.length > 0) {
-            return `${entera},${decimal || '00'}`;
-        } else {
-            return entera;
-        }
+        // Devolver como número entero sin formato
+        return limpio;
     }
 
     // Formatear número a estilo venezolano
@@ -564,30 +540,6 @@ class ValidacionCampos {
             console.warn(`⚠️ Campo no encontrado: ${campoId}`);
             return;
         }
-
-        console.log(`✅ Configurando validación para: ${campoId}`);
-
-        // Validación en tiempo real
-        campo.addEventListener('input', () => {
-            // Formateo especial para monto
-            if (campoId === 'monto-pago') {
-                const valorFormateado = this.formatearMontoVenezolano(campo.value);
-                if (valorFormateado !== campo.value) {
-                    // Guardar posición del cursor
-                    const start = campo.selectionStart;
-                    const end = campo.selectionEnd;
-                    
-                    // Actualizar valor
-                    campo.value = valorFormateado;
-                    
-                    // Restaurar posición del cursor (ajustada por el formateo)
-                    const nuevaPosicion = this.ajustarPosicionCursor(start, campo.value, valorFormateado);
-                    campo.setSelectionRange(nuevaPosicion, nuevaPosicion);
-                }
-            }
-            
-            this.validarCampo(campoId, metodoPago);
-        });
 
         // Validación al perder foco
         campo.addEventListener('blur', () => {

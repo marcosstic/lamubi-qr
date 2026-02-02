@@ -720,11 +720,15 @@
                 console.log('Valor de monto:', monto.value, 'Convertido:', montoNumerico);
                 
                 // Obtener tasa actual
-                const tasaActual = parseFloat(window.TASA_DOLAR_UTILS?.tasaActual || 450);
-                const montoEsperado = tasaActual * 5; // 5 USD * tasa
-                console.log('Tasa actual:', tasaActual, 'Monto esperado:', montoEsperado);
+                const tasaActual = parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 1234.56);
+                const montoEsperado = Math.round(tasaActual * 5); // Redondear a entero
+                console.log('Tasa actual:', tasaActual, 'Monto esperado (entero):', montoEsperado);
                 
-                if (montoNumerico !== montoEsperado) {
+                // Convertir monto del usuario a entero para comparación
+                const montoUsuarioEntero = Math.round(montoNumerico);
+                console.log('Monto usuario:', montoNumerico, 'Monto usuario (entero):', montoUsuarioEntero);
+                
+                if (montoUsuarioEntero !== montoEsperado) {
                     console.log('Error: monto no coincide con tasa * 5');
                     monto.closest('.form-group').classList.add('error');
                     isValid = false;
@@ -927,13 +931,13 @@
                     monto: paymentMethod === 'pago-movil' ? 
                         parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
                         5.00, // $5 USD para Zelle
-                    tasa_dolar: parseFloat(window.TASA_DOLAR_UTILS?.tasaActual || 450),
+                    tasa_dolar: parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 1234.56),
                     referencia: verificationData.referencia || null,
                     confirmacion_zelle: verificationData.confirmacionZelle || null,
                     email_remitente: verificationData.emailRemitente || null,
                     fecha_pago: paymentMethod === 'pago-movil' ? 
-                        formatFechaParaBD(verificationData.fechaPago) : 
-                        formatFechaParaBD(verificationData.fechaZelle),
+                        verificationData.fechaPago : 
+                        verificationData.fechaZelle,
                     comprobante_url: comprobanteUrl,
                     comprobante_nombre: comprobanteNombre,
                     datos_compra: {
@@ -993,11 +997,13 @@
             }
         }
 
-        // Remove error on input
+        // Remove error on input - PERO NO FORMATEAR MONTOS
         document.querySelectorAll('.form-input').forEach(input => {
-            input.addEventListener('input', function() {
-                this.closest('.form-group').classList.remove('error');
-            });
+            if (input.id !== 'monto-pago') {
+                input.addEventListener('input', function() {
+                    this.closest('.form-group').classList.remove('error');
+                });
+            }
         });
 
         // Initialize
@@ -1076,8 +1082,8 @@
                 
                 // Mostrar valores por defecto en caso de error
                 document.getElementById('tasa-dolar-actual').textContent = 'Bs. 1.234,56';
-                document.getElementById('monto-bolivares').textContent = 'Bs. 6.172,80';
-                document.getElementById('monto-sugerido').textContent = '6.172,80';
+                document.getElementById('monto-bolivares').textContent = 'Bs. 6.173';
+                document.getElementById('monto-sugerido').textContent = '6.173';
             }
         };
         

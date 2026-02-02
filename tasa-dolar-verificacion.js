@@ -54,12 +54,16 @@ function calcularMontoBolivares(montoUSD, tasaDolar) {
     const tasaNumerica = parseFloat(tasaDolar.replace(/\./g, '').replace(',', '.'));
     const montoBolivares = montoUSD * tasaNumerica;
     
-    // Formatear como moneda venezolana
+    // Redondear a entero para mostrar
+    const montoEntero = Math.round(montoBolivares);
+    
+    // Formatear como moneda venezolana sin decimales
     return new Intl.NumberFormat('es-VE', {
         style: 'currency',
         currency: 'VES',
-        minimumFractionDigits: 2
-    }).format(montoBolivares);
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(montoEntero);
 }
 
 // Función principal para mostrar información de pago

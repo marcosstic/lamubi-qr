@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Conexión LA MUBI QR</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #111;
+            border: 1px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success {
+            color: #00ff00;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .info {
+            color: #ffff00;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        #results {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 TEST CONEXIÓN LA MUBI QR</h1>
+        <p>Probando conexión a Supabase: https://jayzsshngmbwvwdmizis.supabase.co</p>
+        
+        <div class="test-section">
+            <h3>🔧 Tests Disponibles</h3>
+            <button onclick="testSupabaseConnection()">1. Test Conexión Supabase</button>
+            <button onclick="testTables()">2. Test Tablas</button>
+            <button onclick="testInsert()">3. Test Insertar Datos</button>
+            <button onclick="testViews()">4. Test Vistas</button>
+            <button onclick="testAll()">🚀 EJECUTAR TODOS LOS TESTS</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Resultados</h3>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Configuración
+        const SUPABASE_URL = 'https://jayzsshngmbwvwdmizis.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpheXpzc2huZ21id3Z3ZG1pemlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODI1NzEsImV4cCI6MjA4NTU1ODU3MX0.n47Rzi-nnK-OFR1XFdtjfM1MA2_cvY6XIPgdvCxVWrs';
+        
+        let supabase;
+        let results = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            results.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function initSupabase() {
+            try {
+                supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                log('✅ Supabase client inicializado correctamente', 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Error inicializando Supabase: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testSupabaseConnection() {
+            log('\n🔧 === TEST 1: CONEXIÓN SUPABASE ===', 'info');
+            
+            if (!initSupabase()) return;
+            
+            try {
+                // Test básico de conexión
+                const { data, error } = await supabase.from('configuracion_sistema').select('count').single();
+                
+                if (error) {
+                    log(`❌ Error de conexión: ${error.message}`, 'error');
+                    log(`Código: ${error.code}`, 'error');
+                } else {
+                    log('✅ Conexión a Supabase exitosa', 'success');
+                    log(`📊 Configuración encontrada: ${data.count} registros`, 'success');
+                }
+            } catch (error) {
+                log(`❌ Error inesperado: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testTables() {
+            log('\n🗄️ === TEST 2: TABLAS ===', 'info');
+            
+            const tables = ['usuarios', 'administradores', 'verificaciones_pagos', 'configuracion_sistema'];
+            
+            for (const table of tables) {
+                try {
+                    const { data, error } = await supabase.from(table).select('count').single();
+                    
+                    if (error) {
+                        log(`❌ Tabla ${table}: ${error.message}`, 'error');
+                    } else {
+                        log(`✅ Tabla ${table}: ${data.count} registros`, 'success');
+                    }
+                } catch (error) {
+                    log(`❌ Error verificando tabla ${table}: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function testInsert() {
+            log('\n📝 === TEST 3: INSERTAR DATOS ===', 'info');
+            
+            try {
+                // Test insertar en configuración
+                const testData = {
+                    clave: `test_${Date.now()}`,
+                    valor: 'valor de prueba',
+                    descripcion: 'Test de inserción',
+                    activo: true
+                };
+                
+                const { data, error } = await supabase
+                    .from('configuracion_sistema')
+                    .insert([testData])
+                    .select()
+                    .single();
+                
+                if (error) {
+                    log(`❌ Error insertando: ${error.message}`, 'error');
+                } else {
+                    log('✅ Inserción exitosa', 'success');
+                    log(`📋 ID insertado: ${data.id}`, 'success');
+                    log(`🔑 Clave: ${data.clave}`, 'success');
+                    
+                    // Limpiar dato de prueba
+                    await supabase
+                        .from('configuracion_sistema')
+                        .delete()
+                        .eq('id', data.id);
+                    
+                    log('🧹 Dato de prueba eliminado', 'info');
+                }
+            } catch (error) {
+                log(`❌ Error en test de inserción: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testViews() {
+            log('\n👁️ === TEST 4: VISTAS ===', 'info');
+            
+            const views = ['dashboard_verificaciones', 'usuarios_con_verificaciones', 'stats_verificaciones'];
+            
+            for (const view of views) {
+                try {
+                    const { data, error } = await supabase.from(view).select('*').limit(1);
+                    
+                    if (error) {
+                        log(`❌ Vista ${view}: ${error.message}`, 'error');
+                    } else {
+                        log(`✅ Vista ${view}: Funciona correctamente`, 'success');
+                        log(`📊 Registros encontrados: ${data.length}`, 'success');
+                    }
+                } catch (error) {
+                    log(`❌ Error verificando vista ${view}: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function testAll() {
+            log('\n🚀 === EJECUTANDO TODOS LOS TESTS ===', 'info');
+            results.innerHTML = '';
+            
+            await testSupabaseConnection();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testTables();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testInsert();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testViews();
+            
+            log('\n🎉 === TESTS COMPLETADOS ===', 'success');
+            log('Revisa los resultados arriba para verificar que todo funciona correctamente', 'info');
+        }
+        
+        // Auto-inicialización
+        window.onload = function() {
+            log('🧪 Test Conexión LA MUBI QR - Listo para usar', 'info');
+            log('Haz clic en los botones para ejecutar los tests', 'info');
+        };
+    </script>
+</body>
+</html>

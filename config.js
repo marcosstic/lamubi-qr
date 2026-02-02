@@ -4,13 +4,13 @@
 // 🗄️ Supabase Configuration
 const CONFIG = {
     SUPABASE: {
-        URL: 'https://dyzdvucticmszainpxvf.supabase.co',
-        ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5emR2dWN0aWNtc3phaW5weHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMzQ1NzIsImV4cCI6MjA4NDcxMDU3Mn0.uKGK07mRyINqdUYgODbn7Og35B9nPtrLq79yvCCRgHw'
+        URL: 'https://jayzsshngmbwvwdmizis.supabase.co',
+        ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpheXpzc2huZ21id3Z3ZG1pemlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODI1NzEsImV4cCI6MjA4NTU1ODU3MX0.n47Rzi-nnK-OFR1XFdtjfM1MA2_cvY6XIPgdvCxVWrs'
     },
     
     // 📱 Storage Configuration
     STORAGE: {
-        BUCKET: 'lamubi-comprobantes',
+        BUCKET: 'lamubi-qr-comprobantes',
         MAX_SIZE: 5 * 1024 * 1024, // 5MB (confirmado con bucket)
         ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'], // Confirmado con bucket
         COMPRESSION: {
