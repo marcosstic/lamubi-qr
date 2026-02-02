@@ -37,30 +37,79 @@ class MubiScanner {
                 throw new Error("Camera API no disponible en este navegador");
             }
 
-            // 3. Inicializar scanner
+            // 3. Verificar Html5Qrcode disponible
+            if (typeof Html5Qrcode === 'undefined') {
+                throw new Error("Html5Qrcode no está disponible. Verifica que la librería se cargue correctamente.");
+            }
+
+            // 4. Inicializar scanner
             this.scanner = new Html5Qrcode(this.elementId);
 
-            // 4. Estrategia de cámara optimizada para móviles
+            // 5. Estrategia de cámara optimizada para móviles
             const cameraConfig = await this.getBestCameraConfig();
+            console.log('📹 Configuración de cámara:', cameraConfig);
             
-            // 5. Iniciar escaneo
-            await this.scanner.start(
-                cameraConfig,
-                this.config,
-                (decodedText) => {
-                    console.log('🎫 QR detectado:', decodedText);
-                    this.stop(); // Detener al encontrar éxito
-                    this.onResult(decodedText);
-                },
-                (errorMessage) => {
-                    // Silenciar errores continuos
-                    // console.log('⚠️ Error de escaneo:', errorMessage);
-                }
-            );
+            // 6. Iniciar escaneo con retry
+            let retryCount = 0;
+            const maxRetries = 2;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    await this.scanner.start(
+                        cameraConfig,
+                        this.config,
+                        (decodedText) => {
+                            console.log('🎫 QR detectado:', decodedText);
+                            this.stop(); // Detener al encontrar éxito
+                            this.onResult(decodedText);
+                        },
+                        (errorMessage) => {
+                            // Silenciar errores continuos
+                            // console.log('⚠️ Error de escaneo:', errorMessage);
+                        }
+                    );
 
-            this.isScanning = true;
-            console.log('✅ MubiScanner iniciado correctamente');
-            return { success: true };
+                    this.isScanning = true;
+                    console.log('✅ MubiScanner iniciado correctamente');
+                    return { success: true };
+                    
+                } catch (startError) {
+                    console.log(`❌ Intento ${retryCount + 1} fallido:`, startError.message);
+                    retryCount++;
+                    
+                    if (retryCount >= maxRetries) {
+                        // Último intento: usar cámara por defecto
+                        if (cameraConfig !== undefined) {
+                            console.log('🔄 Último intento con cámara por defecto...');
+                            try {
+                                await this.scanner.start(
+                                    undefined,
+                                    this.config,
+                                    (decodedText) => {
+                                        console.log('🎫 QR detectado:', decodedText);
+                                        this.stop();
+                                        this.onResult(decodedText);
+                                    },
+                                    (errorMessage) => {
+                                        // Silenciar errores continuos
+                                    }
+                                );
+                                
+                                this.isScanning = true;
+                                console.log('✅ MubiScanner iniciado con cámara por defecto');
+                                return { success: true };
+                            } catch (finalError) {
+                                throw new Error(`No se pudo iniciar la cámara después de ${maxRetries + 1} intentos. Último error: ${finalError.message}`);
+                            }
+                        } else {
+                            throw startError;
+                        }
+                    }
+                    
+                    // Esperar antes de reintentar
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
 
         } catch (error) {
             console.error('❌ Error MubiScanner:', error);
@@ -76,13 +125,20 @@ class MubiScanner {
             
             console.log('📱 Dispositivo detectado:', isMobile ? (isIOS ? 'iOS' : 'Android') : 'Desktop');
 
-            // Para móviles: intentar cámara trasera primero
+            // Para iOS: usar siempre facingMode environment (más compatible)
+            if (isIOS) {
+                console.log('📱 iOS: usando facingMode environment (más compatible)');
+                return { facingMode: "environment" };
+            }
+            
+            // Para Android: intentar cámaras específicas
             if (isMobile) {
                 try {
                     // Intentar obtener cámaras disponibles
                     const cameras = await Html5Qrcode.getCameras();
+                    console.log('📹 Cámaras detectadas en Android:', cameras.length);
                     
-                    // Buscar cámara trasera
+                    // Buscar cámara trasera (prioridad para Android)
                     const backCamera = cameras.find(camera => 
                         camera.label && (
                             camera.label.toLowerCase().includes('back') ||
@@ -92,27 +148,22 @@ class MubiScanner {
                     );
                     
                     if (backCamera) {
-                        console.log('📹 Usando cámara trasera:', backCamera.label);
+                        console.log('📹 Android: usando cámara trasera:', backCamera.label);
                         return { deviceId: { exact: backCamera.id } };
                     }
                     
                     // Si no hay trasera, usar la primera disponible
                     if (cameras.length > 0) {
-                        console.log('📹 Usando primera cámara disponible:', cameras[0].label);
+                        console.log('📹 Android: usando primera cámara disponible:', cameras[0].label);
                         return { deviceId: { exact: cameras[0].id } };
                     }
                 } catch (error) {
-                    console.log('⚠️ No se pudieron detectar cámaras, usando fallback');
+                    console.log('⚠️ Error detectando cámaras Android, usando fallback:', error);
                 }
                 
-                // Fallback para móviles
-                if (isIOS) {
-                    console.log('📱 iOS: usando facingMode environment');
-                    return { facingMode: "environment" };
-                } else {
-                    console.log('📱 Android: usando facingMode environment');
-                    return { facingMode: "environment" };
-                }
+                // Fallback para Android
+                console.log('📱 Android: usando facingMode environment');
+                return { facingMode: "environment" };
             }
             
             // Para desktop: cualquier cámara

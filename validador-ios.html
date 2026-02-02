@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎫 Validador QR iOS - LA MUBI</title>
+    
+    <!-- 🎨 Estilos -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .scanner-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .scanner-container {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 15px;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scanner-placeholder {
+            text-align: center;
+            color: white;
+        }
+
+        .scanner-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 50px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .debug-info {
+            background: #212529;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .scanner-card {
+                padding: 20px;
+            }
+            
+            .scanner-container {
+                height: 250px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Safe area */
+        @supports (padding: max(0px)) {
+            body {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎫 Validador QR iOS</h1>
+            <p>LA MUBI - Sistema Optimizado para iPhone</p>
+        </div>
+
+        <!-- Scanner Card -->
+        <div class="scanner-card">
+            <div id="status" class="status" style="display: none;"></div>
+            
+            <div class="scanner-container">
+                <div id="camera-container" class="scanner-placeholder">
+                    <div class="scanner-icon">📷</div>
+                    <p>Lista para escanear</p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="startBtn" class="btn btn-primary">
+                    🎯 Iniciar Cámara
+                </button>
+                <button id="stopBtn" class="btn btn-danger" style="display: none;">
+                    ⏹️ Detener
+                </button>
+            </div>
+
+            <button id="debugBtn" class="btn btn-primary" style="width: 100%;">
+                🔍 Debug Info
+            </button>
+        </div>
+
+        <!-- Debug Info -->
+        <div id="debugInfo" class="debug-info" style="display: none;"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="config.js"></script>
+    <script src="ios-camera-helper.js"></script>
+    
+    <script>
+        // 🎫 VALIDADOR QR iOS - LA MUBI
+        class ValidadorQRIOS {
+            constructor() {
+                this.cameraHelper = null;
+                this.currentTicket = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    console.log('🎫 Iniciando Validador QR iOS...');
+                    
+                    // Inicializar Supabase
+                    await this.initSupabase();
+                    
+                    // Configurar event listeners
+                    this.setupEventListeners();
+                    
+                    // Mostrar estado inicial
+                    this.showStatus('Listo para escanear (iOS Optimizado)', 'success');
+                    
+                    console.log('✅ Validador QR iOS iniciado');
+                    
+                } catch (error) {
+                    console.error('❌ Error en inicialización:', error);
+                    this.showStatus('Error de configuración', 'error');
+                }
+            }
+
+            async initSupabase() {
+                try {
+                    if (typeof window.supabaseClient === 'undefined') {
+                        const { createClient } = window.supabase;
+                        window.supabaseClient = createClient(CONFIG.SUPABASE.URL, CONFIG.SUPABASE.ANON_KEY);
+                    }
+                    console.log('✅ Supabase inicializado');
+                } catch (error) {
+                    console.error('❌ Error inicializando Supabase:', error);
+                    throw error;
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('startBtn').addEventListener('click', () => this.startCamera());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stopCamera());
+                document.getElementById('debugBtn').addEventListener('click', () => this.showDebugInfo());
+            }
+
+            async startCamera() {
+                try {
+                    console.log('🎯 Iniciando cámara iOS...');
+                    
+                    // Actualizar UI
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'inline-flex';
+                    this.showStatus('Iniciando cámara iOS...', 'warning');
+                    
+                    // Crear camera helper
+                    this.cameraHelper = new IOSCameraHelper();
+                    
+                    // Configurar callback para QR (simulado por ahora)
+                    this.cameraHelper.setQRCallback(async (qrText) => {
+                        await this.onQRScanned(qrText);
+                    });
+                    
+                    // Iniciar cámara
+                    await this.cameraHelper.startCamera('camera-container');
+                    
+                    this.showStatus('Cámara iOS activa (método optimizado)', 'success');
+                    
+                } catch (error) {
+                    console.error('❌ Error iniciando cámara iOS:', error);
+                    this.showStatus('Error: ' + error.message, 'error');
+                    this.resetCameraUI();
+                }
+            }
+
+            stopCamera() {
+                try {
+                    console.log('⏹️ Deteniendo cámara...');
+                    
+                    if (this.cameraHelper) {
+                        this.cameraHelper.stopCamera();
+                    }
+                    
+                    this.resetCameraUI();
+                    this.showStatus('Cámara detenida', 'success');
+                    
+                } catch (error) {
+                    console.error('❌ Error deteniendo cámara:', error);
+                }
+            }
+
+            async onQRScanned(qrText) {
+                try {
+                    console.log('🎫 QR escaneado:', qrText);
+                    
+                    this.showStatus('QR detectado: ' + qrText, 'success');
+                    
+                    // Aquí iría la lógica de validación con Supabase
+                    // Por ahora solo mostramos el resultado
+                    
+                } catch (error) {
+                    console.error('❌ Error procesando QR:', error);
+                }
+            }
+
+            resetCameraUI() {
+                document.getElementById('startBtn').style.display = 'inline-flex';
+                document.getElementById('stopBtn').style.display = 'none';
+                document.getElementById('camera-container').innerHTML = `
+                    <div class="scanner-placeholder">
+                        <div class="scanner-icon">📷</div>
+                        <p>Lista para escanear</p>
+                    </div>
+                `;
+            }
+
+            showStatus(message, type) {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.className = `status ${type}`;
+                status.style.display = 'block';
+            }
+
+            async showDebugInfo() {
+                try {
+                    const diagnostic = await IOSCameraHelper.getDiagnostic();
+                    const debugInfo = document.getElementById('debugInfo');
+                    
+                    debugInfo.innerHTML = `
+🔍 DIAGNÓSTICO IOS CAMERA HELPER
+================================
+User Agent: ${diagnostic.userAgent}
+Dispositivo iOS: ${diagnostic.isIOS ? '✅' : '❌'}
+Camera API: ${diagnostic.isSupported ? '✅' : '❌'}
+HTTPS: ${diagnostic.protocol === 'https:' ? '✅' : '❌'}
+Hostname: ${diagnostic.hostname}
+
+Video Devices: ${diagnostic.videoDeviceCount || 0}
+${diagnostic.videoDevices ? diagnostic.videoDevices.map((dev, i) => `Cámara ${i}: ${dev.label || 'Sin nombre'}`).join('\\n') : ''}
+
+${diagnostic.deviceError ? `Error dispositivos: ${diagnostic.deviceError}` : ''}
+================================
+                    `;
+                    
+                    debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+                    
+                } catch (error) {
+                    console.error('❌ Error mostrando debug:', error);
+                }
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📱 DOM listo, iniciando Validador QR iOS...');
+            new ValidadorQRIOS();
+        });
+    </script>
+</body>
+</html>

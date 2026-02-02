@@ -334,6 +334,29 @@
     <script src="config.js"></script>
     <script src="mubi-scanner.js"></script>
     
+    <!-- Verificación de carga -->
+    <script>
+        console.log('🔍 Verificando librerías...');
+        console.log('Supabase disponible:', typeof supabase !== 'undefined');
+        console.log('HTML5 QR disponible:', typeof Html5Qrcode !== 'undefined');
+        console.log('CONFIG disponible:', typeof CONFIG !== 'undefined');
+        console.log('MubiScanner disponible:', typeof MubiScanner !== 'undefined');
+        
+        // Esperar a que todo cargue
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📱 DOM listo, verificando MubiScanner...');
+            if (typeof MubiScanner === 'undefined') {
+                console.error('❌ MubiScanner no está disponible');
+                document.getElementById('status').style.display = 'block';
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').textContent = 'Error: MubiScanner no cargó correctamente';
+            } else {
+                console.log('✅ MubiScanner disponible, iniciando ValidadorQR');
+                new ValidadorQR();
+            }
+        });
+    </script>
+    
     <script>
         // 🎫 VALIDADOR QR - LA MUBI
         class ValidadorQR {
