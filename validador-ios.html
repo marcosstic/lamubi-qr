@@ -232,26 +232,58 @@
 
         <!-- Debug Info -->
         <div id="debugInfo" class="debug-info" style="display: none;"></div>
+        
+        <!-- Console Visual para iPhone -->
+        <div id="consoleVisual" style="position: fixed; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.9); color: #00ff00; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 10px; max-height: 150px; overflow-y: auto; z-index: 9999; display: none;">
+            <div style="color: #ffff00; font-weight: bold;">📱 CONSOLE VISUAL:</div>
+            <div id="consoleContent"></div>
+        </div>
+        
+        <button id="consoleBtn" class="btn btn-primary" style="position: fixed; bottom: 170px; right: 10px; width: auto; padding: 10px; font-size: 12px; z-index: 9999;">
+            📱 Console
+        </button>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
     <script src="config.js"></script>
     <script src="ios-camera-helper.js"></script>
+    <script src="android-camera-helper.js"></script>
+    <script src="universal-camera-helper.js"></script>
+    <script src="qr-detection-helper.js"></script>
     
     <script>
-        // 🎫 VALIDADOR QR iOS - LA MUBI
-        class ValidadorQRIOS {
+        // 🌐 VALIDADOR QR UNIVERSAL - LA MUBI
+        class ValidadorQRUniversal {
             constructor() {
                 this.cameraHelper = null;
+                this.qrDetectionHelper = null;
                 this.currentTicket = null;
+                this.deviceType = this.detectDevice();
+                this.isProcessingQR = false; // 🔒 LOCK PARA EVITAR MÚLTIPLES VALIDACIONES
+                this.lastQRTime = 0; // ⏰ TIMESTAMP ÚLTIMO QR
                 this.init();
+            }
+
+            // Detectar tipo de dispositivo
+            detectDevice() {
+                const userAgent = navigator.userAgent;
+                
+                if (/iPad|iPhone|iPod/.test(userAgent)) {
+                    return 'ios';
+                } else if (/Android/.test(userAgent)) {
+                    return 'android';
+                } else {
+                    return 'desktop';
+                }
             }
 
             async init() {
                 try {
-                    console.log('🎫 Iniciando Validador QR iOS...');
+                    console.log(`🌐 Iniciando Validador QR Universal para ${this.deviceType}...`);
+                    this.addConsoleLog(`🌐 Iniciando Validador QR Universal para ${this.deviceType}...`);
                     
                     // Inicializar Supabase
                     await this.initSupabase();
@@ -260,9 +292,9 @@
                     this.setupEventListeners();
                     
                     // Mostrar estado inicial
-                    this.showStatus('Listo para escanear (iOS Optimizado)', 'success');
+                    this.showStatus(`Listo para escanear (${this.deviceType.toUpperCase()} Optimizado)`, 'success');
                     
-                    console.log('✅ Validador QR iOS iniciado');
+                    console.log('✅ Validador QR Universal iniciado');
                     
                 } catch (error) {
                     console.error('❌ Error en inicialización:', error);
@@ -287,47 +319,137 @@
                 document.getElementById('startBtn').addEventListener('click', () => this.startCamera());
                 document.getElementById('stopBtn').addEventListener('click', () => this.stopCamera());
                 document.getElementById('debugBtn').addEventListener('click', () => this.showDebugInfo());
+                document.getElementById('consoleBtn').addEventListener('click', () => this.toggleConsole());
+            }
+
+            toggleConsole() {
+                const consoleVisual = document.getElementById('consoleVisual');
+                consoleVisual.style.display = consoleVisual.style.display === 'none' ? 'block' : 'none';
+            }
+
+            // Agregar logs a console visual
+            addConsoleLog(message, type = 'log') {
+                const consoleContent = document.getElementById('consoleContent');
+                const timestamp = new Date().toLocaleTimeString();
+                const color = type === 'error' ? '#ff6b6b' : type === 'warn' ? '#ffd93d' : '#00ff00';
+                
+                const logEntry = document.createElement('div');
+                logEntry.style.color = color;
+                logEntry.style.marginBottom = '2px';
+                logEntry.innerHTML = `[${timestamp}] ${message}`;
+                
+                consoleContent.appendChild(logEntry);
+                consoleContent.scrollTop = consoleContent.scrollHeight;
+                
+                // Limitar a 50 logs
+                while (consoleContent.children.length > 50) {
+                    consoleContent.removeChild(consoleContent.firstChild);
+                }
             }
 
             async startCamera() {
                 try {
-                    console.log('🎯 Iniciando cámara iOS...');
+                    console.log(`🎯 Iniciando cámara ${this.deviceType} con QR Detection...`);
+                    this.addConsoleLog(`🎯 Iniciando cámara ${this.deviceType} con QR Detection...`);
                     
                     // Actualizar UI
                     document.getElementById('startBtn').style.display = 'none';
                     document.getElementById('stopBtn').style.display = 'inline-flex';
-                    this.showStatus('Iniciando cámara iOS...', 'warning');
+                    this.showStatus('Iniciando cámara...', 'warning');
                     
-                    // Crear camera helper
-                    this.cameraHelper = new IOSCameraHelper();
+                    // Crear camera helper universal
+                    this.cameraHelper = new UniversalCameraHelper();
                     
-                    // Configurar callback para QR (simulado por ahora)
-                    this.cameraHelper.setQRCallback(async (qrText) => {
-                        await this.onQRScanned(qrText);
-                    });
+                    // Configurar callback cuando el video esté listo
+                    this.cameraHelper.onVideoReady = async (videoElement) => {
+                        console.log('📹 Video listo, iniciando QR Detection...');
+                        this.addConsoleLog('📹 Video listo, iniciando QR Detection...');
+                        await this.startQRDetection(videoElement);
+                    };
                     
                     // Iniciar cámara
                     await this.cameraHelper.startCamera('camera-container');
                     
-                    this.showStatus('Cámara iOS activa (método optimizado)', 'success');
+                    this.showStatus(`Cámara ${this.deviceType} activa, preparando QR Detection...`, 'success');
+                    this.addConsoleLog(`✅ Cámara ${this.deviceType} activa, preparando QR Detection...`);
                     
                 } catch (error) {
-                    console.error('❌ Error iniciando cámara iOS:', error);
+                    console.error(`❌ Error iniciando cámara ${this.deviceType}:`, error);
+                    this.addConsoleLog(`❌ Error iniciando cámara ${this.deviceType}: ` + error.message, 'error');
                     this.showStatus('Error: ' + error.message, 'error');
                     this.resetCameraUI();
                 }
             }
 
+            async startQRDetection(videoElement) {
+                try {
+                    console.log('🎯 Iniciando QR Detection...');
+                    this.addConsoleLog('🎯 Iniciando QR Detection...');
+                    console.log('📹 Video element recibido:', videoElement);
+                    console.log('📹 Video element srcObject:', videoElement?.srcObject);
+                    console.log('📹 Video element readyState:', videoElement?.readyState);
+                    console.log('📹 Video element paused:', videoElement?.paused);
+                    
+                    // Crear QR Detection Helper
+                    this.qrDetectionHelper = new QRDetectionHelper();
+                    console.log('✅ QR Detection Helper creado');
+                    this.addConsoleLog('✅ QR Detection Helper creado');
+                    
+                    // Inicializar con video element
+                    console.log('🎯 Inicializando QR Detection Helper...');
+                    this.addConsoleLog('🎯 Inicializando QR Detection Helper...');
+                    await this.qrDetectionHelper.initialize(videoElement, async (qrText) => {
+                        console.log('🎯 QR Detection callback recibido:', qrText);
+                        this.addConsoleLog('🎯 QR Detection callback recibido: ' + qrText);
+                        await this.onQRScanned(qrText);
+                    });
+                    console.log('✅ QR Detection Helper inicializado');
+                    this.addConsoleLog('✅ QR Detection Helper inicializado');
+                    
+                    // Iniciar detección
+                    console.log('🚀 Iniciando QR Detection scanning...');
+                    this.addConsoleLog('🚀 Iniciando QR Detection scanning...');
+                    await this.qrDetectionHelper.startScanning();
+                    console.log('✅ QR Detection scanning iniciado');
+                    this.addConsoleLog('✅ QR Detection scanning iniciado');
+                    
+                    this.showStatus('🎯 Cámara y QR Detection activos', 'success');
+                    
+                    // Verificar estado después de iniciar
+                    setTimeout(() => {
+                        console.log('🔍 Verificación post-inicio:');
+                        console.log('🎯 qrDetectionHelper.isScanning:', this.qrDetectionHelper?.isScanning);
+                        console.log('🎯 qrDetectionHelper.qrScanner:', this.qrDetectionHelper?.qrScanner);
+                        console.log('🎯 qrDetectionHelper.videoElement:', this.qrDetectionHelper?.videoElement);
+                        this.addConsoleLog('🔍 Verificación post-inicio: isScanning=' + this.qrDetectionHelper?.isScanning);
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('❌ Error iniciando QR Detection:', error);
+                    console.error('❌ Error stack:', error.stack);
+                    this.addConsoleLog('❌ Error iniciando QR Detection: ' + error.message, 'error');
+                    this.showStatus('Error QR Detection: ' + error.message, 'error');
+                }
+            }
+
             stopCamera() {
                 try {
-                    console.log('⏹️ Deteniendo cámara...');
+                    console.log('⏹️ Deteniendo cámara y QR Detection...');
                     
+                    // Detener QR Detection
+                    if (this.qrDetectionHelper) {
+                        this.qrDetectionHelper.stopScanning();
+                        this.qrDetectionHelper = null;
+                    }
+                    
+                    // Detener cámara
                     if (this.cameraHelper) {
                         this.cameraHelper.stopCamera();
+                        this.cameraHelper = null;
                     }
                     
                     this.resetCameraUI();
-                    this.showStatus('Cámara detenida', 'success');
+                    this.showStatus('Cámara y QR Detection detenidos', 'success');
                     
                 } catch (error) {
                     console.error('❌ Error deteniendo cámara:', error);
@@ -337,14 +459,234 @@
             async onQRScanned(qrText) {
                 try {
                     console.log('🎫 QR escaneado:', qrText);
+                    this.addConsoleLog('🎫 QR escaneado: ' + qrText);
                     
-                    this.showStatus('QR detectado: ' + qrText, 'success');
+                    // 🔒 DEBOUNCE MEJORADO: Evitar múltiples validaciones rápidas
+                    const currentTime = Date.now();
+                    const timeSinceLastQR = currentTime - this.lastQRTime;
                     
-                    // Aquí iría la lógica de validación con Supabase
-                    // Por ahora solo mostramos el resultado
+                    if (this.isProcessingQR) {
+                        console.log('🔒 Ya procesando QR, ignorando...');
+                        this.addConsoleLog('🔒 Ya procesando QR, ignorando...', 'warn');
+                        return;
+                    }
+                    
+                    if (timeSinceLastQR < 3000) { // 🔒 AUMENTADO a 3 segundos
+                        console.log('⏰ QR muy rápido, esperando... (' + timeSinceLastQR + 'ms)');
+                        this.addConsoleLog('⏰ QR muy rápido, esperando... (' + timeSinceLastQR + 'ms)', 'warn');
+                        return;
+                    }
+                    
+                    // 🔒 ACTIVAR LOCK
+                    this.isProcessingQR = true;
+                    this.lastQRTime = currentTime;
+                    
+                    console.log('🔒 Lock activado, procesando QR...');
+                    this.addConsoleLog('🔒 Lock activado, procesando QR...');
+                    
+                    this.showStatus('🎫 QR detectado: ' + qrText + ' - Validando...', 'warning');
+                    this.addConsoleLog('🔍 Iniciando validación para: ' + qrText);
+                    
+                    // Extraer ID numérico del QR
+                    const ticketId = qrText.replace(/[^0-9]/g, '');
+                    console.log('🎯 Ticket ID extraído:', ticketId);
+                    this.addConsoleLog('🎯 Ticket ID extraído: ' + ticketId);
+                    
+                    if (!ticketId) {
+                        console.log('❌ QR inválido: no contiene ID válido');
+                        this.addConsoleLog('❌ QR inválido: no contiene ID válido', 'error');
+                        this.showStatus('❌ QR inválido: no contiene ID válido', 'error');
+                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        return;
+                    }
+                    
+                    console.log('🔍 Buscando ticket en Supabase con ID:', ticketId);
+                    this.addConsoleLog('🔍 Buscando ticket en Supabase con ID: ' + ticketId);
+                    
+                    // Validar en Supabase
+                    const { data, error } = await window.supabaseClient
+                        .from('verificaciones_pagos')
+                        .select('*')
+                        .eq('id', ticketId)
+                        .single();
+                    
+                    console.log('📊 Resultado Supabase:', { data, error });
+                    this.addConsoleLog('📊 Resultado Supabase: ' + JSON.stringify({ data, error }));
+                    
+                    if (error) {
+                        console.log('❌ Error Supabase:', error);
+                        this.addConsoleLog('❌ Ticket no encontrado en Supabase: ' + ticketId, 'error');
+                        this.addConsoleLog('❌ Error Supabase: ' + error.message, 'error');
+                        this.showStatus('❌ Ticket no encontrado: ' + ticketId, 'error');
+                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        return;
+                    }
+                    
+                    if (!data) {
+                        console.log('❌ No data returned from Supabase');
+                        this.addConsoleLog('❌ No data returned from Supabase', 'error');
+                        this.showStatus('❌ Ticket no encontrado: ' + ticketId, 'error');
+                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        return;
+                    }
+                    
+                    // Verificar estado
+                    console.log('📋 Verificando estado del ticket:', data);
+                    this.addConsoleLog('📋 Verificando estado del ticket: ' + JSON.stringify(data));
+                    
+                    // 🔍 MOSTRAR TODOS LOS DATOS DEL TICKET PARA DEBUG
+                    console.log('📊 DATOS COMPLETOS DEL TICKET:');
+                    console.log('- ID:', data.id);
+                    console.log('- Email:', data.email_temporal);
+                    console.log('- Estado:', data.estado);
+                    console.log('- QR Usado:', data.qr_usado);
+                    console.log('- User ID:', data.user_id);
+                    console.log('- Created at:', data.created_at || data.fecha_creacion);
+                    console.log('- Updated at:', data.updated_at);
+                    console.log('- Todos los campos:', Object.keys(data));
+                    
+                    this.addConsoleLog('📊 DATOS COMPLETOS DEL TICKET:');
+                    this.addConsoleLog('- ID: ' + data.id);
+                    this.addConsoleLog('- Email: ' + data.email_temporal);
+                    this.addConsoleLog('- Estado: ' + data.estado);
+                    this.addConsoleLog('- QR Usado: ' + data.qr_usado);
+                    this.addConsoleLog('- User ID: ' + data.user_id);
+                    this.addConsoleLog('- Created at: ' + (data.created_at || data.fecha_creacion));
+                    this.addConsoleLog('- Updated at: ' + (data.updated_at || 'N/A'));
+                    this.addConsoleLog('- Campos: ' + Object.keys(data).join(', '));
+                    
+                    if (data.qr_usado) {
+                        console.log('⚠️ Ticket ya utilizado');
+                        this.addConsoleLog('⚠️ Ticket ya utilizado', 'warn');
+                        this.showStatus('⚠️ Ticket ya utilizado - No se puede volver a usar', 'warning');
+                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        return;
+                    }
+                    
+                    if (data.estado !== 'aprobado') {
+                        console.log('❌ Ticket no aprobado. Estado:', data.estado);
+                        this.addConsoleLog('❌ Ticket no aprobado. Estado: ' + data.estado, 'error');
+                        this.showStatus('❌ Ticket no aprobado (Estado: ' + data.estado + ')', 'error');
+                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        return;
+                    }
+                    
+                    // 🎯 VALIDACIÓN ADICIONAL: Revisar user_id
+                    if (!data.user_id) {
+                        console.log('⚠️ Ticket sin user_id asignado');
+                        this.addConsoleLog('⚠️ Ticket sin user_id asignado', 'warn');
+                        // NO RECHAZAR por user_id null, solo advertir
+                    }
+                    
+                    // Ticket válido
+                    console.log('✅ Ticket válido:', data);
+                    this.addConsoleLog('✅ Ticket válido para validar: ' + data.email_temporal);
+                    this.showStatus('✅ Ticket válido para validar: ' + data.email_temporal, 'success');
+                    
+                    // 🎫 MOSTRAR UI DE CONFIRMACIÓN
+                    this.showTicketConfirmation(data);
+                    
+                    // Aquí iría la UI de confirmación (próxima fase)
+                    console.log('🎫 Ticket válido:', data);
+                    
+                    // 🔓 LIBERAR LOCK DESPUÉS DE 5 SEGUNDOS (AUMENTADO)
+                    setTimeout(() => {
+                        this.isProcessingQR = false;
+                        console.log('🔓 Lock liberado después de validación exitosa');
+                        this.addConsoleLog('🔓 Lock liberado después de validación exitosa');
+                    }, 5000);
                     
                 } catch (error) {
                     console.error('❌ Error procesando QR:', error);
+                    console.error('❌ Error stack:', error.stack);
+                    this.addConsoleLog('❌ Error procesando QR: ' + error.message, 'error');
+                    this.showStatus('❌ Error procesando QR: ' + error.message, 'error');
+                    this.isProcessingQR = false; // 🔓 LIBERAR LOCK EN CASO DE ERROR
+                }
+            }
+
+            // 🎫 MOSTRAR UI DE CONFIRMACIÓN
+            showTicketConfirmation(ticketData) {
+                try {
+                    console.log('🎫 Mostrando UI de confirmación para ticket:', ticketData);
+                    
+                    // Crear modal de confirmación
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0,0,0,0.9);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 10000;
+                    `;
+                    
+                    modal.innerHTML = `
+                        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center;">
+                            <h2 style="color: #28a745; margin-bottom: 20px;">🎫 Ticket Válido</h2>
+                            <div style="text-align: left; margin-bottom: 20px;">
+                                <p><strong>ID:</strong> ${ticketData.id}</p>
+                                <p><strong>Email:</strong> ${ticketData.email_temporal}</p>
+                                <p><strong>Estado:</strong> <span style="color: #28a745;">${ticketData.estado}</span></p>
+                                <p><strong>QR Usado:</strong> ${ticketData.qr_usado ? 'Sí' : 'No'}</p>
+                                <p><strong>Creado:</strong> ${new Date(ticketData.created_at).toLocaleString()}</p>
+                            </div>
+                            <div style="display: flex; gap: 10px; justify-content: center;">
+                                <button id="confirmBtn" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                                    ✅ Validar Ticket
+                                </button>
+                                <button id="cancelBtn" style="background: #dc3545; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                                    ❌ Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    // Event listeners
+                    document.getElementById('confirmBtn').addEventListener('click', async () => {
+                        try {
+                            console.log('✅ Confirmando validación del ticket...');
+                            
+                            // Actualizar ticket en Supabase
+                            const { error } = await window.supabaseClient
+                                .from('verificaciones_pagos')
+                                .update({ qr_usado: true })
+                                .eq('id', ticketData.id);
+                            
+                            if (error) {
+                                console.error('❌ Error actualizando ticket:', error);
+                                alert('Error validando ticket: ' + error.message);
+                                return;
+                            }
+                            
+                            console.log('✅ Ticket validado exitosamente');
+                            alert('✅ Ticket validado exitosamente');
+                            
+                            // Cerrar modal
+                            document.body.removeChild(modal);
+                            
+                            // Reiniciar cámara
+                            this.stopCamera();
+                            
+                        } catch (error) {
+                            console.error('❌ Error en confirmación:', error);
+                            alert('Error: ' + error.message);
+                        }
+                    });
+                    
+                    document.getElementById('cancelBtn').addEventListener('click', () => {
+                        console.log('❌ Cancelando validación');
+                        document.body.removeChild(modal);
+                    });
+                    
+                } catch (error) {
+                    console.error('❌ Error mostrando confirmación:', error);
                 }
             }
 
@@ -364,27 +706,64 @@
                 status.textContent = message;
                 status.className = `status ${type}`;
                 status.style.display = 'block';
+                
+                // 🎯 MANTENER MENSAJE FIJO POR MÁS TIEMPO
+                if (type === 'success' || type === 'error' || type === 'warning') {
+                    // Para mensajes importantes, mantener por 5 segundos
+                    setTimeout(() => {
+                        if (status.textContent === message) {
+                            status.style.display = 'none';
+                        }
+                    }, 5000);
+                }
             }
 
             async showDebugInfo() {
                 try {
-                    const diagnostic = await IOSCameraHelper.getDiagnostic();
+                    // Obtener diagnóstico universal
+                    const universalDiagnostic = await UniversalCameraHelper.getDiagnostic();
+                    const qrDiagnostic = await QRDetectionHelper.getDiagnostic();
+                    
                     const debugInfo = document.getElementById('debugInfo');
                     
                     debugInfo.innerHTML = `
-🔍 DIAGNÓSTICO IOS CAMERA HELPER
-================================
-User Agent: ${diagnostic.userAgent}
-Dispositivo iOS: ${diagnostic.isIOS ? '✅' : '❌'}
-Camera API: ${diagnostic.isSupported ? '✅' : '❌'}
-HTTPS: ${diagnostic.protocol === 'https:' ? '✅' : '❌'}
-Hostname: ${diagnostic.hostname}
+🔍 DIAGNÓSTICO COMPLETO - UNIVERSAL + QR DETECTION
+=====================================
+🌐 UNIVERSAL CAMERA HELPER:
+-------------------------------------
+User Agent: ${universalDiagnostic.userAgent}
+Dispositivo: ${universalDiagnostic.deviceType.toUpperCase()}
+Camera API: ${universalDiagnostic.cameraAPI ? '✅' : '❌'}
+HTTPS: ${universalDiagnostic.protocol === 'https:' ? '✅' : '❌'}
+Video Devices: ${universalDiagnostic.videoDevices || 0}
 
-Video Devices: ${diagnostic.videoDeviceCount || 0}
-${diagnostic.videoDevices ? diagnostic.videoDevices.map((dev, i) => `Cámara ${i}: ${dev.label || 'Sin nombre'}`).join('\\n') : ''}
+🎯 QR DETECTION HELPER:
+-------------------------------------
+QR-Scanner Available: ${qrDiagnostic.qrScannerAvailable ? '✅' : '❌'}
+Camera API: ${qrDiagnostic.cameraAPI ? '✅' : '❌'}
+QR Supported: ${qrDiagnostic.supported ? '✅' : '❌'}
+Support Reason: ${qrDiagnostic.supportReason || 'OK'}
 
-${diagnostic.deviceError ? `Error dispositivos: ${diagnostic.deviceError}` : ''}
-================================
+📊 ESTADO ACTUAL:
+-------------------------------------
+Camera Helper: ${this.cameraHelper ? '✅ Activo' : '❌ Inactivo'}
+QR Detection: ${this.qrDetectionHelper ? '✅ Activo' : '❌ Inactivo'}
+QR Detection Scanning: ${this.qrDetectionHelper?.isScanning ? '✅ Escaneando' : '❌ No escaneando'}
+QR Scanner Instance: ${this.qrDetectionHelper?.qrScanner ? '✅ Creado' : '❌ No creado'}
+Video Element: ${this.qrDetectionHelper?.videoElement ? '✅ Disponible' : '❌ No disponible'}
+Video Stream: ${this.qrDetectionHelper?.videoElement?.srcObject ? '✅ Activo' : '❌ Inactivo'}
+Current Ticket: ${this.currentTicket ? this.currentTicket.id : 'N/A'}
+
+🔍 ESTADO DETALLADO QR-SCANNER:
+-------------------------------------
+isScanning: ${this.qrDetectionHelper?.isScanning || 'N/A'}
+qrScanner._isScanning: ${this.qrDetectionHelper?.qrScanner?._isScanning || 'N/A'}
+qrScanner._active: ${this.qrDetectionHelper?.qrScanner?._active || 'N/A'}
+video.readyState: ${this.qrDetectionHelper?.videoElement?.readyState || 'N/A'}
+video.paused: ${this.qrDetectionHelper?.videoElement?.paused || 'N/A'}
+
+📱 DISPOSITIVO DETECTADO: ${this.deviceType.toUpperCase()}
+=====================================
                     `;
                     
                     debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
@@ -397,8 +776,15 @@ ${diagnostic.deviceError ? `Error dispositivos: ${diagnostic.deviceError}` : ''}
 
         // Inicializar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📱 DOM listo, iniciando Validador QR iOS...');
-            new ValidadorQRIOS();
+            console.log('📱 DOM listo, iniciando Validador QR Universal...');
+            
+            // Hacer addConsoleLog disponible globalmente
+            if (typeof window.addConsoleLog === 'undefined') {
+                const validatorInstance = new ValidadorQRUniversal();
+                window.addConsoleLog = validatorInstance.addConsoleLog.bind(validatorInstance);
+            } else {
+                new ValidadorQRUniversal();
+            }
         });
     </script>
 </body>

@@ -1,3 +1,8 @@
 iniciar servidor local
 cd Documentos/lamubi2
- python3 -m http.server 8000
+
+Documentos/lamubi-qr
+
+python3 -m http.server 8000
+
+cloudflared tunnel --url http://localhost:8000

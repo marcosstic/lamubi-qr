@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualizar Ticket ID 5</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background: #0056b3; }
+        .ticket-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎫 Actualizar Ticket ID 5</h1>
+        <p>Esta página actualizará el estado del ticket ID 5 a "aprobado" para que pueda ser validado.</p>
+        
+        <div id="status"></div>
+        
+        <button onclick="window.verificarTicket()">🔍 Verificar Ticket Actual</button>
+        <button onclick="window.actualizarTicket()">✅ Actualizar a Aprobado</button>
+        <button onclick="window.resetTicket()">🔄 Resetear a Pendiente</button>
+        
+        <div id="ticketInfo"></div>
+    </div>
+
+    <script>
+        // Usar directamente el supabase client global SIN crear variable local
+        // Esto evita cualquier conflicto de declaración
+
+        // Hacer funciones globales para que los botones las vean
+        window.showStatus = async function(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        window.verificarTicket = async function() {
+            try {
+                await showStatus('🔍 Verificando ticket ID 5...', 'warning');
+                
+                const { data, error } = await (window.supabaseClient || LAMUBI_UTILS.supabase)
+                    .from('verificaciones_pagos')
+                    .select('*')
+                    .eq('id', 5)
+                    .single();
+                
+                if (error) {
+                    await showStatus('❌ Error: ' + error.message, 'error');
+                    return;
+                }
+                
+                if (!data) {
+                    await showStatus('❌ Ticket ID 5 no encontrado', 'error');
+                    return;
+                }
+                
+                // Mostrar información del ticket
+                const ticketInfo = document.getElementById('ticketInfo');
+                ticketInfo.innerHTML = `
+                    <div class="ticket-info">
+                        <h3>📊 Información del Ticket:</h3>
+                        <p><strong>ID:</strong> ${data.id}</p>
+                        <p><strong>Email:</strong> ${data.email_temporal || 'N/A'}</p>
+                        <p><strong>Estado:</strong> <span style="color: ${data.estado === 'aprobado' ? '#28a745' : '#ffc107'}">${data.estado}</span></p>
+                        <p><strong>QR Usado:</strong> ${data.qr_usado ? '✅ Sí' : '❌ No'}</p>
+                        <p><strong>User ID:</strong> ${data.user_id || 'null'}</p>
+                        <p><strong>Creado:</strong> ${data.fecha_creacion || data.created_at || 'N/A'}</p>
+                        <p><strong>Actualizado:</strong> ${data.fecha_actualizacion || data.updated_at || 'N/A'}</p>
+                    </div>
+                `;
+                
+                await showStatus('✅ Ticket encontrado y verificado', 'success');
+                
+            } catch (error) {
+                await showStatus('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        window.actualizarTicket = async function() {
+            try {
+                // Prevenir múltiples clics
+                if (window.isProcessing) return;
+                window.isProcessing = true;
+                
+                const btn = event.target;
+                btn.disabled = true;
+                btn.innerText = 'Actualizando...';
+                
+                await showStatus('🔄 Actualizando ticket a "aprobado"...', 'warning');
+                
+                const { data, error } = await (window.supabaseClient || LAMUBI_UTILS.supabase)
+                    .from('verificaciones_pagos')
+                    .update({ 
+                        estado: 'aprobado',
+                        qr_usado: false,
+                        fecha_actualizacion: new Date().toISOString()
+                    })
+                    .eq('id', 5)
+                    .select()
+                    .single();
+                
+                if (error) {
+                    await showStatus('❌ Error actualizando: ' + error.message, 'error');
+                    btn.disabled = false;
+                    btn.innerText = '✅ Actualizar a Aprobado';
+                    window.isProcessing = false;
+                    return;
+                }
+                
+                await showStatus('✅ Ticket ID 5 actualizado a "aprobado" exitosamente', 'success');
+                
+                // Verificar nuevamente después de 1 segundo
+                setTimeout(async () => {
+                    await window.verificarTicket();
+                    btn.disabled = false;
+                    btn.innerText = '✅ Actualizar a Aprobado';
+                    window.isProcessing = false;
+                }, 1000);
+                
+            } catch (error) {
+                await showStatus('❌ Error: ' + error.message, 'error');
+                window.isProcessing = false;
+            }
+        }
+
+        window.resetTicket = async function() {
+            try {
+                // Prevenir múltiples clics
+                if (window.isProcessing) return;
+                window.isProcessing = true;
+                
+                const btn = event.target;
+                btn.disabled = true;
+                btn.innerText = 'Reseteando...';
+                
+                await showStatus('🔄 Reseteando ticket a "pendiente"...', 'warning');
+                
+                const { data, error } = await (window.supabaseClient || LAMUBI_UTILS.supabase)
+                    .from('verificaciones_pagos')
+                    .update({ 
+                        estado: 'pendiente',
+                        qr_usado: false,
+                        fecha_actualizacion: new Date().toISOString()
+                    })
+                    .eq('id', 5)
+                    .select()
+                    .single();
+                
+                if (error) {
+                    await showStatus('❌ Error reseteando: ' + error.message, 'error');
+                    btn.disabled = false;
+                    btn.innerText = '🔄 Resetear a Pendiente';
+                    window.isProcessing = false;
+                    return;
+                }
+                
+                await showStatus('✅ Ticket ID 5 reseteado a "pendiente" exitosamente', 'success');
+                
+                // Verificar nuevamente después de 1 segundo
+                setTimeout(async () => {
+                    await window.verificarTicket();
+                    btn.disabled = false;
+                    btn.innerText = '🔄 Resetear a Pendiente';
+                    window.isProcessing = false;
+                }, 1000);
+                
+            } catch (error) {
+                await showStatus('❌ Error: ' + error.message, 'error');
+                window.isProcessing = false;
+            }
+        }
+
+        // Verificar ticket al cargar la página
+        window.addEventListener('load', window.verificarTicket);
+    </script>
+</body>
+</html>

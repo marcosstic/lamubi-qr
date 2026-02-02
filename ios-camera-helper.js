@@ -83,6 +83,12 @@ class IOSCameraHelper {
             await this.videoElement.play();
             
             console.log('✅ Cámara iOS iniciada correctamente');
+            
+            // 7. Notificar que el video está listo para QR detection
+            if (this.onVideoReady) {
+                this.onVideoReady(this.videoElement);
+            }
+            
             return this.stream;
             
         } catch (error) {

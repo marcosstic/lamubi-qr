@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Test Simple</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 300px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .qr-code {
+            margin: 20px 0;
+        }
+        .test-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 QR Test Simple</h1>
+    <p>QR con texto simple: "5"</p>
+    
+    <div class="qr-container">
+        <div class="test-text">TICKET ID: 5</div>
+        <div id="qrcode-simple" class="qr-code"></div>
+        <p><strong>Texto:</strong> 5</p>
+    </div>
+    
+    <div class="qr-container">
+        <div class="test-text">TICKET ID: 123</div>
+        <div id="qrcode-number" class="qr-code"></div>
+        <p><strong>Texto:</strong> 123</p>
+    </div>
+    
+    <div class="qr-container">
+        <div class="test-text">TICKET-5</div>
+        <div id="qrcode-ticket" class="qr-code"></div>
+        <p><strong>Texto:</strong> TICKET-5</p>
+    </div>
+
+    <script>
+        // QR simple con número
+        new QRCode(document.getElementById('qrcode-simple'), {
+            text: '5',
+            width: 256,
+            height: 256,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        // QR con número más grande
+        new QRCode(document.getElementById('qrcode-number'), {
+            text: '123',
+            width: 256,
+            height: 256,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        // QR con texto
+        new QRCode(document.getElementById('qrcode-ticket'), {
+            text: 'TICKET-5',
+            width: 256,
+            height: 256,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        console.log('✅ QR codes simples generados');
+        console.log('🎯 Prueba escanear estos QR con el validador');
+    </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Test Grande</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #000;
+            color: white;
+        }
+        .qr-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 8px 16px rgba(255,255,255,0.2);
+        }
+        .qr-code {
+            margin: 30px 0;
+        }
+        .test-text {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0;
+        }
+        .instructions {
+            font-size: 24px;
+            color: #fff;
+            margin: 20px 0;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 QR TEST GRANDE - ANDROID</h1>
+    
+    <div class="instructions">
+        📱 Apunta tu cámara Android a este QR<br>
+        🎯 Mantén 15-20cm de distancia<br>
+        ✅ Asegura buena iluminación<br>
+        📹 QR grande y alto contraste
+    </div>
+    
+    <div class="qr-container">
+        <div class="test-text">TICKET ID: 5</div>
+        <div id="qrcode-grande" class="qr-code"></div>
+        <p style="font-size: 24px; font-weight: bold;">Texto: 5</p>
+    </div>
+    
+    <div class="qr-container">
+        <div class="test-text">TICKET-123</div>
+        <div id="qrcode-mediano" class="qr-code"></div>
+        <p style="font-size: 24px; font-weight: bold;">Texto: TICKET-123</p>
+    </div>
+
+    <script>
+        // QR grande (400x400)
+        new QRCode(document.getElementById('qrcode-grande'), {
+            text: '5',
+            width: 400,
+            height: 400,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        // QR mediano (300x300)
+        new QRCode(document.getElementById('qrcode-mediano'), {
+            text: 'TICKET-123',
+            width: 300,
+            height: 300,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        console.log('✅ QR codes grandes generados');
+        console.log('🎯 QR de 400x400px - óptimo para cámara Android');
+    </script>
+</body>
+</html>
