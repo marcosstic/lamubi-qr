@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎫 Validador QR - LA MUBI</title>
+    
+    <!-- 🎨 Estilos simples y modernos -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .scanner-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .scanner-container {
+            width: 100%;
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scanner-placeholder {
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .scanner-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 50px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .result-message {
+            color: #6c757d;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .ticket-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .ticket-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .ticket-row:last-child {
+            border-bottom: none;
+        }
+
+        .ticket-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .ticket-value {
+            color: #212529;
+            font-weight: 500;
+        }
+
+        .debug-info {
+            background: #212529;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .scanner-card {
+                padding: 20px;
+            }
+            
+            .scanner-container {
+                height: 250px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Safe area */
+        @supports (padding: max(0px)) {
+            body {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎫 Validador QR</h1>
+            <p>LA MUBI - Sistema de Entradas</p>
+        </div>
+
+        <!-- Scanner Card -->
+        <div class="scanner-card">
+            <div id="status" class="status" style="display: none;"></div>
+            
+            <div class="scanner-container">
+                <div id="reader" class="scanner-placeholder">
+                    <div class="scanner-icon">📷</div>
+                    <p>Lista para escanear</p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="startBtn" class="btn btn-primary">
+                    🎯 Iniciar Escaneo
+                </button>
+                <button id="stopBtn" class="btn btn-danger" style="display: none;">
+                    ⏹️ Detener
+                </button>
+            </div>
+
+            <button id="debugBtn" class="btn btn-primary" style="width: 100%;">
+                    🔍 Debug Info
+                </button>
+        </div>
+
+        <!-- Result Card -->
+        <div id="resultCard" class="result-card">
+            <div id="resultIcon" class="result-icon"></div>
+            <h2 id="resultTitle" class="result-title"></h2>
+            <p id="resultMessage" class="result-message"></p>
+            
+            <div id="ticketInfo" class="ticket-info" style="display: none;">
+                <div class="ticket-row">
+                    <span class="ticket-label">Ticket ID:</span>
+                    <span id="ticketId" class="ticket-value"></span>
+                </div>
+                <div class="ticket-row">
+                    <span class="ticket-label">Email:</span>
+                    <span id="ticketEmail" class="ticket-value"></span>
+                </div>
+                <div class="ticket-row">
+                    <span class="ticket-label">Monto:</span>
+                    <span id="ticketMonto" class="ticket-value"></span>
+                </div>
+                <div class="ticket-row">
+                    <span class="ticket-label">Método:</span>
+                    <span id="ticketMetodo" class="ticket-value"></span>
+                </div>
+            </div>
+
+            <button id="confirmBtn" class="btn btn-primary" style="display: none;">
+                ✅ Confirmar Validación
+            </button>
+            
+            <button id="newScanBtn" class="btn btn-primary" style="display: none;">
+                🔄 Nuevo Escaneo
+            </button>
+        </div>
+
+        <!-- Debug Info -->
+        <div id="debugInfo" class="debug-info" style="display: none;"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="config.js"></script>
+    <script src="mubi-scanner.js"></script>
+    
+    <script>
+        // 🎫 VALIDADOR QR - LA MUBI
+        class ValidadorQR {
+            constructor() {
+                this.scanner = null;
+                this.currentTicket = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    console.log('🎫 Iniciando Validador QR LA MUBI...');
+                    
+                    // Inicializar Supabase
+                    await this.initSupabase();
+                    
+                    // Configurar event listeners
+                    this.setupEventListeners();
+                    
+                    // Mostrar estado inicial
+                    this.showStatus('Listo para escanear', 'success');
+                    
+                    console.log('✅ Validador QR iniciado');
+                    
+                } catch (error) {
+                    console.error('❌ Error en inicialización:', error);
+                    this.showStatus('Error de configuración', 'error');
+                }
+            }
+
+            async initSupabase() {
+                try {
+                    if (typeof window.supabaseClient === 'undefined') {
+                        const { createClient } = window.supabase;
+                        window.supabaseClient = createClient(CONFIG.SUPABASE.URL, CONFIG.SUPABASE.ANON_KEY);
+                    }
+                    console.log('✅ Supabase inicializado');
+                } catch (error) {
+                    console.error('❌ Error inicializando Supabase:', error);
+                    throw error;
+                }
+            }
+
+            setupEventListeners() {
+                // Botones principales
+                document.getElementById('startBtn').addEventListener('click', () => this.startScanning());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stopScanning());
+                document.getElementById('debugBtn').addEventListener('click', () => this.showDebugInfo());
+                
+                // Botones de resultado
+                document.getElementById('confirmBtn').addEventListener('click', () => this.confirmValidation());
+                document.getElementById('newScanBtn').addEventListener('click', () => this.newScan());
+            }
+
+            async startScanning() {
+                try {
+                    console.log('🎯 Iniciando escaneo...');
+                    
+                    // Actualizar UI
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'inline-flex';
+                    this.showStatus('Iniciando cámara...', 'warning');
+                    
+                    // Crear scanner
+                    this.scanner = new MubiScanner('reader', async (qrText) => {
+                        await this.onQRScanned(qrText);
+                    });
+                    
+                    // Iniciar escaneo
+                    const result = await this.scanner.start();
+                    
+                    if (result.success) {
+                        this.showStatus('Escaneando...', 'success');
+                    } else {
+                        throw new Error(result.error);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error iniciando escaneo:', error);
+                    this.showStatus('Error: ' + error.message, 'error');
+                    this.resetScannerUI();
+                }
+            }
+
+            stopScanning() {
+                try {
+                    console.log('⏹️ Deteniendo escaneo...');
+                    
+                    if (this.scanner) {
+                        this.scanner.stop();
+                    }
+                    
+                    this.resetScannerUI();
+                    this.showStatus('Escaneo detenido', 'success');
+                    
+                } catch (error) {
+                    console.error('❌ Error deteniendo escaneo:', error);
+                }
+            }
+
+            async onQRScanned(qrText) {
+                try {
+                    console.log('🎫 QR escaneado:', qrText);
+                    
+                    this.showStatus('Validando ticket...', 'warning');
+                    
+                    // Validar ticket en Supabase
+                    const ticketId = qrText.replace(/[^0-9]/g, '');
+                    
+                    if (!ticketId) {
+                        this.showResult('invalid', null, 'QR inválido');
+                        return;
+                    }
+                    
+                    const { data, error } = await window.supabaseClient
+                        .from('verificaciones_pagos')
+                        .select('*')
+                        .eq('id', ticketId)
+                        .single();
+                    
+                    if (error) {
+                        this.showResult('invalid', null, 'Ticket no encontrado');
+                        return;
+                    }
+                    
+                    // Verificar estado
+                    if (data.qr_usado) {
+                        this.showResult('used', data, 'Este ticket ya fue utilizado');
+                        return;
+                    }
+                    
+                    if (data.estado !== 'aprobado') {
+                        this.showResult('invalid', data, 'Ticket no aprobado');
+                        return;
+                    }
+                    
+                    // Ticket válido
+                    this.showResult('valid', data, 'Ticket válido para validar');
+                    
+                } catch (error) {
+                    console.error('❌ Error procesando QR:', error);
+                    this.showResult('invalid', null, 'Error procesando ticket');
+                }
+            }
+
+            showResult(type, ticketData, message) {
+                try {
+                    const resultCard = document.getElementById('resultCard');
+                    const resultIcon = document.getElementById('resultIcon');
+                    const resultTitle = document.getElementById('resultTitle');
+                    const resultMessage = document.getElementById('resultMessage');
+                    const ticketInfo = document.getElementById('ticketInfo');
+                    const confirmBtn = document.getElementById('confirmBtn');
+                    const newScanBtn = document.getElementById('newScanBtn');
+                    
+                    // Configurar según tipo
+                    switch (type) {
+                        case 'valid':
+                            resultIcon.textContent = '✅';
+                            resultTitle.textContent = '¡Ticket Válido!';
+                            resultMessage.textContent = message;
+                            ticketInfo.style.display = 'block';
+                            confirmBtn.style.display = 'inline-flex';
+                            newScanBtn.style.display = 'none';
+                            
+                            // Mostrar datos del ticket
+                            document.getElementById('ticketId').textContent = ticketData.id;
+                            document.getElementById('ticketEmail').textContent = ticketData.email_temporal || 'N/A';
+                            document.getElementById('ticketMonto').textContent = `Bs. ${ticketData.monto.toLocaleString('es-VE')}`;
+                            document.getElementById('ticketMetodo').textContent = ticketData.metodo_pago.replace('-', ' ').toUpperCase();
+                            
+                            this.currentTicket = ticketData;
+                            this.showStatus('Ticket válido', 'success');
+                            break;
+                            
+                        case 'used':
+                            resultIcon.textContent = '⚠️';
+                            resultTitle.textContent = 'Ticket Usado';
+                            resultMessage.textContent = message;
+                            ticketInfo.style.display = 'none';
+                            confirmBtn.style.display = 'none';
+                            newScanBtn.style.display = 'inline-flex';
+                            this.showStatus('Ticket ya utilizado', 'warning');
+                            break;
+                            
+                        case 'invalid':
+                            resultIcon.textContent = '❌';
+                            resultTitle.textContent = 'Ticket Inválido';
+                            resultMessage.textContent = message;
+                            ticketInfo.style.display = 'none';
+                            confirmBtn.style.display = 'none';
+                            newScanBtn.style.display = 'inline-flex';
+                            this.showStatus('Ticket inválido', 'error');
+                            break;
+                    }
+                    
+                    // Mostrar resultado
+                    resultCard.style.display = 'block';
+                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                } catch (error) {
+                    console.error('❌ Error mostrando resultado:', error);
+                }
+            }
+
+            async confirmValidation() {
+                try {
+                    if (!this.currentTicket) {
+                        console.error('❌ No hay ticket para confirmar');
+                        return;
+                    }
+                    
+                    console.log('✅ Confirmando validación...');
+                    
+                    // Actualizar ticket
+                    const { error } = await window.supabaseClient
+                        .from('verificaciones_pagos')
+                        .update({
+                            qr_usado: true,
+                            fecha_uso: new Date().toISOString(),
+                            validador_nombre: 'Validador MUBI',
+                            ubicacion_validacion: 'Entrada Principal'
+                        })
+                        .eq('id', this.currentTicket.id);
+                    
+                    if (error) {
+                        throw error;
+                    }
+                    
+                    // Mostrar confirmación
+                    this.showResult('valid', null, '✅ Ticket validado exitosamente');
+                    document.getElementById('confirmBtn').style.display = 'none';
+                    document.getElementById('newScanBtn').style.display = 'inline-flex';
+                    document.getElementById('ticketInfo').style.display = 'none';
+                    
+                    this.currentTicket = null;
+                    this.showStatus('Validación confirmada', 'success');
+                    
+                } catch (error) {
+                    console.error('❌ Error confirmando validación:', error);
+                    this.showStatus('Error confirmando validación', 'error');
+                }
+            }
+
+            newScan() {
+                this.resetScannerUI();
+                document.getElementById('resultCard').style.display = 'none';
+                this.currentTicket = null;
+                this.showStatus('Listo para nuevo escaneo', 'success');
+            }
+
+            resetScannerUI() {
+                document.getElementById('startBtn').style.display = 'inline-flex';
+                document.getElementById('stopBtn').style.display = 'none';
+                document.getElementById('reader').innerHTML = `
+                    <div class="scanner-placeholder">
+                        <div class="scanner-icon">📷</div>
+                        <p>Lista para escanear</p>
+                    </div>
+                `;
+            }
+
+            showStatus(message, type) {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.className = `status ${type}`;
+                status.style.display = 'block';
+            }
+
+            async showDebugInfo() {
+                try {
+                    const diagnostic = await MubiScanner.getDiagnostic();
+                    const debugInfo = document.getElementById('debugInfo');
+                    
+                    debugInfo.innerHTML = `
+🔍 DIAGNÓSTICO MUBI SCANNER
+================================
+User Agent: ${diagnostic.userAgent}
+Dispositivo: ${diagnostic.isMobile ? (diagnostic.isIOS ? 'iOS' : (diagnostic.isAndroid ? 'Android' : 'Móvil')) : 'Desktop'}
+HTTPS: ${diagnostic.isHTTPS ? '✅' : '❌'}
+Localhost: ${diagnostic.isLocalhost ? '✅' : '❌'}
+Camera API: ${diagnostic.cameraAPI ? '✅' : '❌'}
+HTML5 QR: ${diagnostic.html5QrcodeAvailable ? '✅' : '❌'}
+Cámaras detectadas: ${diagnostic.cameraCount}
+
+${diagnostic.cameras.map((cam, i) => `Cámara ${i}: ${cam.label || 'Sin nombre'}`).join('\\n')}
+
+${diagnostic.cameraError ? `Error cámara: ${diagnostic.cameraError}` : ''}
+================================
+                    `;
+                    
+                    debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+                    
+                } catch (error) {
+                    console.error('❌ Error mostrando debug:', error);
+                }
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            new ValidadorQR();
+        });
+    </script>
+</body>
+</html>
