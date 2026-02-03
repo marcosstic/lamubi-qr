@@ -195,9 +195,9 @@ class AdminPanel {
     // 👥 Obtener usuarios con tickets
     async getUsersWithTickets() {
         const { data, error } = await this.supabase
-            .from('usuarios_con_compras')
+            .from('verificaciones_pagos')
             .select('*')
-            .not('compra_id', 'is', null);
+            .in('estado', ['aprobado', 'usado']);
         
         if (error) throw error;
         
@@ -210,7 +210,7 @@ class AdminPanel {
     // 🛒 Obtener total de compras
     async getTotalPurchases() {
         const { data, error } = await this.supabase
-            .from('compras')
+            .from('verificaciones_pagos')
             .select('*');
         
         if (error) throw error;
@@ -224,10 +224,9 @@ class AdminPanel {
     // ⏳ Obtener compras pendientes
     async getPendingPurchases() {
         const { data, error } = await this.supabase
-            .from('compras')
+            .from('verificaciones_pagos')
             .select('*')
-            .eq('verified', false)
-            .not('comprobante_url', 'is', null);
+            .eq('estado', 'pendiente');
         
         if (error) throw error;
         
@@ -264,9 +263,9 @@ class AdminPanel {
     async loadRecentActivity() {
         try {
             const { data, error } = await this.supabase
-                .from('dashboard_tickets')
+                .from('verificaciones_pagos')
                 .select('*')
-                .order('fecha_compra', { ascending: false })
+                .order('fecha_pago', { ascending: false })
                 .limit(10);
             
             if (error) throw error;
@@ -293,17 +292,17 @@ class AdminPanel {
             <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong>${activity.usuario_nombre}</strong>
+                        <strong>${activity.email_temporal || 'Usuario no registrado'}</strong>
                         <span style="color: var(--gray); margin-left: 0.5rem;">
-                            ${activity.usuario_correo}
+                            ${activity.metodo_pago}
                         </span>
                     </div>
                     <div style="text-align: right;">
-                        <span style="color: ${this.getStatusColor(activity.estado_compra)};">
-                            ${this.formatStatus(activity.estado_compra)}
+                        <span style="color: ${this.getStatusColor(activity.estado)};">
+                            ${this.formatStatus(activity.estado)}
                         </span>
                         <div style="font-size: 0.8rem; color: var(--gray);">
-                            ${window.LAMUBI_UTILS.formatDateVenezuela(activity.fecha_compra)}
+                            ${window.LAMUBI_UTILS.formatDateVenezuela(activity.fecha_pago)}
                         </div>
                     </div>
                 </div>
@@ -313,14 +312,14 @@ class AdminPanel {
         container.innerHTML = html;
     }
 
-    // ✅ Cargar compras pendientes
+    // 📋 Cargar compras pendientes
     async loadPendingPurchases() {
         try {
             const { data, error } = await this.supabase
-                .from('dashboard_tickets')
+                .from('verificaciones_pagos')
                 .select('*')
-                .eq('estado_compra', 'pendiente')
-                .order('fecha_compra', { ascending: false });
+                .eq('estado', 'pendiente')
+                .order('fecha_pago', { ascending: false });
             
             if (error) throw error;
             
@@ -329,7 +328,7 @@ class AdminPanel {
         } catch (error) {
             console.error('Error loading pending purchases:', error);
             document.getElementById('pendingPurchases').innerHTML = 
-                '<p>Error cargando compras pendientes</p>';
+                '<p>Error cargando pagos pendientes</p>';
         }
     }
 
@@ -346,17 +345,17 @@ class AdminPanel {
             <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong>${purchase.usuario_nombre}</strong>
+                        <strong>${purchase.email_temporal || 'Usuario no registrado'}</strong>
                         <div style="color: var(--gray); font-size: 0.9rem;">
-                            ${purchase.usuario_correo} • ${purchase.payment_method}
+                            ${purchase.metodo_pago}
                         </div>
                         <div style="color: var(--gray); font-size: 0.8rem;">
-                            ${window.LAMUBI_UTILS.formatDateVenezuela(purchase.fecha_compra)}
+                            ${window.LAMUBI_UTILS.formatDateVenezuela(purchase.fecha_pago)}
                         </div>
                     </div>
                     <div style="text-align: right;">
                         <div style="font-weight: 600; margin-bottom: 0.5rem;">
-                            $${purchase.monto.toFixed(2)}
+                            $${purchase.monto ? purchase.monto.toFixed(2) : '0.00'}
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" 
@@ -364,11 +363,11 @@ class AdminPanel {
                                 <i class="fas fa-eye"></i> Ver
                             </button>
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; background: var(--success);" 
-                                    onclick="approvePurchase(${purchase.compra_id})">
+                                    onclick="approvePurchase(${purchase.id})">
                                 <i class="fas fa-check"></i> Aprobar
                             </button>
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; background: var(--danger);" 
-                                    onclick="rejectPurchase(${purchase.compra_id})">
+                                    onclick="rejectPurchase(${purchase.id})">
                                 <i class="fas fa-times"></i> Rechazar
                             </button>
                         </div>
@@ -384,9 +383,9 @@ class AdminPanel {
     async loadAllTickets() {
         try {
             const { data, error } = await this.supabase
-                .from('dashboard_tickets')
+                .from('verificaciones_pagos')
                 .select('*')
-                .order('fecha_compra', { ascending: false });
+                .order('fecha_pago', { ascending: false });
             
             if (error) throw error;
             
@@ -412,22 +411,22 @@ class AdminPanel {
             <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong>${ticket.usuario_nombre}</strong>
+                        <strong>${ticket.email_temporal || 'Usuario no registrado'}</strong>
                         <div style="color: var(--gray); font-size: 0.9rem;">
-                            ${ticket.usuario_correo} • ${ticket.codigo_unico || 'Sin QR'}
+                            ${ticket.metodo_pago} • ${ticket.estado}
                         </div>
                         <div style="color: var(--gray); font-size: 0.8rem;">
-                            ${window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_compra)}
+                            ${window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_pago)}
                         </div>
                     </div>
                     <div style="text-align: right;">
                         <div style="font-weight: 600; margin-bottom: 0.5rem;">
-                            $${ticket.monto.toFixed(2)}
+                            $${ticket.monto ? ticket.monto.toFixed(2) : '0.00'}
                         </div>
-                        <span style="color: ${this.getStatusColor(ticket.estado_compra)};">
-                            ${this.formatStatus(ticket.estado_compra)}
+                        <span style="color: ${this.getStatusColor(ticket.estado)};">
+                            ${this.formatStatus(ticket.estado)}
                         </span>
-                        ${ticket.ticket_usado ? '<div style="color: var(--warning); font-size: 0.8rem;">Usado</div>' : ''}
+                        ${ticket.qr_usado ? '<div style="color: var(--warning); font-size: 0.8rem;">Usado</div>' : ''}
                     </div>
                 </div>
             </div>
@@ -518,26 +517,26 @@ window.viewComprobante = function(url) {
     window.open(url, '_blank');
 };
 
-window.approvePurchase = async function(purchaseId) {
+window.rejectPurchase = async function(purchaseId) {
     try {
         const { error } = await window.LAMUBI_UTILS.supabase
-            .from('compras')
+            .from('verificaciones_pagos')
             .update({ 
-                verified: true,
+                estado: 'rechazado',
                 fecha_verificacion: window.LAMUBI_UTILS.venezuelaNow(),
-                validador_id: window.adminPanel.currentUser.id
+                admin_id: window.adminPanel.currentUser.id
             })
             .eq('id', purchaseId);
         
         if (error) throw error;
         
-        window.adminPanel.showSuccess('Compra aprobada correctamente');
+        window.adminPanel.showSuccess('Compra rechazada correctamente');
         window.adminPanel.loadPendingPurchases();
         window.adminPanel.loadDashboardData();
         
     } catch (error) {
-        console.error('Error approving purchase:', error);
-        window.adminPanel.showError('Error aprobando compra');
+        console.error('Error rejecting purchase:', error);
+        window.adminPanel.showError('Error rechazando compra');
     }
 };
 
@@ -547,12 +546,12 @@ window.rejectPurchase = async function(purchaseId) {
     
     try {
         const { error } = await window.LAMUBI_UTILS.supabase
-            .from('compras')
+            .from('verificaciones_pagos')
             .update({ 
-                verified: false,
+                estado: 'rechazado',
                 fecha_verificacion: window.LAMUBI_UTILS.venezuelaNow(),
-                validador_id: window.adminPanel.currentUser.id,
-                datos_verificacion: { motivo_rechazo: reason }
+                admin_id: window.adminPanel.currentUser.id,
+                admin_notas: reason
             })
             .eq('id', purchaseId);
         
