@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # La Mubi - Landing Page Mockup
 
 ## Vista Previa Online
@@ -30,3 +31,7 @@ Para compartir este mockup con tu cliente:
 
 ## Compartir con Cliente
 Una vez publicado, comparte la URL pública con tu cliente para que pueda ver el diseño desde cualquier dispositivo.
+=======
+# lamubi-qr
+Sistema completo de tickets QR para eventos LA MUBI con validación móvil en tiempo real. Generación de códigos QR compatibles con iOS/Android, panel de administración, y procesamiento de pagos integrado.
+>>>>>>> 9abf74a3b099ed65d3d7d790fdde79a39fdb89d7
