@@ -461,31 +461,21 @@
                     console.log('🎫 QR escaneado:', qrText);
                     this.addConsoleLog('🎫 QR escaneado: ' + qrText);
                     
-                    // 🔒 DEBOUNCE MEJORADO: Evitar múltiples validaciones rápidas
-                    const currentTime = Date.now();
-                    const timeSinceLastQR = currentTime - this.lastQRTime;
-                    
+                    // 🔒 BLOQUEO TOTAL MEJORADO - CON TIEMPO DIFERENCIADO
                     if (this.isProcessingQR) {
-                        console.log('🔒 Ya procesando QR, ignorando...');
-                        this.addConsoleLog('🔒 Ya procesando QR, ignorando...', 'warn');
-                        return;
+                        console.log('🔒 Sistema bloqueado, ignorando completamente...');
+                        this.addConsoleLog('🔒 Sistema bloqueado, ignorando completamente...', 'warn');
+                        return; // 🚫 SALIR INMEDIATAMENTE SIN PROCESAR NADA
                     }
                     
-                    if (timeSinceLastQR < 3000) { // 🔒 AUMENTADO a 3 segundos
-                        console.log('⏰ QR muy rápido, esperando... (' + timeSinceLastQR + 'ms)');
-                        this.addConsoleLog('⏰ QR muy rápido, esperando... (' + timeSinceLastQR + 'ms)', 'warn');
-                        return;
-                    }
-                    
-                    // 🔒 ACTIVAR LOCK
+                    // 🔒 ACTIVAR BLOQUEO INMEDIATO
                     this.isProcessingQR = true;
-                    this.lastQRTime = currentTime;
+                    console.log('🔒 BLOQUEO ACTIVADO - Sistema pausado');
+                    this.addConsoleLog('🔒 BLOQUEO ACTIVADO - Sistema pausado');
                     
-                    console.log('🔒 Lock activado, procesando QR...');
-                    this.addConsoleLog('🔒 Lock activado, procesando QR...');
-                    
-                    this.showStatus('🎫 QR detectado: ' + qrText + ' - Validando...', 'warning');
-                    this.addConsoleLog('🔍 Iniciando validación para: ' + qrText);
+                    // 🎯 MOSTRAR MENSAJE INMEDIATO Y FIJO
+                    this.showStatus('🎫 QR detectado: ' + qrText + ' - Procesando...', 'warning');
+                    this.addConsoleLog('🎫 QR detectado: ' + qrText + ' - Procesando...');
                     
                     // Extraer ID numérico del QR
                     const ticketId = qrText.replace(/[^0-9]/g, '');
@@ -496,7 +486,12 @@
                         console.log('❌ QR inválido: no contiene ID válido');
                         this.addConsoleLog('❌ QR inválido: no contiene ID válido', 'error');
                         this.showStatus('❌ QR inválido: no contiene ID válido', 'error');
-                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS
+                        setTimeout(() => {
+                            this.isProcessingQR = false;
+                            console.log('🔓 Bloqueo liberado (QR inválido)');
+                            this.addConsoleLog('🔓 Bloqueo liberado (QR inválido)');
+                        }, 2000);
                         return;
                     }
                     
@@ -518,7 +513,12 @@
                         this.addConsoleLog('❌ Ticket no encontrado en Supabase: ' + ticketId, 'error');
                         this.addConsoleLog('❌ Error Supabase: ' + error.message, 'error');
                         this.showStatus('❌ Ticket no encontrado: ' + ticketId, 'error');
-                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS
+                        setTimeout(() => {
+                            this.isProcessingQR = false;
+                            console.log('🔓 Bloqueo liberado (error Supabase)');
+                            this.addConsoleLog('🔓 Bloqueo liberado (error Supabase)');
+                        }, 2000);
                         return;
                     }
                     
@@ -526,7 +526,12 @@
                         console.log('❌ No data returned from Supabase');
                         this.addConsoleLog('❌ No data returned from Supabase', 'error');
                         this.showStatus('❌ Ticket no encontrado: ' + ticketId, 'error');
-                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS
+                        setTimeout(() => {
+                            this.isProcessingQR = false;
+                            console.log('🔓 Bloqueo liberado (sin data)');
+                            this.addConsoleLog('🔓 Bloqueo liberado (sin data)');
+                        }, 2000);
                         return;
                     }
                     
@@ -559,7 +564,13 @@
                         console.log('⚠️ Ticket ya utilizado');
                         this.addConsoleLog('⚠️ Ticket ya utilizado', 'warn');
                         this.showStatus('⚠️ Ticket ya utilizado - No se puede volver a usar', 'warning');
-                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        
+                        // 🔓 LIBERAR BLOQUEO DESPUÉS DE 5 SEGUNDOS (MÁS TIEMPO PARA TICKETS USADOS)
+                        setTimeout(() => {
+                            this.isProcessingQR = false;
+                            console.log('🔓 Bloqueo liberado (ticket usado - 5s)');
+                            this.addConsoleLog('🔓 Bloqueo liberado (ticket usado - 5s)');
+                        }, 5000);
                         return;
                     }
                     
@@ -567,7 +578,12 @@
                         console.log('❌ Ticket no aprobado. Estado:', data.estado);
                         this.addConsoleLog('❌ Ticket no aprobado. Estado: ' + data.estado, 'error');
                         this.showStatus('❌ Ticket no aprobado (Estado: ' + data.estado + ')', 'error');
-                        this.isProcessingQR = false; // 🔓 LIBERAR LOCK
+                        // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS
+                        setTimeout(() => {
+                            this.isProcessingQR = false;
+                            console.log('🔓 Bloqueo liberado (ticket no aprobado)');
+                            this.addConsoleLog('🔓 Bloqueo liberado (ticket no aprobado)');
+                        }, 2000);
                         return;
                     }
                     
@@ -589,19 +605,21 @@
                     // Aquí iría la UI de confirmación (próxima fase)
                     console.log('🎫 Ticket válido:', data);
                     
-                    // 🔓 LIBERAR LOCK DESPUÉS DE 5 SEGUNDOS (AUMENTADO)
-                    setTimeout(() => {
-                        this.isProcessingQR = false;
-                        console.log('🔓 Lock liberado después de validación exitosa');
-                        this.addConsoleLog('🔓 Lock liberado después de validación exitosa');
-                    }, 5000);
+                    // 🔓 BLOQUEO MANTIENE ACTIVO HASTA QUE SE CIERRE EL MODAL
+                    console.log('🔒 Bloqueo mantenido hasta que se cierre el modal');
+                    this.addConsoleLog('🔒 Bloqueo mantenido hasta que se cierre el modal');
                     
                 } catch (error) {
                     console.error('❌ Error procesando QR:', error);
                     console.error('❌ Error stack:', error.stack);
                     this.addConsoleLog('❌ Error procesando QR: ' + error.message, 'error');
                     this.showStatus('❌ Error procesando QR: ' + error.message, 'error');
-                    this.isProcessingQR = false; // 🔓 LIBERAR LOCK EN CASO DE ERROR
+                    // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS EN CASO DE ERROR
+                    setTimeout(() => {
+                        this.isProcessingQR = false;
+                        console.log('🔓 Bloqueo liberado (error catch)');
+                        this.addConsoleLog('🔓 Bloqueo liberado (error catch)');
+                    }, 2000);
                 }
             }
 
@@ -633,7 +651,7 @@
                                 <p><strong>Email:</strong> ${ticketData.email_temporal}</p>
                                 <p><strong>Estado:</strong> <span style="color: #28a745;">${ticketData.estado}</span></p>
                                 <p><strong>QR Usado:</strong> ${ticketData.qr_usado ? 'Sí' : 'No'}</p>
-                                <p><strong>Creado:</strong> ${new Date(ticketData.created_at).toLocaleString()}</p>
+                                <p><strong>Creado:</strong> ${new Date(ticketData.created_at || ticketData.fecha_creacion).toLocaleString()}</p>
                             </div>
                             <div style="display: flex; gap: 10px; justify-content: center;">
                                 <button id="confirmBtn" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px;">
@@ -671,6 +689,11 @@
                             // Cerrar modal
                             document.body.removeChild(modal);
                             
+                            // 🔓 LIBERAR BLOQUEO DESPUÉS DE VALIDACIÓN
+                            this.isProcessingQR = false;
+                            console.log('🔓 Bloqueo liberado (validación completada)');
+                            this.addConsoleLog('🔓 Bloqueo liberado (validación completada)');
+                            
                             // Reiniciar cámara
                             this.stopCamera();
                             
@@ -682,11 +705,22 @@
                     
                     document.getElementById('cancelBtn').addEventListener('click', () => {
                         console.log('❌ Cancelando validación');
+                        
+                        // Cerrar modal
                         document.body.removeChild(modal);
+                        
+                        // 🔓 LIBERAR BLOQUEO DESPUÉS DE CANCELAR
+                        this.isProcessingQR = false;
+                        console.log('🔓 Bloqueo liberado (validación cancelada)');
+                        this.addConsoleLog('🔓 Bloqueo liberado (validación cancelada)');
                     });
                     
                 } catch (error) {
                     console.error('❌ Error mostrando confirmación:', error);
+                    // 🔓 LIBERAR BLOQUEO EN CASO DE ERROR
+                    this.isProcessingQR = false;
+                    console.log('🔓 Bloqueo liberado (error modal)');
+                    this.addConsoleLog('🔓 Bloqueo liberado (error modal)');
                 }
             }
 
