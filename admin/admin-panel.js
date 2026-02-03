@@ -517,12 +517,12 @@ window.viewComprobante = function(url) {
     window.open(url, '_blank');
 };
 
-window.rejectPurchase = async function(purchaseId) {
+window.approvePurchase = async function(purchaseId) {
     try {
         const { error } = await window.LAMUBI_UTILS.supabase
             .from('verificaciones_pagos')
             .update({ 
-                estado: 'rechazado',
+                estado: 'aprobado',
                 fecha_verificacion: window.LAMUBI_UTILS.venezuelaNow(),
                 admin_id: window.adminPanel.currentUser.id
             })
@@ -530,13 +530,13 @@ window.rejectPurchase = async function(purchaseId) {
         
         if (error) throw error;
         
-        window.adminPanel.showSuccess('Compra rechazada correctamente');
+        window.adminPanel.showSuccess('Compra aprobada correctamente');
         window.adminPanel.loadPendingPurchases();
         window.adminPanel.loadDashboardData();
         
     } catch (error) {
-        console.error('Error rejecting purchase:', error);
-        window.adminPanel.showError('Error rechazando compra');
+        console.error('Error approving purchase:', error);
+        window.adminPanel.showError('Error aprobando compra');
     }
 };
 
