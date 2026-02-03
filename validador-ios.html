@@ -565,6 +565,9 @@
                         this.addConsoleLog('⚠️ Ticket ya utilizado', 'warn');
                         this.showStatus('⚠️ Ticket ya utilizado - No se puede volver a usar', 'warning');
                         
+                        // 🎫 MOSTRAR ALERTA PERMANENTE
+                        this.showPermanentAlert(data, 'used');
+                        
                         // 🔓 LIBERAR BLOQUEO DESPUÉS DE 5 SEGUNDOS (MÁS TIEMPO PARA TICKETS USADOS)
                         setTimeout(() => {
                             this.isProcessingQR = false;
@@ -578,6 +581,14 @@
                         console.log('❌ Ticket no aprobado. Estado:', data.estado);
                         this.addConsoleLog('❌ Ticket no aprobado. Estado: ' + data.estado, 'error');
                         this.showStatus('❌ Ticket no aprobado (Estado: ' + data.estado + ')', 'error');
+                        
+                        // 🎫 MOSTRAR ALERTA PERMANENTE PARA PENDIENTE
+                        if (data.estado === 'pendiente') {
+                            this.showPermanentAlert(data, 'pending');
+                        } else {
+                            this.showPermanentAlert(data, 'invalid', 'Ticket con estado: ' + data.estado);
+                        }
+                        
                         // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS
                         setTimeout(() => {
                             this.isProcessingQR = false;
@@ -598,6 +609,9 @@
                     console.log('✅ Ticket válido:', data);
                     this.addConsoleLog('✅ Ticket válido para validar: ' + data.email_temporal);
                     this.showStatus('✅ Ticket válido para validar: ' + data.email_temporal, 'success');
+                    
+                    // 🎫 MOSTRAR ALERTA PERMANENTE PARA APROBADO
+                    this.showPermanentAlert(data, 'approved');
                     
                     // 🎫 MOSTRAR UI DE CONFIRMACIÓN
                     this.showTicketConfirmation(data);
@@ -741,14 +755,114 @@
                 status.className = `status ${type}`;
                 status.style.display = 'block';
                 
-                // 🎯 MANTENER MENSAJE FIJO POR MÁS TIEMPO
+                // 🎯 MANTENER MENSAJE FIJO PARA SIEMPRE (SIN TIMEOUT)
                 if (type === 'success' || type === 'error' || type === 'warning') {
-                    // Para mensajes importantes, mantener por 5 segundos
-                    setTimeout(() => {
-                        if (status.textContent === message) {
-                            status.style.display = 'none';
-                        }
-                    }, 5000);
+                    // 🚫 NO eliminar el mensaje nunca - permanece hasta nueva acción
+                    console.log('🎯 Mensaje permanente activado:', message);
+                }
+            }
+
+            // 🎫 NUEVO: Mostrar alerta permanente con QR
+            showPermanentAlert(ticketData, alertType, customMessage = null) {
+                try {
+                    console.log('🎫 Creando alerta permanente para ticket:', ticketData.id, 'Tipo:', alertType);
+                    
+                    // Eliminar alerta anterior si existe
+                    const existingAlert = document.getElementById('permanentAlert');
+                    if (existingAlert) {
+                        existingAlert.remove();
+                    }
+                    
+                    // Crear contenedor de alerta permanente
+                    const alertContainer = document.createElement('div');
+                    alertContainer.id = 'permanentAlert';
+                    alertContainer.style.cssText = `
+                        position: fixed;
+                        top: 60px;
+                        left: 10px;
+                        right: 10px;
+                        background: white;
+                        border: 3px solid ${alertType === 'success' ? '#28a745' : alertType === 'warning' ? '#ffc107' : '#dc3545'};
+                        border-radius: 10px;
+                        padding: 15px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        z-index: 99999;
+                        font-family: Arial, sans-serif;
+                        max-height: 300px;
+                        overflow-y: auto;
+                    `;
+                    
+                    // Determinar mensaje y colores
+                    let title, message, icon, bgColor;
+                    switch(alertType) {
+                        case 'used':
+                            title = '🚫 TICKET UTILIZADO';
+                            message = customMessage || 'Este ticket ya ha sido validado y no se puede volver a usar';
+                            icon = '🚫';
+                            bgColor = '#f8d7da';
+                            break;
+                        case 'pending':
+                            title = '⏳ TICKET PENDIENTE';
+                            message = customMessage || 'Este ticket está pendiente de aprobación';
+                            icon = '⏳';
+                            bgColor = '#fff3cd';
+                            break;
+                        case 'approved':
+                            title = '✅ TICKET APROBADO';
+                            message = customMessage || 'Este ticket está aprobado y listo para usar';
+                            icon = '✅';
+                            bgColor = '#d4edda';
+                            break;
+                        case 'invalid':
+                            title = '❌ TICKET INVÁLIDO';
+                            message = customMessage || 'Este ticket no es válido o no existe';
+                            icon = '❌';
+                            bgColor = '#f8d7da';
+                            break;
+                        default:
+                            title = '📋 INFORMACIÓN DEL TICKET';
+                            message = customMessage || 'Información del ticket';
+                            icon = '📋';
+                            bgColor = '#d1ecf1';
+                    }
+                    
+                    alertContainer.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <h3 style="margin: 0; color: ${alertType === 'success' ? '#155724' : alertType === 'warning' ? '#856404' : '#721c24'}; font-size: 16px;">
+                                ${icon} ${title}
+                            </h3>
+                            <button onclick="document.getElementById('permanentAlert').remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #666;">✕</button>
+                        </div>
+                        <div style="display: flex; gap: 15px; align-items: flex-start;">
+                            <div style="flex: 1;">
+                                <p style="margin: 5px 0; color: #333; font-weight: bold;">${message}</p>
+                                ${ticketData ? `
+                                    <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 12px;">
+                                        <p style="margin: 3px 0;"><strong>ID:</strong> ${ticketData.id}</p>
+                                        <p style="margin: 3px 0;"><strong>Email:</strong> ${ticketData.email_temporal || 'N/A'}</p>
+                                        <p style="margin: 3px 0;"><strong>Estado:</strong> ${ticketData.estado}</p>
+                                        <p style="margin: 3px 0;"><strong>QR Usado:</strong> ${ticketData.qr_usado ? 'Sí' : 'No'}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="width: 80px; height: 80px; background: white; border: 2px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+                                    ${ticketData ? ticketData.id : 'QR'}
+                                </div>
+                                <p style="margin: 5px 0; font-size: 10px; color: #666;">CÓDIGO QR</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Agregar nueva alerta
+                    document.body.appendChild(alertContainer);
+                    
+                    console.log('✅ Alerta permanente mostrada:', title);
+                    console.log('🎯 Alerta HTML:', alertContainer.innerHTML.substring(0, 100) + '...');
+                    
+                } catch (error) {
+                    console.error('❌ Error creando alerta permanente:', error);
+                    console.error('❌ Error stack:', error.stack);
                 }
             }
 
