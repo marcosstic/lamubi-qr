@@ -58,15 +58,16 @@
 
         .qr-container {
             background: white;
-            padding: var(--spacing-lg);
+            padding: var(--spacing-md);
             border-radius: var(--radius-lg);
             margin: var(--spacing-md) auto;
-            max-width: 500px;
+            max-width: 400px;
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(10px);
             position: relative;
             overflow: hidden;
+            text-align: center;
         }
 
         .qr-container::before {
@@ -80,7 +81,15 @@
         }
 
         .qr-code {
-            margin: 30px 0;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-code img {
+            border-radius: var(--radius-sm);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .ticket-id {
@@ -277,11 +286,14 @@
 
             <div class="instructions">
                 <h3>📱 Instrucciones para escanear</h3>
+                <p style="text-align: center; margin-bottom: 15px; color: var(--text-secondary); font-style: italic;">
+                    🎯 QR optimizado LA MUBI - Escaneo perfecto en cualquier móvil
+                </p>
                 <ul>
                     <li>📷 Apunta tu cámara a este QR</li>
-                    <li>🎯 Mantén 15-20cm de distancia</li>
+                    <li>🎯 Mantén 10-15cm de distancia (óptimo)</li>
                     <li>✅ Asegura buena iluminación</li>
-                    <li>📹 QR grande y alto contraste</li>
+                    <li>📹 QR tamaño perfecto LA MUBI para móviles</li>
                 </ul>
             </div>
 
@@ -393,18 +405,18 @@
         function generateQRCode() {
             if (!ticketData) return;
 
-            // Usar configuración óptima probada con Android
+            // Usar configuración óptima LA MUBI para móviles
             new QRCode(document.getElementById('qrcode-grande'), {
                 text: ticketData.id.toString(),  // ID numérico simple
-                width: 400,                      // Óptimo para Android
-                height: 400,                     // Cuadrado perfecto
-                colorDark: '#000000',           // Negro puro
-                colorLight: '#ffffff',          // Blanco puro
-                correctLevel: QRCode.CorrectLevel.H  // Máxima corrección
+                width: 200,                      // 🎯 Óptimo LA MUBI para móviles
+                height: 200,                     // 🎯 Cuadrado perfecto y escaneable
+                colorDark: '#000000',           // Negro puro (máximo contraste)
+                colorLight: '#ffffff',          // Blanco puro (fondo limpio)
+                correctLevel: QRCode.CorrectLevel.H  // Máxima corrección de errores
             });
             
-            console.log('✅ QR Code generado exitosamente');
-            console.log('🎯 QR de 400x400px - óptimo para cámara Android');
+            console.log('✅ QR Code LA MUBI generado exitosamente');
+            console.log('🎯 QR de 200x200px - óptimo para escaneo móvil y diseño LA MUBI');
         }
 
         // Mostrar error
