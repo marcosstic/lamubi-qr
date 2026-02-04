@@ -720,7 +720,7 @@
                 console.log('Valor de monto:', monto.value, 'Convertido:', montoNumerico);
                 
                 // Obtener tasa actual
-                const tasaActual = parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 1234.56);
+                const tasaActual = parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 600);
                 const montoEsperado = Math.round(tasaActual * 5); // Redondear a entero
                 console.log('Tasa actual:', tasaActual, 'Monto esperado (entero):', montoEsperado);
                 
@@ -931,7 +931,7 @@
                     monto: paymentMethod === 'pago-movil' ? 
                         parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
                         5.00, // $5 USD para Zelle
-                    tasa_dolar: parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 1234.56),
+                    tasa_dolar: parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 600),
                     referencia: verificationData.referencia || null,
                     confirmacion_zelle: verificationData.confirmacionZelle || null,
                     email_remitente: verificationData.emailRemitente || null,

@@ -372,7 +372,9 @@
             // Si existe datos_compra, intentar extraer email de ahí
             if (ticketData.datos_compra) {
                 try {
-                    const formData = JSON.parse(ticketData.datos_compra);
+                    const formData = typeof ticketData.datos_compra === 'string' ? 
+                        JSON.parse(ticketData.datos_compra) : 
+                        ticketData.datos_compra;
                     email = formData.email || email;
                 } catch (e) {
                     console.error('Error parsing datos_compra:', e);
