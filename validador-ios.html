@@ -69,9 +69,23 @@
             position: relative;
         }
 
+        #camera-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .scanner-placeholder {
             text-align: center;
             color: white;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .scanner-icon {
@@ -260,10 +274,16 @@
             constructor() {
                 this.cameraHelper = null;
                 this.qrDetectionHelper = null;
+                this.videoElement = null;
+                this.html5QrCode = null;
                 this.currentTicket = null;
                 this.deviceType = this.detectDevice();
                 this.isProcessingQR = false; // 🔒 LOCK PARA EVITAR MÚLTIPLES VALIDACIONES
                 this.lastQRTime = 0; // ⏰ TIMESTAMP ÚLTIMO QR
+                this._androidRefreshTimeout = null;
+                this._androidLastRefreshTs = 0;
+                this._androidRecoveryTimeout = null;
+                this._androidHardRestarted = false;
                 this.init();
             }
 
@@ -278,6 +298,110 @@
                 } else {
                     return 'desktop';
                 }
+            }
+
+            async startAndroidScanner() {
+                try {
+                    if (typeof Html5Qrcode === 'undefined') {
+                        throw new Error('html5-qrcode no está disponible');
+                    }
+
+                    // Actualizar UI
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'inline-flex';
+                    this.showStatus('Iniciando cámara Android...', 'warning');
+
+                    // Limpiar cualquier instancia previa
+                    if (this.html5QrCode) {
+                        try {
+                            await this.html5QrCode.stop();
+                        } catch (e) {
+                            // ignore
+                        }
+                        this.html5QrCode = null;
+                    }
+
+                    const containerId = 'camera-container';
+                    const container = document.getElementById(containerId);
+                    if (!container) {
+                        throw new Error('Contenedor de cámara no encontrado');
+                    }
+                    container.innerHTML = '';
+
+                    this.html5QrCode = new Html5Qrcode(containerId);
+                    this.addConsoleLog('🤖 html5-qrcode inicializado');
+
+                    await this.html5QrCode.start(
+                        { facingMode: 'environment' },
+                        {
+                            fps: 10,
+                            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                                const minSide = Math.min(viewfinderWidth, viewfinderHeight);
+                                const boxSize = Math.max(180, Math.min(260, Math.floor(minSide * 0.7)));
+                                return { width: boxSize, height: boxSize };
+                            },
+                            disableFlip: true
+                        },
+                        async (decodedText) => {
+                            this.addConsoleLog('🎫 QR detectado (Android): ' + decodedText, 'success');
+                            await this.onQRScanned(decodedText);
+                        },
+                        () => {
+                            // silenciar errores continuos
+                        }
+                    );
+
+                    this.showStatus('🎯 Cámara Android y escáner activos', 'success');
+                    this.addConsoleLog('✅ Escáner Android activo');
+
+                } catch (error) {
+                    console.error('❌ Error iniciando escáner Android:', error);
+                    this.addConsoleLog('❌ Error iniciando escáner Android: ' + error.message, 'error');
+                    this.showStatus('Error: ' + error.message, 'error');
+                    this.resetCameraUI();
+                }
+            }
+
+            scheduleAndroidRecovery() {
+                if (this.deviceType !== 'android') return;
+                if (this._androidRecoveryTimeout) {
+                    clearTimeout(this._androidRecoveryTimeout);
+                }
+
+                this._androidRecoveryTimeout = setTimeout(async () => {
+                    try {
+                        if (!this.qrDetectionHelper || !this.qrDetectionHelper.isScanning) return;
+
+                        // Si ya detectó un QR, no hacer nada
+                        if (this.lastQRTime && Date.now() - this.lastQRTime < 60000) return;
+
+                        console.warn('🤖 Android Recovery: no se detectó QR aún, refrescando scanner...');
+                        this.addConsoleLog('🤖 Android Recovery: refrescando scanner...', 'warn');
+                        await this.refreshAndroidScanner();
+
+                        // Segunda oportunidad: si sigue sin detectar, reiniciar cámara una sola vez
+                        setTimeout(async () => {
+                            try {
+                                if (!this.qrDetectionHelper || !this.qrDetectionHelper.isScanning) return;
+                                if (this.lastQRTime && Date.now() - this.lastQRTime < 60000) return;
+                                if (this._androidHardRestarted) return;
+
+                                this._androidHardRestarted = true;
+                                console.warn('🤖 Android Recovery: reiniciando cámara/escáner (1 vez)...');
+                                this.addConsoleLog('🤖 Android Recovery: reiniciando cámara/escáner (1 vez)...', 'warn');
+                                this.showStatus('🔄 Reiniciando escáner Android...', 'warning');
+                                this.stopCamera();
+                                setTimeout(() => {
+                                    this.startCamera();
+                                }, 400);
+                            } catch (e) {
+                                console.warn('⚠️ Error en hard restart Android:', e);
+                            }
+                        }, 3500);
+                    } catch (error) {
+                        console.warn('⚠️ Error en Android Recovery:', error);
+                    }
+                }, 6000);
             }
 
             async init() {
@@ -320,6 +444,53 @@
                 document.getElementById('stopBtn').addEventListener('click', () => this.stopCamera());
                 document.getElementById('debugBtn').addEventListener('click', () => this.showDebugInfo());
                 document.getElementById('consoleBtn').addEventListener('click', () => this.toggleConsole());
+
+                window.addEventListener('resize', () => this.handleViewportChange());
+                window.addEventListener('orientationchange', () => this.handleViewportChange());
+                window.addEventListener('focus', () => this.handleViewportChange());
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) {
+                        this.handleViewportChange();
+                    }
+                });
+            }
+
+            handleViewportChange() {
+                if (this.deviceType !== 'android') return;
+                if (!this.qrDetectionHelper || !this.qrDetectionHelper.isScanning) return;
+
+                if (this._androidRefreshTimeout) {
+                    clearTimeout(this._androidRefreshTimeout);
+                }
+
+                this._androidRefreshTimeout = setTimeout(() => {
+                    this.refreshAndroidScanner();
+                }, 150);
+            }
+
+            async refreshAndroidScanner() {
+                if (this.deviceType !== 'android') return;
+                if (!this.qrDetectionHelper || !this.qrDetectionHelper.isScanning) return;
+
+                const now = Date.now();
+                if (now - this._androidLastRefreshTs < 1500) return;
+                this._androidLastRefreshTs = now;
+
+                try {
+                    const container = document.getElementById('camera-container');
+                    if (container) {
+                        void container.offsetHeight;
+                    }
+                    window.dispatchEvent(new Event('resize'));
+                } catch (e) {
+                    // ignore
+                }
+
+                try {
+                    await this.qrDetectionHelper.restartScanning();
+                } catch (error) {
+                    console.warn('⚠️ Error refrescando scanner Android:', error);
+                }
             }
 
             toggleConsole() {
@@ -351,6 +522,17 @@
                 try {
                     console.log(`🎯 Iniciando cámara ${this.deviceType} con QR Detection...`);
                     this.addConsoleLog(`🎯 Iniciando cámara ${this.deviceType} con QR Detection...`);
+
+                    this.lastQRTime = 0;
+                    if (this.deviceType === 'android') {
+                        this._androidHardRestarted = false;
+                    }
+
+                    // ANDROID: usar html5-qrcode directamente (más estable que QrScanner)
+                    if (this.deviceType === 'android') {
+                        await this.startAndroidScanner();
+                        return;
+                    }
                     
                     // Actualizar UI
                     document.getElementById('startBtn').style.display = 'none';
@@ -364,6 +546,7 @@
                     this.cameraHelper.onVideoReady = async (videoElement) => {
                         console.log('📹 Video listo, iniciando QR Detection...');
                         this.addConsoleLog('📹 Video listo, iniciando QR Detection...');
+                        this.videoElement = videoElement;
                         await this.startQRDetection(videoElement);
                     };
                     
@@ -412,6 +595,14 @@
                     await this.qrDetectionHelper.startScanning();
                     console.log('✅ QR Detection scanning iniciado');
                     this.addConsoleLog('✅ QR Detection scanning iniciado');
+
+                    if (this.deviceType === 'android') {
+                        setTimeout(() => {
+                            this.handleViewportChange();
+                        }, 400);
+
+                        this.scheduleAndroidRecovery();
+                    }
                     
                     this.showStatus('🎯 Cámara y QR Detection activos', 'success');
                     
@@ -435,6 +626,28 @@
             stopCamera() {
                 try {
                     console.log('⏹️ Deteniendo cámara y QR Detection...');
+
+                    if (this._androidRefreshTimeout) {
+                        clearTimeout(this._androidRefreshTimeout);
+                        this._androidRefreshTimeout = null;
+                    }
+                    if (this._androidRecoveryTimeout) {
+                        clearTimeout(this._androidRecoveryTimeout);
+                        this._androidRecoveryTimeout = null;
+                    }
+
+                    // Detener html5-qrcode (Android)
+                    if (this.html5QrCode) {
+                        try {
+                            const stopPromise = this.html5QrCode.stop();
+                            if (stopPromise && typeof stopPromise.then === 'function') {
+                                stopPromise.catch(() => {});
+                            }
+                        } catch (e) {
+                            // ignore
+                        }
+                        this.html5QrCode = null;
+                    }
                     
                     // Detener QR Detection
                     if (this.qrDetectionHelper) {
@@ -460,6 +673,8 @@
                 try {
                     console.log('🎫 QR escaneado:', qrText);
                     this.addConsoleLog('🎫 QR escaneado: ' + qrText);
+
+                    this.lastQRTime = Date.now();
                     
                     // 🔒 BLOQUEO TOTAL MEJORADO - CON TIEMPO DIFERENCIADO
                     if (this.isProcessingQR) {

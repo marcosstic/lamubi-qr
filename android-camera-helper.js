@@ -125,6 +125,8 @@ class AndroidCameraHelper {
         // Atributos para Android
         video.autoplay = true;
         video.playsInline = true;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
         video.muted = true;
         video.style.width = '100%';
         video.style.height = '100%';

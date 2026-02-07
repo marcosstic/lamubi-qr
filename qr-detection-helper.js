@@ -178,6 +178,31 @@ class QRDetectionHelper {
         }
     }
 
+    async restartScanning() {
+        try {
+            console.log('🔄 Reiniciando detección QR...');
+
+            if (this.qrScanner) {
+                try {
+                    const maybePromise = this.qrScanner.stop();
+                    if (maybePromise && typeof maybePromise.then === 'function') {
+                        await maybePromise;
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Error al detener qrScanner durante restart:', e);
+                }
+            }
+
+            this.qrScanner = null;
+            this.isScanning = false;
+
+            await this.startScanning();
+        } catch (error) {
+            console.error('❌ Error reiniciando detección QR:', error);
+            throw error;
+        }
+    }
+
     // Manejar QR detectado
     handleQRDetected(result) {
         try {
