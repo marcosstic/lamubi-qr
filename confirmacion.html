@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎫 Confirmación Ticket LA MUBI</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -233,6 +234,104 @@
             font-weight: 600;
         }
 
+        body.exporting {
+            background: #ffffff;
+            color: #000000;
+            padding: 20px;
+        }
+
+        body.exporting .header {
+            display: none;
+        }
+
+        body.exporting .ticket-info {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            box-shadow: none;
+            backdrop-filter: none;
+        }
+
+        body.exporting .ticket-info p {
+            color: #212529;
+        }
+
+        body.exporting .ticket-info h3 {
+            color: var(--primary);
+        }
+
+        body.exporting .info-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        body.exporting .info-label {
+            color: #6c757d;
+        }
+
+        body.exporting .info-value {
+            color: #212529;
+        }
+
+        body.exporting .qr-container {
+            background: #ffffff;
+            box-shadow: none;
+        }
+
+        body.exporting .instructions,
+        body.exporting .action-buttons {
+            display: none !important;
+        }
+
+        body.exporting .qr-code {
+            /* En export evitamos transform scale porque no reserva espacio y puede solaparse */
+            transform: none;
+        }
+
+        /* Estilos para secciones de información */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+        
+        .info-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            font-size: 1rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        /* Estados adicionales */
+        .status-aprobado { color: #51cf66; font-weight: 600; }
+        .status-pendiente { color: #ffd43b; font-weight: 600; }
+        .status-rechazado { color: #ff6b6b; font-weight: 600; }
+        .status-usado { color: #ff6b6b; font-weight: 600; }
+        .status-unknown { color: #868e96; font-weight: 600; }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 36px;
@@ -252,6 +351,15 @@
                 width: 100%;
                 max-width: 300px;
             }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .info-item {
+                padding: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -268,14 +376,66 @@
         </div>
 
         <div id="ticketSection" style="display: none;">
+            <!-- Sección del Comprador -->
             <div class="ticket-info">
-                <h3>📧 Información del Ticket</h3>
-                <p><strong>ID:</strong> <span id="ticketId">-</span></p>
-                <p><strong>Email:</strong> <span id="ticketEmail">-</span></p>
-                <p><strong>Estado:</strong> <span id="ticketStatus">-</span></p>
-                <p><strong>Evento:</strong> LA MUBI</p>
-                <p><strong>Fecha:</strong> 28/02/2026</p>
-                <p><strong>Precio:</strong> $5 USD</p>
+                <h3>👤 Datos del Comprador</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Nombre:</span>
+                        <span class="info-value" id="ticketNombre">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value" id="ticketEmail">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Teléfono:</span>
+                        <span class="info-value" id="ticketTelefono">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Documento:</span>
+                        <span class="info-value" id="ticketDocumento">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Edad:</span>
+                        <span class="info-value" id="ticketEdad">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Género:</span>
+                        <span class="info-value" id="ticketGenero">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección del Ticket -->
+            <div class="ticket-info">
+                <h3>🎫 Detalles del Ticket</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">ID Ticket:</span>
+                        <span class="info-value" id="ticketId">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Estado:</span>
+                        <span class="info-value" id="ticketStatus">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Monto:</span>
+                        <span class="info-value" id="ticketMonto">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Método Pago:</span>
+                        <span class="info-value" id="ticketMetodo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Fecha Compra:</span>
+                        <span class="info-value" id="ticketFecha">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Estado QR:</span>
+                        <span class="info-value" id="ticketQRStatus">-</span>
+                    </div>
+                </div>
             </div>
 
             <div class="qr-container">
@@ -300,9 +460,6 @@
             <div class="action-buttons">
                 <button class="btn btn-primary" onclick="downloadTicket()">
                     📥 Descargar Ticket
-                </button>
-                <button class="btn btn-secondary" onclick="shareTicket()">
-                    📤 Compartir
                 </button>
                 <button class="btn btn-secondary" onclick="printTicket()">
                     🖨️ Imprimir
@@ -378,38 +535,108 @@
             document.getElementById('qrTicketId').textContent = ticketData.id;
             document.getElementById('qrCodeText').textContent = ticketData.id;
             
-            // Extraer email de email_temporal primero
-            let email = ticketData.email_temporal || 'No disponible';
+            // Extraer todos los datos del comprador desde datos_compra
+            let comprador = {
+                nombre: 'No disponible',
+                email: ticketData.email_temporal || 'No disponible',
+                telefono: 'No disponible',
+                documento: 'No disponible',
+                edad: 'No disponible',
+                genero: 'No disponible'
+            };
             
-            // Si existe datos_compra, intentar extraer email de ahí
+            // Si existe datos_compra, extraer todos los datos
             if (ticketData.datos_compra) {
                 try {
-                    const formData = typeof ticketData.datos_compra === 'string' ? 
+                    const rawDatosCompra = typeof ticketData.datos_compra === 'string' ? 
                         JSON.parse(ticketData.datos_compra) : 
                         ticketData.datos_compra;
-                    email = formData.email || email;
+
+                    const formData = rawDatosCompra?.formData || rawDatosCompra;
+                    
+                    // Actualizar con datos reales del formulario
+                    comprador.nombre = formData.nombre || comprador.nombre;
+                    comprador.email = formData.email || comprador.email;
+                    comprador.telefono = formData.telefono || comprador.telefono;
+                    comprador.documento = formData.documento || comprador.documento;
+                    comprador.edad = formData.edad || comprador.edad;
+                    comprador.genero = formData.genero || comprador.genero;
+                    
                 } catch (e) {
                     console.error('Error parsing datos_compra:', e);
-                    // Mantener email_temporal como fallback
+                    // Mantener valores por defecto
                 }
             }
-            document.getElementById('ticketEmail').textContent = email;
+            
+            // Actualizar UI con datos del comprador
+            document.getElementById('ticketNombre').textContent = comprador.nombre;
+            document.getElementById('ticketEmail').textContent = comprador.email;
+            document.getElementById('ticketTelefono').textContent = comprador.telefono;
+            document.getElementById('ticketDocumento').textContent = comprador.documento;
+            document.getElementById('ticketEdad').textContent = comprador.edad;
+            document.getElementById('ticketGenero').textContent = comprador.genero;
             
             // Actualizar estado con clase apropiada
             const statusElement = document.getElementById('ticketStatus');
             statusElement.textContent = ticketData.estado || 'desconocido';
             statusElement.className = 'status-' + (ticketData.estado || 'unknown');
+            
+            // Actualizar datos adicionales del ticket
+            const metodoPago = ticketData.metodo_pago || 'No especificado';
+            document.getElementById('ticketMetodo').textContent = metodoPago;
+
+            const montoNumero = Number(ticketData.monto || 0);
+            const montoFormateado = new Intl.NumberFormat('es-VE', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(montoNumero);
+
+            const simboloMonto = metodoPago === 'pago-movil' ? 'Bs' : '$';
+            document.getElementById('ticketMonto').textContent = `${simboloMonto} ${montoFormateado}`;
+
+            const fechaPago = ticketData.fecha_pago ? new Date(ticketData.fecha_pago) : null;
+            document.getElementById('ticketFecha').textContent = fechaPago
+                ? new Intl.DateTimeFormat('es-VE', {
+                    timeZone: 'UTC',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                }).format(fechaPago)
+                : 'No disponible';
+            
+            // Actualizar estado del QR
+            const qrStatusElement = document.getElementById('ticketQRStatus');
+            if (ticketData.qr_usado) {
+                qrStatusElement.textContent = '🚫 Usado';
+                qrStatusElement.className = 'status-usado';
+            } else {
+                qrStatusElement.textContent = '✅ Disponible';
+                qrStatusElement.className = 'status-aprobado';
+            }
         }
 
         // Generar QR Code (configuración probada de test-qr-grande.html)
-        function generateQRCode() {
+        function generateQRCode(size = 200) {
             if (!ticketData) return;
 
+            // Verificar que el elemento exista antes de generar QR
+            const qrElement = document.getElementById('qrcode-grande');
+            if (!qrElement) {
+                console.error('❌ Error: No se encontró el elemento "qrcode-grande" en el HTML');
+                return;
+            }
+
+            // Limpiar contenido anterior
+            qrElement.innerHTML = '';
+
             // Usar configuración óptima LA MUBI para móviles
-            new QRCode(document.getElementById('qrcode-grande'), {
+            new QRCode(qrElement, {
                 text: ticketData.id.toString(),  // ID numérico simple
-                width: 200,                      // 🎯 Óptimo LA MUBI para móviles
-                height: 200,                     // 🎯 Cuadrado perfecto y escaneable
+                width: size,                     // 🎯 Tamaño controlado por parámetro
+                height: size,                    // 🎯 Cuadrado perfecto y escaneable
                 colorDark: '#000000',           // Negro puro (máximo contraste)
                 colorLight: '#ffffff',          // Blanco puro (fondo limpio)
                 correctLevel: QRCode.CorrectLevel.H  // Máxima corrección de errores
@@ -430,37 +657,73 @@
         // Descargar ticket
         async function downloadTicket() {
             try {
+                if (typeof html2canvas === 'undefined') {
+                    throw new Error('html2canvas no está disponible');
+                }
+
                 const element = document.getElementById('ticketSection');
-                const canvas = await html2canvas(element);
+                if (!element) {
+                    throw new Error('No se encontró el contenedor del ticket');
+                }
+
+                document.body.classList.add('exporting');
+                window.scrollTo(0, 0);
+                await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+
+                // Aumentar temporalmente el QR SOLO para la exportación (evita solapamiento)
+                generateQRCode(260);
+                await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+
+                const canvas = await html2canvas(element, {
+                    backgroundColor: '#ffffff',
+                    scale: 3,
+                    useCORS: true,
+                    logging: false
+                });
+
+                document.body.classList.remove('exporting');
+
+                // Restaurar QR a tamaño normal en pantalla
+                generateQRCode(200);
+
                 const link = document.createElement('a');
                 link.download = `ticket-lamubi-${ticketData.id}.png`;
-                link.href = canvas.toDataURL();
+                link.href = canvas.toDataURL('image/png');
                 link.click();
+
+                console.log('✅ Ticket descargado exitosamente (PNG)');
+                
             } catch (error) {
                 console.error('Error descargando ticket:', error);
-                alert('Error al descargar el ticket');
+                document.body.classList.remove('exporting');
+                try {
+                    generateQRCode(200);
+                } catch (e) {
+                    // ignorar
+                }
+                alert('Error al descargar el ticket. Intenta nuevamente.');
             }
         }
 
-        // Compartir ticket
-        async function shareTicket() {
-            try {
-                if (navigator.share) {
-                    await navigator.share({
-                        title: 'Mi Ticket LA MUBI',
-                        text: `¡Te invito a LA MUBI! Mi ticket ID: ${ticketData.id}`,
-                        url: window.location.href
-                    });
-                } else {
-                    // Fallback: copiar al portapapeles
-                    const text = `¡Te invito a LA MUBI! Mi ticket ID: ${ticketData.id}`;
-                    await navigator.clipboard.writeText(text);
-                    alert('¡Enlace copiado al portapapeles!');
-                }
-            } catch (error) {
-                console.error('Error compartiendo ticket:', error);
-            }
-        }
+        // Compartir ticket - ELIMINADO POR PRIVACIDAD
+        // async function shareTicket() {
+        //     try {
+        //         if (navigator.share) {
+        //             await navigator.share({
+        //                 title: 'Mi Ticket LA MUBI',
+        //                 text: `¡Te invito a LA MUBI! Mi ticket ID: ${ticketData.id}`,
+        //                 url: window.location.href
+        //             });
+        //         } else {
+        //             // Fallback: copiar al portapapeles
+        //             const text = `¡Te invito a LA MUBI! Mi ticket ID: ${ticketData.id}`;
+        //             await navigator.clipboard.writeText(text);
+        //             alert('¡Enlace copiado al portapapeles!');
+        //         }
+        //     } catch (error) {
+        //         console.error('Error compartiendo ticket:', error);
+        //     }
+        // }
 
         // Imprimir ticket
         function printTicket() {
