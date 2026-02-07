@@ -280,10 +280,15 @@
                 this.deviceType = this.detectDevice();
                 this.isProcessingQR = false; // 🔒 LOCK PARA EVITAR MÚLTIPLES VALIDACIONES
                 this.lastQRTime = 0; // ⏰ TIMESTAMP ÚLTIMO QR
+                this._qrCooldownByText = {};
+                this._qrCooldownMs = 3000;
+                this._qrCooldownUsedMs = 15000;
                 this._androidRefreshTimeout = null;
                 this._androidLastRefreshTs = 0;
                 this._androidRecoveryTimeout = null;
                 this._androidHardRestarted = false;
+                this._iosFallbackTimeout = null;
+                this._iosFallbackActivated = false;
                 this.init();
             }
 
@@ -343,6 +348,7 @@
                             disableFlip: true
                         },
                         async (decodedText) => {
+                            if (this.isProcessingQR) return;
                             this.addConsoleLog('🎫 QR detectado (Android): ' + decodedText, 'success');
                             await this.onQRScanned(decodedText);
                         },
@@ -527,6 +533,13 @@
                     if (this.deviceType === 'android') {
                         this._androidHardRestarted = false;
                     }
+                    if (this.deviceType === 'ios') {
+                        this._iosFallbackActivated = false;
+                        if (this._iosFallbackTimeout) {
+                            clearTimeout(this._iosFallbackTimeout);
+                            this._iosFallbackTimeout = null;
+                        }
+                    }
 
                     // ANDROID: usar html5-qrcode directamente (más estable que QrScanner)
                     if (this.deviceType === 'android') {
@@ -564,6 +577,97 @@
                 }
             }
 
+            scheduleIOSFallback() {
+                if (this.deviceType !== 'ios') return;
+                if (this._iosFallbackActivated) return;
+                if (this._iosFallbackTimeout) {
+                    clearTimeout(this._iosFallbackTimeout);
+                }
+
+                // Si en iPhone el flujo con QrScanner no detecta en X segundos,
+                // hacemos fallback a html5-qrcode (más robusto en algunos Safari).
+                this._iosFallbackTimeout = setTimeout(async () => {
+                    try {
+                        if (this.lastQRTime) return;
+                        if (!this.qrDetectionHelper || !this.qrDetectionHelper.isScanning) return;
+
+                        this._iosFallbackActivated = true;
+                        console.warn('🍎 iOS Fallback: cambiando a html5-qrcode...');
+                        this.addConsoleLog('🍎 iOS Fallback: cambiando a html5-qrcode...', 'warn');
+                        this.showStatus('🔄 Optimizando escáner para iPhone...', 'warning');
+
+                        // Detener flujo actual y arrancar html5-qrcode
+                        this.stopCamera();
+                        setTimeout(() => {
+                            this.startIOSScannerHtml5Qrcode();
+                        }, 350);
+                    } catch (e) {
+                        console.warn('⚠️ Error en fallback iOS:', e);
+                    }
+                }, 2500);
+            }
+
+            async startIOSScannerHtml5Qrcode() {
+                try {
+                    if (typeof Html5Qrcode === 'undefined') {
+                        throw new Error('html5-qrcode no está disponible');
+                    }
+
+                    // Actualizar UI
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'inline-flex';
+                    this.showStatus('Iniciando cámara iPhone...', 'warning');
+
+                    if (this.html5QrCode) {
+                        try {
+                            await this.html5QrCode.stop();
+                        } catch (e) {
+                            // ignore
+                        }
+                        this.html5QrCode = null;
+                    }
+
+                    const containerId = 'camera-container';
+                    const container = document.getElementById(containerId);
+                    if (!container) {
+                        throw new Error('Contenedor de cámara no encontrado');
+                    }
+                    container.innerHTML = '';
+
+                    this.html5QrCode = new Html5Qrcode(containerId);
+                    this.addConsoleLog('🍎 html5-qrcode inicializado (iOS)');
+
+                    await this.html5QrCode.start(
+                        { facingMode: 'environment' },
+                        {
+                            fps: 10,
+                            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                                const minSide = Math.min(viewfinderWidth, viewfinderHeight);
+                                const boxSize = Math.max(180, Math.min(260, Math.floor(minSide * 0.7)));
+                                return { width: boxSize, height: boxSize };
+                            },
+                            disableFlip: true
+                        },
+                        async (decodedText) => {
+                            if (this.isProcessingQR) return;
+                            this.addConsoleLog('🎫 QR detectado (iOS): ' + decodedText, 'success');
+                            await this.onQRScanned(decodedText);
+                        },
+                        () => {
+                            // silenciar errores continuos
+                        }
+                    );
+
+                    this.showStatus('🎯 Cámara iPhone y escáner activos', 'success');
+                    this.addConsoleLog('✅ Escáner iPhone activo');
+                } catch (error) {
+                    console.error('❌ Error iniciando escáner iOS:', error);
+                    this.addConsoleLog('❌ Error iniciando escáner iOS: ' + error.message, 'error');
+                    this.showStatus('Error: ' + error.message, 'error');
+                    this.resetCameraUI();
+                }
+            }
+
             async startQRDetection(videoElement) {
                 try {
                     console.log('🎯 Iniciando QR Detection...');
@@ -582,6 +686,7 @@
                     console.log('🎯 Inicializando QR Detection Helper...');
                     this.addConsoleLog('🎯 Inicializando QR Detection Helper...');
                     await this.qrDetectionHelper.initialize(videoElement, async (qrText) => {
+                        if (this.isProcessingQR) return;
                         console.log('🎯 QR Detection callback recibido:', qrText);
                         this.addConsoleLog('🎯 QR Detection callback recibido: ' + qrText);
                         await this.onQRScanned(qrText);
@@ -603,6 +708,10 @@
 
                         this.scheduleAndroidRecovery();
                     }
+
+                    if (this.deviceType === 'ios') {
+                        this.scheduleIOSFallback();
+                    }
                     
                     this.showStatus('🎯 Cámara y QR Detection activos', 'success');
                     
@@ -620,6 +729,21 @@
                     console.error('❌ Error stack:', error.stack);
                     this.addConsoleLog('❌ Error iniciando QR Detection: ' + error.message, 'error');
                     this.showStatus('Error QR Detection: ' + error.message, 'error');
+                    if (this.deviceType === 'ios' && !this._iosFallbackActivated) {
+                        this._iosFallbackActivated = true;
+                        console.warn('🍎 iOS Fallback (error): cambiando a html5-qrcode...');
+                        this.addConsoleLog('🍎 iOS Fallback (error): cambiando a html5-qrcode...', 'warn');
+                        this.showStatus('🔄 Optimizando escáner para iPhone...', 'warning');
+
+                        try {
+                            this.stopCamera();
+                        } catch (e) {
+                        }
+
+                        setTimeout(() => {
+                            this.startIOSScannerHtml5Qrcode();
+                        }, 350);
+                    }
                 }
             }
 
@@ -634,6 +758,11 @@
                     if (this._androidRecoveryTimeout) {
                         clearTimeout(this._androidRecoveryTimeout);
                         this._androidRecoveryTimeout = null;
+                    }
+
+                    if (this._iosFallbackTimeout) {
+                        clearTimeout(this._iosFallbackTimeout);
+                        this._iosFallbackTimeout = null;
                     }
 
                     // Detener html5-qrcode (Android)
@@ -671,24 +800,28 @@
 
             async onQRScanned(qrText) {
                 try {
+                    if (this.isProcessingQR) {
+                        return;
+                    }
+
+                    const now = Date.now();
+                    const qrKey = String(qrText || '').trim();
+                    if (!qrKey) return;
+                    const cooldownUntil = this._qrCooldownByText[qrKey] || 0;
+                    if (cooldownUntil && now < cooldownUntil) {
+                        return;
+                    }
+                    this._qrCooldownByText[qrKey] = now + this._qrCooldownMs;
+
                     console.log('🎫 QR escaneado:', qrText);
                     this.addConsoleLog('🎫 QR escaneado: ' + qrText);
 
                     this.lastQRTime = Date.now();
                     
-                    // 🔒 BLOQUEO TOTAL MEJORADO - CON TIEMPO DIFERENCIADO
-                    if (this.isProcessingQR) {
-                        console.log('🔒 Sistema bloqueado, ignorando completamente...');
-                        this.addConsoleLog('🔒 Sistema bloqueado, ignorando completamente...', 'warn');
-                        return; // 🚫 SALIR INMEDIATAMENTE SIN PROCESAR NADA
-                    }
-                    
-                    // 🔒 ACTIVAR BLOQUEO INMEDIATO
                     this.isProcessingQR = true;
-                    console.log('🔒 BLOQUEO ACTIVADO - Sistema pausado');
-                    this.addConsoleLog('🔒 BLOQUEO ACTIVADO - Sistema pausado');
+                    console.log('🔒 BLOQUEO ACTIVADO - Sistema pausado por 2 segundos');
+                    this.addConsoleLog('🔒 BLOQUEO ACTIVADO - Sistema pausado por 2 segundos', 'warn');
                     
-                    // 🎯 MOSTRAR MENSAJE INMEDIATO Y FIJO
                     this.showStatus('🎫 QR detectado: ' + qrText + ' - Procesando...', 'warning');
                     this.addConsoleLog('🎫 QR detectado: ' + qrText + ' - Procesando...');
                     
@@ -779,6 +912,8 @@
                         console.log('⚠️ Ticket ya utilizado');
                         this.addConsoleLog('⚠️ Ticket ya utilizado', 'warn');
                         this.showStatus('⚠️ Ticket ya utilizado - No se puede volver a usar', 'warning');
+
+                        this._qrCooldownByText[qrKey] = Date.now() + this._qrCooldownUsedMs;
                         
                         // 🎫 MOSTRAR ALERTA PERMANENTE
                         this.showPermanentAlert(data, 'used');
