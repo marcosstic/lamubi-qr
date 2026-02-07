@@ -1034,24 +1034,50 @@
                     document.getElementById('confirmBtn').addEventListener('click', async () => {
                         try {
                             console.log('✅ Confirmando validación del ticket...');
+
+                            const confirmBtn = document.getElementById('confirmBtn');
+                            if (confirmBtn) {
+                                confirmBtn.disabled = true;
+                            }
                             
                             // Actualizar ticket en Supabase
-                            const { error } = await window.supabaseClient
+                            const { data: updatedRows, error } = await window.supabaseClient
                                 .from('verificaciones_pagos')
                                 .update({ qr_usado: true })
-                                .eq('id', ticketData.id);
+                                .eq('id', ticketData.id)
+                                .eq('qr_usado', false)
+                                .eq('estado', 'aprobado')
+                                .select('id');
                             
                             if (error) {
                                 console.error('❌ Error actualizando ticket:', error);
+                                if (confirmBtn) {
+                                    confirmBtn.disabled = false;
+                                }
                                 alert('Error validando ticket: ' + error.message);
                                 return;
                             }
+
+                            if (!updatedRows || updatedRows.length === 0) {
+                                if (confirmBtn) {
+                                    confirmBtn.disabled = false;
+                                }
+                                alert('⚠️ No se pudo validar: ticket ya utilizado o estado cambió');
+                                return;
+                            }
+
+                            if (ticketData) {
+                                ticketData.qr_usado = true;
+                            }
                             
                             console.log('✅ Ticket validado exitosamente');
+
+                            // Cerrar modal antes del alert para evitar que quede visible en iOS
+                            if (modal && modal.parentNode) {
+                                modal.parentNode.removeChild(modal);
+                            }
+
                             alert('✅ Ticket validado exitosamente');
-                            
-                            // Cerrar modal
-                            document.body.removeChild(modal);
                             
                             // 🔓 LIBERAR BLOQUEO DESPUÉS DE VALIDACIÓN
                             this.isProcessingQR = false;
