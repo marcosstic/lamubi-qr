@@ -112,19 +112,47 @@ class VerificacionUpload {
             // Generar nombre único
             const fileName = `${paymentMethod}_${referencia}_${Date.now()}.jpg`;
             
-            // Subir a Supabase Storage
-            const { data, error } = await window.LAMUBI_UTILS.supabase.storage
-                .from('lamubi-comprobantes')
-                .upload(fileName, compressedFile, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
+            console.log('🚀 Iniciando upload a Supabase Storage...');
+            console.log('📁 Bucket: lamubi-comprobantes');
+            console.log('📄 Archivo:', fileName);
             
-            if (error) throw error;
+            // Subir a Supabase Storage con retry
+            let uploadResult;
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    console.log(`📤 Intento ${retryCount + 1}/${maxRetries}`);
+                    
+                    uploadResult = await window.LAMUBI_UTILS.supabase.storage
+                        .from('lamubi-qr-comprobantes')
+                        .upload(fileName, compressedFile, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+                    
+                    console.log('✅ Upload exitoso:', uploadResult);
+                    break;
+                    
+                } catch (uploadError) {
+                    console.error(`❌ Error en intento ${retryCount + 1}:`, uploadError);
+                    retryCount++;
+                    
+                    if (retryCount >= maxRetries) {
+                        throw new Error(`Error después de ${maxRetries} intentos: ${uploadError.message}`);
+                    }
+                    
+                    // Esperar antes de reintentar
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                }
+            }
+            
+            if (uploadResult.error) throw uploadResult.error;
             
             // Obtener URL pública
             const { data: { publicUrl } } = window.LAMUBI_UTILS.supabase.storage
-                .from('lamubi-comprobantes')
+                .from('lamubi-qr-comprobantes')
                 .getPublicUrl(fileName);
             
             console.log('📤 Comprobante subido exitosamente:', publicUrl);
@@ -139,9 +167,65 @@ class VerificacionUpload {
             
         } catch (error) {
             console.error('❌ Error subiendo comprobante:', error);
+            
+            // Error específico de Firefox
+            if (error.message.includes('onMessage listener')) {
+                console.error('🔥 Error detectado de Firefox - Intentando solución alternativa...');
+                // Intentar upload con fetch directo como fallback
+                return await this.subirComprobanteFallback(file, paymentMethod, referencia);
+            }
+            
             return {
                 success: false,
                 error: error.message
+            };
+        }
+    }
+
+    // 🔄 Fallback para Firefox - Upload con fetch directo
+    async subirComprobanteFallback(file, paymentMethod, referencia) {
+        try {
+            console.log('🔄 Usando fallback fetch directo...');
+            
+            const compressedFile = await this.comprimirImagen(file);
+            const fileName = `${paymentMethod}_${referencia}_${Date.now()}.jpg`;
+            
+            const formData = new FormData();
+            formData.append('file', compressedFile);
+            
+            const response = await fetch(
+                `https://jayzsshngmbwvwdmizis.supabase.co/storage/v1/object/lamubi-qr-comprobantes/${fileName}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${window.LAMUBI_UTILS.SUPABASE.ANON_KEY}`,
+                        'x-upsert': 'false'
+                    },
+                    body: compressedFile
+                }
+            );
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const publicUrl = `https://jayzsshngmbwvwdmizis.supabase.co/storage/v1/object/public/lamubi-qr-comprobantes/${fileName}`;
+            
+            console.log('✅ Fallback exitoso:', publicUrl);
+            
+            return {
+                success: true,
+                url: publicUrl,
+                fileName: fileName,
+                originalSize: file.size,
+                compressedSize: compressedFile.size
+            };
+            
+        } catch (error) {
+            console.error('❌ Error en fallback:', error);
+            return {
+                success: false,
+                error: `Fallback fallido: ${error.message}`
             };
         }
     }
