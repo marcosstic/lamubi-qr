@@ -623,9 +623,14 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Todos los Tickets</h3>
-                        <button class="btn btn-secondary" onclick="loadAllTickets()">
-                            <i class="fas fa-sync-alt"></i> Actualizar
-                        </button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" onclick="loadAllTickets()">
+                                <i class="fas fa-sync-alt"></i> Actualizar
+                            </button>
+                            <button class="btn btn-primary" onclick="exportApprovedTicketsToExcel()" style="background: var(--primary);">
+                                <i class="fas fa-file-excel"></i> Exportar Excel
+                            </button>
+                        </div>
                     </div>
                     <!-- Búsqueda y filtros -->
                     <div style="margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
@@ -688,5 +693,6 @@
     <script src="../config.js"></script>
     <script src="login.js"></script>
     <script src="admin-panel.js"></script>
+    <script src="xlsx.min.js"></script>
 </body>
 </html>
