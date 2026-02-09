@@ -312,7 +312,45 @@ class AdminPanel {
         container.innerHTML = html;
     }
 
-    // 📋 Cargar compras pendientes
+    // � Filtrar compras pendientes
+    filterPendingPurchases(searchTerm = null) {
+        const searchValue = searchTerm || document.getElementById('searchPending').value.toLowerCase();
+        const methodFilter = document.getElementById('filterPendingMethod').value;
+        
+        if (!this.allPendingPurchases) return;
+        
+        const filtered = this.allPendingPurchases.filter(purchase => {
+            const matchesSearch = !searchValue || 
+                (purchase.email_temporal && purchase.email_temporal.toLowerCase().includes(searchValue)) ||
+                purchase.id.toString().includes(searchValue);
+            const matchesMethod = !methodFilter || purchase.metodo_pago === methodFilter;
+            
+            return matchesSearch && matchesMethod;
+        });
+        
+        this.renderPendingPurchases(filtered);
+    }
+
+    // 🔍 Filtrar todos los tickets
+    filterAllTickets(searchTerm = null) {
+        const searchValue = searchTerm || document.getElementById('searchTickets').value.toLowerCase();
+        const stateFilter = document.getElementById('filterTicketsState').value;
+        const methodFilter = document.getElementById('filterTicketsMethod').value;
+        
+        if (!this.allTickets) return;
+        
+        const filtered = this.allTickets.filter(ticket => {
+            const matchesSearch = !searchValue || 
+                (ticket.email_temporal && ticket.email_temporal.toLowerCase().includes(searchValue)) ||
+                ticket.id.toString().includes(searchValue);
+            const matchesState = !stateFilter || ticket.estado === stateFilter;
+            const matchesMethod = !methodFilter || ticket.metodo_pago === methodFilter;
+            
+            return matchesSearch && matchesState && matchesMethod;
+        });
+        
+        this.renderAllTickets(filtered);
+    }
     async loadPendingPurchases() {
         try {
             const { data, error } = await this.supabase
@@ -323,6 +361,7 @@ class AdminPanel {
             
             if (error) throw error;
             
+            this.allPendingPurchases = data;
             this.renderPendingPurchases(data);
             
         } catch (error) {
@@ -359,14 +398,17 @@ class AdminPanel {
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" 
+                                    title="Ver comprobante de pago"
                                     onclick="viewComprobante('${purchase.comprobante_url}')">
                                 <i class="fas fa-eye"></i> Ver
                             </button>
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; background: var(--success);" 
+                                    title="Aprobar este pago"
                                     onclick="approvePurchase(${purchase.id})">
                                 <i class="fas fa-check"></i> Aprobar
                             </button>
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; background: var(--danger);" 
+                                    title="Rechazar este pago"
                                     onclick="rejectPurchase(${purchase.id})">
                                 <i class="fas fa-times"></i> Rechazar
                             </button>
@@ -389,6 +431,7 @@ class AdminPanel {
             
             if (error) throw error;
             
+            this.allTickets = data;
             this.renderAllTickets(data);
             
         } catch (error) {

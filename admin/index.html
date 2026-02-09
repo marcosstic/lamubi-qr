@@ -386,6 +386,33 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Skeleton Loaders */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        .skeleton-text {
+            height: 1rem;
+            margin-bottom: 0.5rem;
+            width: 100%;
+        }
+
+        .skeleton-text.short {
+            width: 60%;
+        }
+
+        .skeleton-text.medium {
+            width: 80%;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .admin-container {
@@ -558,6 +585,25 @@
                             <i class="fas fa-sync-alt"></i> Actualizar
                         </button>
                     </div>
+                    <!-- Búsqueda y filtros -->
+                    <div style="margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <div style="position: relative;">
+                                <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                                <input type="text" id="searchPending" placeholder="Buscar por email o ID" 
+                                       style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
+                                       oninput="adminPanel.filterPendingPurchases(this.value)">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <select id="filterPendingMethod" style="padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
+                                    onchange="adminPanel.filterPendingPurchases()">
+                                <option value="">Todos los métodos</option>
+                                <option value="pago-movil">Pago Móvil</option>
+                                <option value="zelle">Zelle</option>
+                            </select>
+                        </div>
+                    </div>
                     <div id="pendingPurchases">
                         <div class="loading">
                             <div class="spinner"></div>
@@ -580,6 +626,32 @@
                         <button class="btn btn-secondary" onclick="loadAllTickets()">
                             <i class="fas fa-sync-alt"></i> Actualizar
                         </button>
+                    </div>
+                    <!-- Búsqueda y filtros -->
+                    <div style="margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <div style="position: relative;">
+                                <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+                                <input type="text" id="searchTickets" placeholder="Buscar por email o ID" 
+                                       style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
+                                       oninput="adminPanel.filterAllTickets(this.value)">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <select id="filterTicketsState" style="padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
+                                    onchange="adminPanel.filterAllTickets()">
+                                <option value="">Todos los estados</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="aprobado">Aprobado</option>
+                                <option value="rechazado">Rechazado</option>
+                            </select>
+                            <select id="filterTicketsMethod" style="padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
+                                    onchange="adminPanel.filterAllTickets()">
+                                <option value="">Todos los métodos</option>
+                                <option value="pago-movil">Pago Móvil</option>
+                                <option value="zelle">Zelle</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="allTickets">
                         <div class="loading">
