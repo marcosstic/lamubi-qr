@@ -294,6 +294,25 @@
             color: var(--danger);
         }
 
+        /* Ticket Badge - LA MUBI Style */
+        .ticket-badge {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .ticket-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(187, 17, 117, 0.3);
+        }
+
         /* Sections */
         .content-section {
             display: none;
@@ -447,6 +466,15 @@
             
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .ticket-badge {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.4rem;
+            }
+            
+            .ticket-badge i {
+                font-size: 0.6rem;
             }
         }
     </style>

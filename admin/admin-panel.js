@@ -454,7 +454,13 @@ class AdminPanel {
             <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong>${ticket.email_temporal || 'Usuario no registrado'}</strong>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <strong>${ticket.email_temporal || 'Usuario no registrado'}</strong>
+                            <span class="ticket-badge">
+                                <i class="fas fa-ticket-alt" style="font-size: 0.7rem;"></i>
+                                #${ticket.id}
+                            </span>
+                        </div>
                         <div style="color: var(--gray); font-size: 0.9rem;">
                             ${ticket.metodo_pago} • ${ticket.estado}
                         </div>
@@ -555,8 +561,84 @@ class AdminPanel {
     }
 }
 
-// 🎯 Funciones globales para botones
+// 📊 Exportar tickets aprobados a Excel
+window.exportApprovedTicketsToExcel = async function() {
+    try {
+        // Mostrar loading
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i> Exportando...';
+        button.disabled = true;
+        
+        // Consultar tickets aprobados ordenados por fecha_creacion
+        const { data, error } = await window.LAMUBI_UTILS.supabase
+            .from('verificaciones_pagos')
+            .select('*')
+            .eq('estado', 'aprobado')
+            .order('fecha_creacion', { ascending: false });
+        
+        if (error) throw error;
+        
+        if (!data || data.length === 0) {
+            alert('No hay tickets aprobados para exportar');
+            button.innerHTML = originalText;
+            button.disabled = false;
+            return;
+        }
+        
+        // Preparar datos para Excel
+        const excelData = data.map(ticket => ({
+            'ID': ticket.id,
+            'Email': ticket.email_temporal || 'N/A',
+            'Método Pago': ticket.metodo_pago,
+            'Monto': ticket.monto || 0,
+            'Tasa Dólar': ticket.tasa_dolar || 0,
+            'Referencia': ticket.referencia || 'N/A',
+            'Estado': ticket.estado,
+            'Fecha Creación': window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_creacion),
+            'Fecha Pago': window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_pago),
+            'Fecha Verificación': ticket.fecha_verificacion ? window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_verificacion) : 'N/A',
+            'QR Usado': ticket.qr_usado ? 'Sí' : 'No',
+            'Fecha Uso': ticket.fecha_uso ? window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_uso) : 'N/A',
+            'Comprobante': ticket.comprobante_url ? 'Disponible' : 'No',
+            'Nombre Comprobante': ticket.comprobante_nombre || 'N/A'
+        }));
+        
+        // Crear workbook y worksheet
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Tickets Aprobados');
+        
+        // Generar nombre de archivo con fecha
+        const now = new Date();
+        const fileName = `tickets_aprobados_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${now.getHours()}${now.getMinutes()}.xlsx`;
+        
+        // Descargar archivo
+        XLSX.writeFile(wb, fileName);
+        
+        // Restaurar botón
+        button.innerHTML = originalText;
+        button.disabled = false;
+        
+        console.log(`✅ Excel exportado: ${fileName} con ${data.length} tickets`);
+        
+    } catch (error) {
+        console.error('❌ Error exportando Excel:', error);
+        alert('Error al exportar Excel: ' + error.message);
+        
+        // Restaurar botón en caso de error
+        const button = document.querySelector('button[onclick*="exportApprovedTicketsToExcel"]');
+        if (button) {
+            button.innerHTML = '<i class="fas fa-file-excel"></i> Exportar Excel';
+            button.disabled = false;
+        }
+    }
+};
 window.viewComprobante = function(url) {
+    if (!url) {
+        alert('No hay comprobante disponible para este pago');
+        return;
+    }
     window.open(url, '_blank');
 };
 
