@@ -172,7 +172,7 @@ class AdminLogin {
             await this.supabase
                 .from('administradores')
                 .update({ 
-                    ultimo_acceso: window.LAMUBI_UTILS.venezuelaNow(),
+                    ultimo_acceso: window.LAMUBI_UTILS.venezuelaNowString(),
                     metadata: {
                         last_login_ip: await this.getUserIP(),
                         last_login_browser: navigator.userAgent

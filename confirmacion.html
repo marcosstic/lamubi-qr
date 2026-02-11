@@ -597,7 +597,7 @@
             const fechaPago = ticketData.fecha_pago ? new Date(ticketData.fecha_pago) : null;
             document.getElementById('ticketFecha').textContent = fechaPago
                 ? new Intl.DateTimeFormat('es-VE', {
-                    timeZone: 'UTC',
+                    timeZone: 'America/Caracas',
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit',

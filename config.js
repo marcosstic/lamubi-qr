@@ -81,7 +81,12 @@ const venezuelaNow = () => {
     return venezuelaTime.toISOString();
 };
 
-// 📱 Format Venezuela Currency
+// � Venezuela Now String - Formato correcto usando formatDateVenezuela
+const venezuelaNowString = () => {
+    return formatDateVenezuela(new Date());
+};
+
+// � Format Venezuela Currency
 const formatBolivares = (amount) => {
     return new Intl.NumberFormat('es-VE', {
         style: 'currency',
@@ -153,6 +158,7 @@ try {
 window.LAMUBI_CONFIG = CONFIG;
 window.LAMUBI_UTILS = {
     venezuelaNow,
+    venezuelaNowString,
     formatBolivares,
     formatDateVenezuela,
     generateTicketId,

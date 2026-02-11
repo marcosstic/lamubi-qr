@@ -826,6 +826,24 @@
                     verificationData.fechaZelle = document.getElementById('fecha-zelle').value;
                 }
                 
+                // Convertir fechas a timestamp Venezuela
+                if (verificationData.fechaPago) {
+                    const fechaPagoDate = new Date(verificationData.fechaPago);
+                    // Crear timestamp en timezone Venezuela
+                    const venezuelaOffset = 4 * 60; // UTC-4 en minutos
+                    const utcTime = fechaPagoDate.getTime() + (fechaPagoDate.getTimezoneOffset() * 60000);
+                    const venezuelaTime = new Date(utcTime - (venezuelaOffset * 60000));
+                    verificationData.fechaPago = venezuelaTime.toISOString();
+                }
+                if (verificationData.fechaZelle) {
+                    const fechaZelleDate = new Date(verificationData.fechaZelle);
+                    // Crear timestamp en timezone Venezuela
+                    const venezuelaOffset = 4 * 60; // UTC-4 en minutos
+                    const utcTime = fechaZelleDate.getTime() + (fechaZelleDate.getTimezoneOffset() * 60000);
+                    const venezuelaTime = new Date(utcTime - (venezuelaOffset * 60000));
+                    verificationData.fechaZelle = venezuelaTime.toISOString();
+                }
+                
                 // Guardar en base de datos en lugar de localStorage
                 guardarVerificacionEnBD(verificationData).then(resultado => {
                     if (resultado.success) {

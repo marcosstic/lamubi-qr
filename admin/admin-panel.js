@@ -648,7 +648,7 @@ window.approvePurchase = async function(purchaseId) {
             .from('verificaciones_pagos')
             .update({ 
                 estado: 'aprobado',
-                fecha_verificacion: window.LAMUBI_UTILS.venezuelaNow(),
+                fecha_verificacion: window.LAMUBI_UTILS.venezuelaNowString(),
                 admin_id: window.adminPanel.currentUser.id
             })
             .eq('id', purchaseId);
@@ -674,7 +674,7 @@ window.rejectPurchase = async function(purchaseId) {
             .from('verificaciones_pagos')
             .update({ 
                 estado: 'rechazado',
-                fecha_verificacion: window.LAMUBI_UTILS.venezuelaNow(),
+                fecha_verificacion: window.LAMUBI_UTILS.venezuelaNowString(),
                 admin_id: window.adminPanel.currentUser.id,
                 admin_notas: reason
             })
@@ -704,7 +704,7 @@ window.updateDollarRate = async function() {
             .from('configuracion_sistema')
             .update({ 
                 valor: newRate,
-                fecha_actualizacion: window.LAMUBI_UTILS.venezuelaNow(),
+                fecha_actualizacion: window.LAMUBI_UTILS.venezuelaNowString(),
                 actualizado_por: window.adminPanel.currentUser.id
             })
             .eq('clave', 'tasa_dolar_bcv');

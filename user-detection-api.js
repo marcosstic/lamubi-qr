@@ -118,8 +118,8 @@ class UserDetectionAPI {
                 edad: parseInt(datosUsuario.edad),
                 fuente: 'tickets_web',
                 status: 'lead',
-                fecha_registro: window.LAMUBI_UTILS.venezuelaNow(),
-                ultima_actualizacion: window.LAMUBI_UTILS.venezuelaNow(),
+                fecha_registro: window.LAMUBI_UTILS.venezuelaNowString(),
+                ultima_actualizacion: window.LAMUBI_UTILS.venezuelaNowString(),
                 etiquetas: ['interes_tickets'],
                 metadata: {
                     registro_origen: 'formulario_tickets',
@@ -165,7 +165,7 @@ class UserDetectionAPI {
             // Preparar datos de actualización
             const datosUpdate = {
                 ...datosActualizacion,
-                ultima_actualizacion: window.LAMUBI_UTILS.venezuelaNow(),
+                ultima_actualizacion: window.LAMUBI_UTILS.venezuelaNowString(),
                 metadata: {
                     ...datosActualizacion.metadata,
                     ultima_actualizacion_origen: 'formulario_tickets'
