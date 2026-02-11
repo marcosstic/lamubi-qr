@@ -289,11 +289,11 @@ class AdminPanel {
         }
         
         const html = activities.map(activity => `
-            <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div class="activity-item" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong>${activity.email_temporal || 'Usuario no registrado'}</strong>
-                        <span style="color: var(--gray); margin-left: 0.5rem;">
+                        <span class="method-text" style="color: var(--gray); margin-left: 0.5rem;">
                             ${activity.metodo_pago}
                         </span>
                     </div>
@@ -301,7 +301,7 @@ class AdminPanel {
                         <span style="color: ${this.getStatusColor(activity.estado)};">
                             ${this.formatStatus(activity.estado)}
                         </span>
-                        <div style="font-size: 0.8rem; color: var(--gray);">
+                        <div class="time-info" style="font-size: 0.8rem; color: var(--gray);">
                             🕐 Compra: ${window.LAMUBI_UTILS.formatDateVenezuela(activity.fecha_pago)}
                             ${activity.fecha_verificacion ? 
                                 `<br>✅ ${activity.estado === 'aprobado' ? 'Aprobado' : 'Rechazado'}: ${window.LAMUBI_UTILS.formatDateVenezuela(activity.fecha_verificacion)}` 
@@ -459,10 +459,10 @@ class AdminPanel {
         }
         
         const html = tickets.map(ticket => `
-            <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div class="ticket-item" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <div class="badge-container" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                             <strong>${ticket.email_temporal || 'Usuario no registrado'}</strong>
                             <span class="ticket-badge">
                                 <i class="fas fa-ticket-alt" style="font-size: 0.7rem;"></i>
