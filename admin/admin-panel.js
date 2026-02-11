@@ -302,7 +302,10 @@ class AdminPanel {
                             ${this.formatStatus(activity.estado)}
                         </span>
                         <div style="font-size: 0.8rem; color: var(--gray);">
-                            ${window.LAMUBI_UTILS.formatDateVenezuela(activity.fecha_pago)}
+                            🕐 Compra: ${window.LAMUBI_UTILS.formatDateVenezuela(activity.fecha_pago)}
+                            ${activity.fecha_verificacion ? 
+                                `<br>✅ ${activity.estado === 'aprobado' ? 'Aprobado' : 'Rechazado'}: ${window.LAMUBI_UTILS.formatDateVenezuela(activity.fecha_verificacion)}` 
+                                : ''}
                         </div>
                     </div>
                 </div>
@@ -312,7 +315,12 @@ class AdminPanel {
         container.innerHTML = html;
     }
 
-    // � Filtrar compras pendientes
+    // 🔧 Obtener timestamp Venezuela actual
+    getVenezuelaTimestamp() {
+        return new Date().toISOString();
+    }
+
+    // 🔍 Filtrar compras pendientes
     filterPendingPurchases(searchTerm = null) {
         const searchValue = searchTerm || document.getElementById('searchPending').value.toLowerCase();
         const methodFilter = document.getElementById('filterPendingMethod').value;
@@ -648,7 +656,7 @@ window.approvePurchase = async function(purchaseId) {
             .from('verificaciones_pagos')
             .update({ 
                 estado: 'aprobado',
-                fecha_verificacion: window.LAMUBI_UTILS.venezuelaNowString(),
+                fecha_verificacion: window.adminPanel.getVenezuelaTimestamp(),
                 admin_id: window.adminPanel.currentUser.id
             })
             .eq('id', purchaseId);
@@ -674,7 +682,7 @@ window.rejectPurchase = async function(purchaseId) {
             .from('verificaciones_pagos')
             .update({ 
                 estado: 'rechazado',
-                fecha_verificacion: window.LAMUBI_UTILS.venezuelaNowString(),
+                fecha_verificacion: window.adminPanel.getVenezuelaTimestamp(),
                 admin_id: window.adminPanel.currentUser.id,
                 admin_notas: reason
             })
