@@ -513,7 +513,7 @@
                         </div>
                     </div>
                     <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">
-                        <i class="fas fa-info-circle"></i> El ticket tiene un costo de $5.00 USD
+                        <i class="fas fa-info-circle"></i> El ticket tiene un costo de <span id="ticket-price-usd-inline">$5.00</span> USD
                     </div>
                 </div>
 
@@ -521,7 +521,7 @@
                 <div id="contenido-zelle" style="display: none;">
                     <div style="text-align: center; padding: 1rem 0;">
                         <div style="font-size: 1.1rem; color: #999; margin-bottom: 0.5rem;">Monto a transferir:</div>
-                        <div style="font-size: 1.8rem; font-weight: 700; color: #11bb75; margin-bottom: 0.5rem;">$5.00 USD</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #11bb75; margin-bottom: 0.5rem;"><span id="ticket-price-usd-zelle">$5.00</span> USD</div>
                         <div style="font-size: 0.8rem; color: #666;">
                             <i class="fas fa-info-circle"></i> Transferencia instantánea desde EE.UU.
                         </div>
@@ -674,12 +674,16 @@
         }
 
         // Form validation
-        document.getElementById('verification-form').addEventListener('submit', function(e) {
+        document.getElementById('verification-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             console.log('Formulario enviado - Iniciando validación');
             
             let isValid = true;
+
+            const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
+                ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+                : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
             
             // Reset all errors
             document.querySelectorAll('.form-group').forEach(group => {
@@ -721,7 +725,7 @@
                 
                 // Obtener tasa actual
                 const tasaActual = parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 600);
-                const montoEsperado = Math.round(tasaActual * 5); // Redondear a entero
+                const montoEsperado = Math.round(tasaActual * ticketPriceUsd); // Redondear a entero
                 console.log('Tasa actual:', tasaActual, 'Monto esperado (entero):', montoEsperado);
                 
                 // Convertir monto del usuario a entero para comparación
@@ -729,7 +733,7 @@
                 console.log('Monto usuario:', montoNumerico, 'Monto usuario (entero):', montoUsuarioEntero);
                 
                 if (montoUsuarioEntero !== montoEsperado) {
-                    console.log('Error: monto no coincide con tasa * 5');
+                    console.log('Error: monto no coincide con tasa * precio');
                     monto.closest('.form-group').classList.add('error');
                     isValid = false;
                 }
@@ -825,23 +829,47 @@
                     verificationData.emailRemitente = document.getElementById('email-remitente').value;
                     verificationData.fechaZelle = document.getElementById('fecha-zelle').value;
                 }
+
+                function parseVenezuelaDateTimeToISO(input) {
+                    if (!input || typeof input !== 'string') return null;
+
+                    // Already ISO-like
+                    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(input) || input.endsWith('Z')) {
+                        const d = new Date(input);
+                        return Number.isNaN(d.getTime()) ? null : d.toISOString();
+                    }
+
+                    // Format: DD/MM/YYYY, HH:MM or DD/MM/YYYY, HH:MM:SS
+                    const match = input.match(/^(\d{2})\/(\d{2})\/(\d{4}),\s*(\d{2}):(\d{2})(?::(\d{2}))?$/);
+                    if (!match) return null;
+
+                    const dd = match[1];
+                    const mm = match[2];
+                    const yyyy = match[3];
+                    const hh = match[4];
+                    const mi = match[5];
+                    const ss = match[6] || '00';
+
+                    // Interpret as Venezuela local time (UTC-4)
+                    const isoWithOffset = `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}-04:00`;
+                    const d = new Date(isoWithOffset);
+                    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+                }
                 
                 // Convertir fechas a timestamp Venezuela
                 if (verificationData.fechaPago) {
-                    const fechaPagoDate = new Date(verificationData.fechaPago);
-                    // Crear timestamp en timezone Venezuela
-                    const venezuelaOffset = 4 * 60; // UTC-4 en minutos
-                    const utcTime = fechaPagoDate.getTime() + (fechaPagoDate.getTimezoneOffset() * 60000);
-                    const venezuelaTime = new Date(utcTime - (venezuelaOffset * 60000));
-                    verificationData.fechaPago = venezuelaTime.toISOString();
+                    const iso = parseVenezuelaDateTimeToISO(verificationData.fechaPago);
+                    if (!iso) {
+                        throw new Error('Fecha de pago inválida');
+                    }
+                    verificationData.fechaPago = iso;
                 }
                 if (verificationData.fechaZelle) {
-                    const fechaZelleDate = new Date(verificationData.fechaZelle);
-                    // Crear timestamp en timezone Venezuela
-                    const venezuelaOffset = 4 * 60; // UTC-4 en minutos
-                    const utcTime = fechaZelleDate.getTime() + (fechaZelleDate.getTimezoneOffset() * 60000);
-                    const venezuelaTime = new Date(utcTime - (venezuelaOffset * 60000));
-                    verificationData.fechaZelle = venezuelaTime.toISOString();
+                    const iso = parseVenezuelaDateTimeToISO(verificationData.fechaZelle);
+                    if (!iso) {
+                        throw new Error('Fecha Zelle inválida');
+                    }
+                    verificationData.fechaZelle = iso;
                 }
                 
                 // Guardar en base de datos en lugar de localStorage
@@ -871,6 +899,10 @@
         async function guardarVerificacionEnBD(verificationData) {
             try {
                 console.log('🎯 Guardando verificación en BD...', verificationData);
+
+                const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
+                    ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+                    : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
                 
                 // Obtener datos del formulario
                 const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
@@ -948,7 +980,7 @@
                     metodo_pago: paymentMethod,
                     monto: paymentMethod === 'pago-movil' ? 
                         parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
-                        5.00, // $5 USD para Zelle
+                        ticketPriceUsd, // USD para Zelle
                     tasa_dolar: parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 600),
                     referencia: verificationData.referencia || null,
                     confirmacion_zelle: verificationData.confirmacionZelle || null,
@@ -962,12 +994,14 @@
                         ...verificationData,
                         formData: formData,
                         userAgent: navigator.userAgent,
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        precio_usd_aplicado: ticketPriceUsd
                     },
                     metadata: {
                         ip: await obtenerIP(),
                         origen: 'formulario_verificacion',
-                        version: '1.0.0'
+                        version: '1.0.0',
+                        precio_usd_aplicado: ticketPriceUsd
                     }
                 };
                 
@@ -1090,8 +1124,17 @@
                 
                 console.log('✅ Scripts cargados, obteniendo tasa dólar...');
                 
+                const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
+                    ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+                    : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+
+                const inlineEl = document.getElementById('ticket-price-usd-inline');
+                if (inlineEl) inlineEl.textContent = `$${ticketPriceUsd.toFixed(2)}`;
+                const zelleEl = document.getElementById('ticket-price-usd-zelle');
+                if (zelleEl) zelleEl.textContent = `$${ticketPriceUsd.toFixed(2)}`;
+
                 // Cargar información de pago
-                const infoPago = await window.TASA_DOLAR_UTILS.mostrarInformacionPago(5.00);
+                const infoPago = await window.TASA_DOLAR_UTILS.mostrarInformacionPago(ticketPriceUsd);
                 
                 console.log('🎯 Información de pago cargada:', infoPago);
                 

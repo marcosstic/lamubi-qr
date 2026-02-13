@@ -67,7 +67,12 @@ function calcularMontoBolivares(montoUSD, tasaDolar) {
 }
 
 // Función principal para mostrar información de pago
-async function mostrarInformacionPago(montoUSD = 5.00) {
+async function mostrarInformacionPago(montoUSD) {
+    if (typeof montoUSD === 'undefined' || montoUSD === null) {
+        montoUSD = window.LAMUBI_UTILS?.getTicketPriceUSD
+            ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+            : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+    }
     const tasaDolar = await obtenerTasaDolar();
     const montoBolivares = calcularMontoBolivares(montoUSD, tasaDolar);
     

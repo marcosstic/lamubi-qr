@@ -595,8 +595,8 @@
                 <span class="counter-number" id="available-tickets">47</span>
                 <span class="counter-total">/ 100</span>
             </div>
-            <button class="main-cta-button" onclick="window.location.href='comprar.html'">
-                <span class="cta-text">COMPRAR ENTRADA GENERAL - $5</span>
+            <button class="main-cta-button" id="main-cta" onclick="window.location.href='comprar.html'">
+                <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
                 <div class="cta-pulse"></div>
             </button>
         </div>
@@ -635,7 +635,7 @@
             <div class="tickets-grid">
                 <div class="ticket-card">
                     <h3 class="ticket-type">GENERAL</h3>
-                    <div class="ticket-price">$5</div>
+                    <div class="ticket-price" id="ticket-price-card">$5</div>
                     <ul class="ticket-features">
                         <li>✓ Acceso General</li>
                         <li>✓ Bar disponible</li>
@@ -648,6 +648,8 @@
         </div>
     </section>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <script>
         // Crear partículas dinámicas
         function createParticles() {
@@ -747,10 +749,25 @@
             }, 150);
         });
 
+        async function loadTicketPrice() {
+            try {
+                if (!window.LAMUBI_UTILS?.getTicketPriceUSD) return;
+                const price = await window.LAMUBI_UTILS.getTicketPriceUSD();
+                const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
+                const cta = document.getElementById('cta-price-text');
+                if (cta) cta.textContent = `COMPRAR ENTRADA GENERAL - ${formatted}`;
+                const card = document.getElementById('ticket-price-card');
+                if (card) card.textContent = formatted;
+            } catch (e) {
+                // Ignore and keep fallback
+            }
+        }
+
         // Inicializar
         createParticles();
         updateCountdown();
         updateTicketCounter();
+        loadTicketPrice();
     </script>
 </body>
 </html>

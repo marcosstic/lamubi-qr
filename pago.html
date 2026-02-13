@@ -470,7 +470,7 @@
             </div>
             <div class="summary-total">
                 <span class="summary-label">TOTAL A PAGAR:</span>
-                <span class="summary-value">$5</span>
+                <span class="summary-value" id="summary-total-usd">$5</span>
             </div>
         </div>
 
@@ -511,12 +511,25 @@
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <script>
         // Load form data from localStorage
         function loadFormData() {
             const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
             if (formData) {
                 document.getElementById('summary-name').textContent = formData.nombre || 'No disponible';
+            }
+        }
+
+        async function loadTicketPrice() {
+            try {
+                if (!window.LAMUBI_UTILS?.getTicketPriceUSD) return;
+                const price = await window.LAMUBI_UTILS.getTicketPriceUSD();
+                const el = document.getElementById('summary-total-usd');
+                if (el) el.textContent = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
+            } catch (e) {
+                // Ignore and keep fallback
             }
         }
 
@@ -581,6 +594,7 @@
 
         // Initialize
         loadFormData();
+        loadTicketPrice();
     </script>
 </body>
 </html>

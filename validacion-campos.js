@@ -194,8 +194,12 @@ class ValidacionCampos {
                 }
             }
             
-            // Calcular monto esperado (5 USD * tasa) y redondear a entero
-            const montoEsperado = Math.round(5 * tasaDolar);
+            const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
+                ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+                : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+
+            // Calcular monto esperado (precio USD * tasa) y redondear a entero
+            const montoEsperado = Math.round(ticketPriceUsd * tasaDolar);
             console.log('💰 Monto esperado actualizado y redondeado:', montoEsperado);
             
             // Actualizar cache inmediatamente
@@ -304,8 +308,12 @@ class ValidacionCampos {
                 }
             }
             
-            // Calcular monto esperado (5 USD * tasa) y redondear a entero
-            const montoEsperado = Math.round(5 * tasaDolar);
+            const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
+                ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+                : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+
+            // Calcular monto esperado (precio USD * tasa) y redondear a entero
+            const montoEsperado = Math.round(ticketPriceUsd * tasaDolar);
             console.log('💰 Monto esperado calculado y redondeado:', montoEsperado);
             
             // Actualizar cache

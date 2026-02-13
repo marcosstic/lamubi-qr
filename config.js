@@ -137,6 +137,43 @@ const debugLog = (message, data = null) => {
     }
 };
 
+let ticketPriceCache = {
+    value: CONFIG.TICKETS.PRECIO_USD,
+    timestamp: 0,
+    ttl: 5000
+};
+
+const getTicketPriceUSD = async () => {
+    try {
+        const now = Date.now();
+        if (ticketPriceCache.timestamp && (now - ticketPriceCache.timestamp) < ticketPriceCache.ttl) {
+            return ticketPriceCache.value;
+        }
+
+        if (!window.LAMUBI_UTILS?.supabase) {
+            return CONFIG.TICKETS.PRECIO_USD;
+        }
+
+        const { data, error } = await window.LAMUBI_UTILS.supabase
+            .from('configuracion_sistema')
+            .select('valor')
+            .eq('clave', 'ticket_precio_usd_actual')
+            .eq('activo', true)
+            .single();
+
+        if (error || !data) {
+            return CONFIG.TICKETS.PRECIO_USD;
+        }
+
+        const parsed = parseFloat(data.valor.toString().replace(',', '.'));
+        const value = Number.isFinite(parsed) ? parsed : CONFIG.TICKETS.PRECIO_USD;
+        ticketPriceCache = { ...ticketPriceCache, value, timestamp: now };
+        return value;
+    } catch (e) {
+        return CONFIG.TICKETS.PRECIO_USD;
+    }
+};
+
 // 🚀 Initialize Supabase Client
 let supabaseClient;
 try {
@@ -164,6 +201,7 @@ window.LAMUBI_UTILS = {
     generateTicketId,
     validateEmail,
     validatePhone,
+    getTicketPriceUSD,
     debugLog,
     supabase: supabaseClient // Incluir cliente en utils para acceso global
 };

@@ -495,14 +495,38 @@ class AdminPanel {
     // ⚙️ Cargar datos de configuración
     async loadConfigData() {
         try {
-            const tasaResult = await this.getCurrentDollarRate();
+            const [tasaResult, priceResult] = await Promise.all([
+                this.getCurrentDollarRate(),
+                this.getCurrentTicketPriceUSD()
+            ]);
             this.renderDollarConfig(tasaResult);
+            this.renderTicketPriceConfig(priceResult);
             
         } catch (error) {
             console.error('Error loading config data:', error);
             document.getElementById('dollarConfig').innerHTML = 
                 '<p>Error cargando configuración</p>';
         }
+    }
+
+    // 🎫 Obtener precio actual del ticket en USD
+    async getCurrentTicketPriceUSD() {
+        const fallback = window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00;
+
+        const { data, error } = await this.supabase
+            .from('configuracion_sistema')
+            .select('valor')
+            .eq('clave', 'ticket_precio_usd_actual')
+            .eq('activo', true)
+            .single();
+
+        if (error || !data) {
+            return { value: fallback };
+        }
+
+        const parsed = parseFloat(data.valor.toString().replace(',', '.'));
+        const value = Number.isFinite(parsed) ? parsed : fallback;
+        return { value };
     }
 
     // 💰 Renderizar configuración de dólar
@@ -535,7 +559,55 @@ class AdminPanel {
         container.innerHTML = html;
     }
 
-    // 🎨 Utilidades de UI
+    // � Renderizar configuración de precio del ticket
+    renderTicketPriceConfig(priceData) {
+        const container = document.getElementById('ticketPriceConfig');
+        if (!container) return;
+
+        const price = priceData?.value ?? (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+        const formatted = `$${price.toFixed(2)}`;
+
+        const isSuperAdmin = this.currentUser?.rol === window.LAMUBI_CONFIG?.ADMIN?.ROLES?.SUPER_ADMIN;
+
+        if (!isSuperAdmin) {
+            container.innerHTML = `
+                <div style="max-width: 500px;">
+                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                        <div style="font-weight: 700;">Precio actual:</div>
+                        <div style="font-weight: 800; color: var(--success); font-size: 1.1rem;">${formatted}</div>
+                    </div>
+                    <div style="color: var(--gray); font-size: 0.9rem;">
+                        <i class="fas fa-lock"></i>
+                        Solo un super admin puede cambiar el precio.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div style="max-width: 500px;">
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                    <div style="font-weight: 700;">Precio actual:</div>
+                    <div style="font-weight: 800; color: var(--success); font-size: 1.1rem;">${formatted}</div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Cambiar precio (USD)</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="number" id="ticketPriceUsdInput" min="0" step="0.01" value="${price}"
+                               style="flex: 1; padding: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-family: 'Montserrat', sans-serif;">
+                        <button class="btn" onclick="updateTicketPriceUSD()"><i class="fas fa-save"></i> Actualizar</button>
+                    </div>
+                </div>
+                <div style="color: var(--gray); font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i>
+                    Este precio se usará para calcular el monto en bolívares según la tasa actual.
+                </div>
+            </div>
+        `;
+    }
+
+    // �🎨 Utilidades de UI
     getStatusColor(status) {
         const colors = {
             'aprobado': 'var(--success)',
@@ -712,7 +784,7 @@ window.updateDollarRate = async function() {
             .from('configuracion_sistema')
             .update({ 
                 valor: newRate,
-                fecha_actualizacion: window.LAMUBI_UTILS.venezuelaNowString(),
+                fecha_actualizacion: window.LAMUBI_UTILS.venezuelaNow(),
                 actualizado_por: window.adminPanel.currentUser.id
             })
             .eq('clave', 'tasa_dolar_bcv');
@@ -725,6 +797,48 @@ window.updateDollarRate = async function() {
     } catch (error) {
         console.error('Error updating dollar rate:', error);
         window.adminPanel.showError('Error actualizando tasa del dólar');
+    }
+};
+
+window.updateTicketPriceUSD = async function() {
+    const input = document.getElementById('ticketPriceUsdInput');
+    const rawValue = input ? input.value : '';
+    const value = parseFloat((rawValue ?? '').toString().replace(',', '.'));
+
+    if (!Number.isFinite(value) || value <= 0) {
+        window.adminPanel.showError('El precio debe ser un número mayor a 0');
+        return;
+    }
+
+    if (window.adminPanel?.currentUser?.rol !== window.LAMUBI_CONFIG?.ADMIN?.ROLES?.SUPER_ADMIN) {
+        window.adminPanel.showError('No tienes permisos para cambiar el precio');
+        return;
+    }
+
+    if (!confirm(`¿Seguro que deseas cambiar el precio del ticket a $${value.toFixed(2)} USD?`)) {
+        return;
+    }
+
+    try {
+        const { error } = await window.LAMUBI_UTILS.supabase
+            .from('configuracion_sistema')
+            .upsert({
+                clave: 'ticket_precio_usd_actual',
+                valor: value.toFixed(2),
+                activo: true,
+                fecha_actualizacion: window.LAMUBI_UTILS.venezuelaNow(),
+                actualizado_por: window.adminPanel.currentUser.id
+            }, {
+                onConflict: 'clave'
+            });
+
+        if (error) throw error;
+
+        window.adminPanel.showSuccess('Precio actualizado correctamente');
+        window.adminPanel.loadConfigData();
+    } catch (error) {
+        console.error('Error updating ticket price:', error);
+        window.adminPanel.showError('Error actualizando el precio');
     }
 };
 
