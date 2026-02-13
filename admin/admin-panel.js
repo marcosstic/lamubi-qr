@@ -265,7 +265,7 @@ class AdminPanel {
             const { data, error } = await this.supabase
                 .from('verificaciones_pagos')
                 .select('*')
-                .order('fecha_pago', { ascending: false })
+                .order('fecha_actualizacion', { ascending: false })
                 .limit(10);
             
             if (error) throw error;
@@ -473,7 +473,8 @@ class AdminPanel {
                             ${ticket.metodo_pago} • ${ticket.estado}
                         </div>
                         <div style="color: var(--gray); font-size: 0.8rem;">
-                            ${window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_pago)}
+                            🕐 Compra: ${window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_pago)}
+                            ${ticket.fecha_verificacion ? `<br>✅ ${ticket.estado === 'aprobado' ? 'Aprobado' : 'Rechazado'}: ${window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_verificacion)}` : ''}
                         </div>
                     </div>
                     <div style="text-align: right;">
@@ -737,6 +738,7 @@ window.approvePurchase = async function(purchaseId) {
         
         window.adminPanel.showSuccess('Compra aprobada correctamente');
         window.adminPanel.loadPendingPurchases();
+        window.adminPanel.loadAllTickets();
         window.adminPanel.loadDashboardData();
         
     } catch (error) {
@@ -764,6 +766,7 @@ window.rejectPurchase = async function(purchaseId) {
         
         window.adminPanel.showSuccess('Compra rechazada correctamente');
         window.adminPanel.loadPendingPurchases();
+        window.adminPanel.loadAllTickets();
         window.adminPanel.loadDashboardData();
         
     } catch (error) {
