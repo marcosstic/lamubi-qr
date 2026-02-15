@@ -278,13 +278,30 @@
         }
 
         body.exporting .instructions,
-        body.exporting .action-buttons {
+        body.exporting .action-buttons,
+        body.exporting .important-notice {
             display: none !important;
         }
 
         body.exporting .qr-code {
             /* En export evitamos transform scale porque no reserva espacio y puede solaparse */
             transform: none;
+        }
+
+        /* Estilos para sección importante */
+        .important-notice {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin: var(--spacing-md) 0;
+            text-align: center;
+        }
+
+        .important-notice h3 {
+            color: var(--primary);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-md);
         }
 
         /* Estilos para secciones de información */
@@ -442,6 +459,19 @@
                 <div class="ticket-id">TICKET LA MUBI: <span id="qrTicketId">-</span></div>
                 <div id="qrcode-grande" class="qr-code"></div>
                 <p style="font-size: var(--font-size-lg); font-weight: 600; color: #333;">Código: <span id="qrCodeText">-</span></p>
+            </div>
+
+            <div class="important-notice">
+                <h3>💾 IMPORTANTE: Guarda tu Ticket</h3>
+                <p style="text-align: center; margin-bottom: 15px; color: var(--text-secondary); font-weight: 500;">
+                    Descarga este ticket o toma una captura de pantalla y guárdalo en un lugar seguro de tu dispositivo.
+                </p>
+                <p style="text-align: center; margin-bottom: 15px; color: var(--text-secondary); font-weight: 500;">
+                    📱 Recibirás un mensaje de confirmación por WhatsApp una vez que tu pago sea aprobado.
+                </p>
+                <p style="text-align: center; color: #ff6b6b; font-weight: 600; font-size: 0.9rem;">
+                    ⚠️ Este ticket es válido para UNA SOLA PERSONA y debe presentarse al momento del ingreso al evento.
+                </p>
             </div>
 
             <div class="instructions">
