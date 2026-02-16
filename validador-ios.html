@@ -1301,7 +1301,7 @@ video.paused: ${this.qrDetectionHelper?.videoElement?.paused || 'N/A'}
         // Inicializar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
             console.log('📱 DOM listo, iniciando Validador QR Universal...');
-            
+
             // Hacer addConsoleLog disponible globalmente
             if (typeof window.addConsoleLog === 'undefined') {
                 const validatorInstance = new ValidadorQRUniversal();
@@ -1311,5 +1311,6 @@ video.paused: ${this.qrDetectionHelper?.videoElement?.paused || 'N/A'}
             }
         });
     </script>
+
 </body>
 </html>
