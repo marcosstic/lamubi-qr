@@ -302,6 +302,14 @@
                     <span id="ticketId" class="ticket-value"></span>
                 </div>
                 <div class="ticket-row">
+                    <span class="ticket-label">Entradas:</span>
+                    <span id="ticketEntradas" class="ticket-value"></span>
+                </div>
+                <div class="ticket-row">
+                    <span class="ticket-label">Quedan:</span>
+                    <span id="ticketQuedan" class="ticket-value"></span>
+                </div>
+                <div class="ticket-row">
                     <span class="ticket-label">Email:</span>
                     <span id="ticketEmail" class="ticket-value"></span>
                 </div>
@@ -487,6 +495,18 @@
                         this.showResult('used', data, 'Este ticket ya fue utilizado');
                         return;
                     }
+
+                    const cantidadEntradas = (typeof data.cantidad_entradas !== 'undefined' && data.cantidad_entradas !== null)
+                        ? parseInt(data.cantidad_entradas, 10)
+                        : 1;
+                    const usosRestantes = (typeof data.usos_restantes !== 'undefined' && data.usos_restantes !== null)
+                        ? parseInt(data.usos_restantes, 10)
+                        : 1;
+
+                    if (Number.isFinite(usosRestantes) && usosRestantes <= 0) {
+                        this.showResult('used', data, 'Entradas agotadas para este QR');
+                        return;
+                    }
                     
                     if (data.estado !== 'aprobado') {
                         this.showResult('invalid', data, 'Ticket no aprobado');
@@ -494,7 +514,10 @@
                     }
                     
                     // Ticket válido
-                    this.showResult('valid', data, 'Ticket válido para validar');
+                    const msg = (Number.isFinite(cantidadEntradas) && cantidadEntradas > 1)
+                        ? `Ticket válido - Quedan ${Number.isFinite(usosRestantes) ? usosRestantes : 1} de ${cantidadEntradas}`
+                        : 'Ticket válido para validar';
+                    this.showResult('valid', data, msg);
                     
                 } catch (error) {
                     console.error('❌ Error procesando QR:', error);
@@ -524,6 +547,18 @@
                             
                             // Mostrar datos del ticket
                             document.getElementById('ticketId').textContent = ticketData.id;
+                            {
+                                const entradasRaw = (typeof ticketData.cantidad_entradas !== 'undefined' && ticketData.cantidad_entradas !== null)
+                                    ? parseInt(ticketData.cantidad_entradas, 10)
+                                    : 1;
+                                const quedanRaw = (typeof ticketData.usos_restantes !== 'undefined' && ticketData.usos_restantes !== null)
+                                    ? parseInt(ticketData.usos_restantes, 10)
+                                    : 1;
+                                const entradas = Number.isFinite(entradasRaw) && entradasRaw >= 1 ? entradasRaw : 1;
+                                const quedan = Number.isFinite(quedanRaw) && quedanRaw >= 0 ? quedanRaw : 1;
+                                document.getElementById('ticketEntradas').textContent = `${entradas}`;
+                                document.getElementById('ticketQuedan').textContent = `${quedan}`;
+                            }
                             document.getElementById('ticketEmail').textContent = ticketData.email_temporal || 'N/A';
                             document.getElementById('ticketMonto').textContent = `Bs. ${ticketData.monto.toLocaleString('es-VE')}`;
                             document.getElementById('ticketMetodo').textContent = ticketData.metodo_pago.replace('-', ' ').toUpperCase();
@@ -570,24 +605,57 @@
                     }
                     
                     console.log('✅ Confirmando validación...');
-                    
+
+                    const hasUsosRestantes = (typeof this.currentTicket.usos_restantes !== 'undefined' && this.currentTicket.usos_restantes !== null);
+                    const usosActuales = hasUsosRestantes ? parseInt(this.currentTicket.usos_restantes, 10) : null;
+                    const cantidadEntradas = (typeof this.currentTicket.cantidad_entradas !== 'undefined' && this.currentTicket.cantidad_entradas !== null)
+                        ? parseInt(this.currentTicket.cantidad_entradas, 10)
+                        : 1;
+
                     // Actualizar ticket
-                    const { error } = await window.supabaseClient
+                    let updatePayload = {
+                        fecha_uso: new Date().toISOString(),
+                        validador_nombre: 'Validador MUBI',
+                        ubicacion_validacion: 'Entrada Principal'
+                    };
+
+                    if (hasUsosRestantes && Number.isFinite(usosActuales)) {
+                        const nuevosUsos = usosActuales - 1;
+                        updatePayload.usos_restantes = nuevosUsos;
+                        if (nuevosUsos <= 0) {
+                            updatePayload.qr_usado = true;
+                        }
+                    } else {
+                        // Legacy: ticket de una sola entrada
+                        updatePayload.qr_usado = true;
+                    }
+
+                    let query = window.supabaseClient
                         .from('verificaciones_pagos')
-                        .update({
-                            qr_usado: true,
-                            fecha_uso: new Date().toISOString(),
-                            validador_nombre: 'Validador MUBI',
-                            ubicacion_validacion: 'Entrada Principal'
-                        })
+                        .update(updatePayload)
                         .eq('id', this.currentTicket.id);
+
+                    // Evitar doble validación cuando ya está usado
+                    if (updatePayload.qr_usado === true) {
+                        query = query.eq('qr_usado', false);
+                    }
+
+                    const { error } = await query;
                     
                     if (error) {
                         throw error;
                     }
                     
                     // Mostrar confirmación
-                    this.showResult('valid', null, '✅ Ticket validado exitosamente');
+                    if (hasUsosRestantes && Number.isFinite(usosActuales) && cantidadEntradas > 1) {
+                        const nuevosUsosUI = Math.max(0, usosActuales - 1);
+                        const msg = nuevosUsosUI > 0
+                            ? `✅ Entrada validada. Quedan ${nuevosUsosUI} de ${cantidadEntradas}`
+                            : '✅ Última entrada validada. QR agotado.';
+                        this.showResult('valid', null, msg);
+                    } else {
+                        this.showResult('valid', null, '✅ Ticket validado exitosamente');
+                    }
                     document.getElementById('confirmBtn').style.display = 'none';
                     document.getElementById('newScanBtn').style.display = 'inline-flex';
                     document.getElementById('ticketInfo').style.display = 'none';

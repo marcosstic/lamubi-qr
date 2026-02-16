@@ -11,6 +11,144 @@ class AdminPanel {
         this.init();
     }
 
+    getMultiInfo(record) {
+        const safeInt = (value, fallback) => {
+            const n = parseInt(value, 10);
+            return Number.isFinite(n) ? n : fallback;
+        };
+
+        let purchase = null;
+        if (record && record.datos_compra) {
+            try {
+                const raw = typeof record.datos_compra === 'string' ? JSON.parse(record.datos_compra) : record.datos_compra;
+                purchase = raw && raw.purchase ? raw.purchase : null;
+            } catch (e) {
+                purchase = null;
+            }
+        }
+
+        const cantidadEntradasFromCols = (typeof record?.cantidad_entradas !== 'undefined' && record?.cantidad_entradas !== null)
+            ? safeInt(record.cantidad_entradas, 1)
+            : null;
+        const usosRestantesFromCols = (typeof record?.usos_restantes !== 'undefined' && record?.usos_restantes !== null)
+            ? safeInt(record.usos_restantes, 1)
+            : null;
+        const hombresFromCols = (typeof record?.cantidad_hombres !== 'undefined' && record?.cantidad_hombres !== null)
+            ? safeInt(record.cantidad_hombres, 0)
+            : null;
+        const mujeresFromCols = (typeof record?.cantidad_mujeres !== 'undefined' && record?.cantidad_mujeres !== null)
+            ? safeInt(record.cantidad_mujeres, 0)
+            : null;
+
+        const cantidadEntradas = (cantidadEntradasFromCols !== null)
+            ? cantidadEntradasFromCols
+            : safeInt(purchase?.cantidadEntradas, 1);
+
+        const usosRestantes = (usosRestantesFromCols !== null)
+            ? usosRestantesFromCols
+            : safeInt(purchase?.cantidadEntradas, 1);
+
+        const hombres = (hombresFromCols !== null)
+            ? hombresFromCols
+            : safeInt(purchase?.cantidadHombres, 0);
+
+        const mujeres = (mujeresFromCols !== null)
+            ? mujeresFromCols
+            : safeInt(purchase?.cantidadMujeres, 0);
+
+        return {
+            cantidadEntradas: Math.max(1, cantidadEntradas),
+            usosRestantes: Math.max(0, usosRestantes),
+            hombres: Math.max(0, hombres),
+            mujeres: Math.max(0, mujeres)
+        };
+    }
+
+    openTicketDetailModal(record) {
+        if (!record) return;
+
+        const multi = this.getMultiInfo(record);
+        const modal = document.createElement('div');
+        modal.style.cssText = [
+            'position: fixed',
+            'top: 0',
+            'left: 0',
+            'right: 0',
+            'bottom: 0',
+            'z-index: 9999',
+            'background: rgba(0,0,0,0.85)',
+            'display: flex',
+            'align-items: center',
+            'justify-content: center',
+            'padding: 16px'
+        ].join(';');
+
+        const safe = (v) => (v === null || typeof v === 'undefined' || v === '') ? 'N/A' : v;
+        const metodo = record.metodo_pago ? record.metodo_pago.replace('-', ' ').toUpperCase() : 'N/A';
+        const fechaPago = record.fecha_pago ? window.LAMUBI_UTILS.formatDateVenezuela(record.fecha_pago) : 'N/A';
+        const fechaVerif = record.fecha_verificacion ? window.LAMUBI_UTILS.formatDateVenezuela(record.fecha_verificacion) : 'N/A';
+
+        modal.innerHTML = `
+            <div style="background: #111; border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; width: 100%; max-width: 520px; padding: 18px; color: #fff;">
+                <div style="display:flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="font-weight: 800; font-size: 1.1rem;">Detalle del Ticket #${record.id}</div>
+                    <button id="lamubiDetailClose" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">Cerrar</button>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Email</div>
+                        <div style="font-weight: 700;">${safe(record.email_temporal)}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Estado</div>
+                        <div style="font-weight: 800; color: ${this.getStatusColor(record.estado)};">${this.formatStatus(record.estado)}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Método</div>
+                        <div style="font-weight: 700;">${metodo}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Monto</div>
+                        <div style="font-weight: 700;">$${record.monto ? record.monto.toFixed(2) : '0.00'}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Entradas</div>
+                        <div style="font-weight: 800;">${multi.cantidadEntradas}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Quedan</div>
+                        <div style="font-weight: 800;">${multi.usosRestantes}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Hombres</div>
+                        <div style="font-weight: 800;">${multi.hombres}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Mujeres</div>
+                        <div style="font-weight: 800;">${multi.mujeres}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; color: rgba(255,255,255,0.7); font-size: 0.85rem; line-height: 1.3;">
+                    <div>🕐 Pago: ${fechaPago}</div>
+                    <div>✅ Verificación: ${fechaVerif}</div>
+                    <div>QR usado: ${record.qr_usado ? 'Sí' : 'No'}</div>
+                </div>
+            </div>
+        `;
+
+        const close = () => {
+            if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+        };
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) close();
+        });
+
+        document.body.appendChild(modal);
+        const closeBtn = modal.querySelector('#lamubiDetailClose');
+        if (closeBtn) closeBtn.addEventListener('click', close);
+    }
+
     init() {
         // Verificar autenticación
         this.checkAuthentication();
@@ -388,13 +526,19 @@ class AdminPanel {
             return;
         }
         
-        const html = purchases.map(purchase => `
+        const html = purchases.map(purchase => {
+            const multi = this.getMultiInfo(purchase);
+            const multiLine = `Entradas: ${multi.cantidadEntradas} • H: ${multi.hombres} • M: ${multi.mujeres}`;
+            return `
             <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong>${purchase.email_temporal || 'Usuario no registrado'}</strong>
                         <div style="color: var(--gray); font-size: 0.9rem;">
                             ${purchase.metodo_pago}
+                        </div>
+                        <div style="color: var(--gray); font-size: 0.85rem;">
+                            ${multiLine}
                         </div>
                         <div style="color: var(--gray); font-size: 0.8rem;">
                             ${window.LAMUBI_UTILS.formatDateVenezuela(purchase.fecha_pago)}
@@ -410,6 +554,11 @@ class AdminPanel {
                                     onclick="viewComprobante('${purchase.comprobante_url}')">
                                 <i class="fas fa-eye"></i> Ver
                             </button>
+                            <button class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" 
+                                    title="Ver detalle del ticket"
+                                    onclick="showTicketDetail(${purchase.id})">
+                                <i class="fas fa-info-circle"></i> Detalle
+                            </button>
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; background: var(--success);" 
                                     title="Aprobar este pago"
                                     onclick="approvePurchase(${purchase.id})">
@@ -424,7 +573,8 @@ class AdminPanel {
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
         
         container.innerHTML = html;
     }
@@ -458,7 +608,10 @@ class AdminPanel {
             return;
         }
         
-        const html = tickets.map(ticket => `
+        const html = tickets.map(ticket => {
+            const multi = this.getMultiInfo(ticket);
+            const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes}`;
+            return `
             <div class="ticket-item" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -471,6 +624,9 @@ class AdminPanel {
                         </div>
                         <div style="color: var(--gray); font-size: 0.9rem;">
                             ${ticket.metodo_pago} • ${ticket.estado}
+                        </div>
+                        <div style="color: var(--gray); font-size: 0.85rem;">
+                            ${multiLine}
                         </div>
                         <div style="color: var(--gray); font-size: 0.8rem;">
                             🕐 Compra: ${window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_pago)}
@@ -485,10 +641,16 @@ class AdminPanel {
                             ${this.formatStatus(ticket.estado)}
                         </span>
                         ${ticket.qr_usado ? '<div style="color: var(--warning); font-size: 0.8rem;">Usado</div>' : ''}
+                        <div style="margin-top: 0.4rem;">
+                            <button class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="showTicketDetail(${ticket.id})">
+                                <i class="fas fa-info-circle"></i> Detalle
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
         
         container.innerHTML = html;
     }
@@ -671,6 +833,10 @@ window.exportApprovedTicketsToExcel = async function() {
         const excelData = data.map(ticket => ({
             'ID': ticket.id,
             'Email': ticket.email_temporal || 'N/A',
+            'Cantidad Entradas': (typeof ticket.cantidad_entradas !== 'undefined' && ticket.cantidad_entradas !== null) ? ticket.cantidad_entradas : (window.adminPanel ? window.adminPanel.getMultiInfo(ticket).cantidadEntradas : 1),
+            'Usos Restantes': (typeof ticket.usos_restantes !== 'undefined' && ticket.usos_restantes !== null) ? ticket.usos_restantes : (window.adminPanel ? window.adminPanel.getMultiInfo(ticket).usosRestantes : 1),
+            'Hombres': (typeof ticket.cantidad_hombres !== 'undefined' && ticket.cantidad_hombres !== null) ? ticket.cantidad_hombres : (window.adminPanel ? window.adminPanel.getMultiInfo(ticket).hombres : 0),
+            'Mujeres': (typeof ticket.cantidad_mujeres !== 'undefined' && ticket.cantidad_mujeres !== null) ? ticket.cantidad_mujeres : (window.adminPanel ? window.adminPanel.getMultiInfo(ticket).mujeres : 0),
             'Método Pago': ticket.metodo_pago,
             'Monto': ticket.monto || 0,
             'Tasa Dólar': ticket.tasa_dolar || 0,
@@ -725,13 +891,29 @@ window.viewComprobante = function(url) {
 
 window.approvePurchase = async function(purchaseId) {
     try {
+        // Buscar registro local para obtener datos_compra (fallback) y normalizar campos multi
+        const record = (window.adminPanel?.allPendingPurchases || []).find(p => p.id === purchaseId)
+            || (window.adminPanel?.allTickets || []).find(t => t.id === purchaseId)
+            || null;
+
+        const multi = window.adminPanel ? window.adminPanel.getMultiInfo(record || {}) : { cantidadEntradas: 1, usosRestantes: 1, hombres: 0, mujeres: 0 };
+
+        const hasUsosRestantes = (record && typeof record.usos_restantes !== 'undefined' && record.usos_restantes !== null);
+        const usosActuales = hasUsosRestantes ? parseInt(record.usos_restantes, 10) : null;
+
+        const updatePayload = {
+            estado: 'aprobado',
+            fecha_verificacion: window.adminPanel.getVenezuelaTimestamp(),
+            admin_id: window.adminPanel.currentUser.id,
+            cantidad_entradas: multi.cantidadEntradas,
+            usos_restantes: (hasUsosRestantes && Number.isFinite(usosActuales)) ? usosActuales : multi.cantidadEntradas,
+            cantidad_hombres: multi.hombres,
+            cantidad_mujeres: multi.mujeres
+        };
+
         const { error } = await window.LAMUBI_UTILS.supabase
             .from('verificaciones_pagos')
-            .update({ 
-                estado: 'aprobado',
-                fecha_verificacion: window.adminPanel.getVenezuelaTimestamp(),
-                admin_id: window.adminPanel.currentUser.id
-            })
+            .update(updatePayload)
             .eq('id', purchaseId);
         
         if (error) throw error;
@@ -773,6 +955,19 @@ window.rejectPurchase = async function(purchaseId) {
         console.error('Error rejecting purchase:', error);
         window.adminPanel.showError('Error rechazando compra');
     }
+};
+
+// 🔎 Modal de detalle bajo demanda
+window.showTicketDetail = function(ticketId) {
+    if (!window.adminPanel) return;
+    const fromPending = (window.adminPanel.allPendingPurchases || []).find(p => p.id === ticketId);
+    const fromAll = (window.adminPanel.allTickets || []).find(t => t.id === ticketId);
+    const record = fromPending || fromAll;
+    if (!record) {
+        window.adminPanel.showError('No se encontró el ticket en memoria. Actualiza la lista e intenta de nuevo.');
+        return;
+    }
+    window.adminPanel.openTicketDetailModal(record);
 };
 
 window.updateDollarRate = async function() {

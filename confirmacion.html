@@ -433,6 +433,10 @@
                         <span class="info-value" id="ticketId">-</span>
                     </div>
                     <div class="info-item">
+                        <span class="info-label">Entradas:</span>
+                        <span class="info-value" id="ticketCantidadEntradas">-</span>
+                    </div>
+                    <div class="info-item">
                         <span class="info-label">Estado:</span>
                         <span class="info-value" id="ticketStatus">-</span>
                     </div>
@@ -468,6 +472,9 @@
                 </p>
                 <p style="text-align: center; margin-bottom: 15px; color: var(--text-secondary); font-weight: 500;">
                     📱 Recibirás un mensaje de confirmación por WhatsApp una vez que tu pago sea aprobado.
+                </p>
+                <p style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: 700; font-size: 1rem;">
+                    🎟️ Este QR permite <span id="qrCantidadEntradas">1</span> entradas
                 </p>
                 <p style="text-align: center; color: #ff6b6b; font-weight: 600; font-size: 0.9rem;">
                     ⚠️ Este ticket es válido para UNA SOLA PERSONA y debe presentarse al momento del ingreso al evento.
@@ -581,6 +588,31 @@
             document.getElementById('ticketId').textContent = ticketData.id;
             document.getElementById('qrTicketId').textContent = ticketData.id;
             document.getElementById('qrCodeText').textContent = ticketData.id;
+
+            // Cantidad de entradas (multi-tickets)
+            let cantidadEntradas = 1;
+            if (typeof ticketData.cantidad_entradas !== 'undefined' && ticketData.cantidad_entradas !== null) {
+                const n = parseInt(ticketData.cantidad_entradas, 10);
+                cantidadEntradas = Number.isFinite(n) ? n : 1;
+            } else if (ticketData.datos_compra) {
+                try {
+                    const rawDatosCompra = typeof ticketData.datos_compra === 'string'
+                        ? JSON.parse(ticketData.datos_compra)
+                        : ticketData.datos_compra;
+                    const fromPurchase = rawDatosCompra?.purchase?.cantidadEntradas;
+                    const n = parseInt(fromPurchase, 10);
+                    if (Number.isFinite(n) && n >= 1) {
+                        cantidadEntradas = n;
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            const cantidadEl = document.getElementById('ticketCantidadEntradas');
+            if (cantidadEl) cantidadEl.textContent = `${cantidadEntradas}`;
+            const qrCantidadEl = document.getElementById('qrCantidadEntradas');
+            if (qrCantidadEl) qrCantidadEl.textContent = `${cantidadEntradas}`;
             
             // Extraer todos los datos del comprador desde datos_compra
             let comprador = {

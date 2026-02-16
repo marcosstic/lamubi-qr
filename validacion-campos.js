@@ -198,8 +198,39 @@ class ValidacionCampos {
                 ? await window.LAMUBI_UTILS.getTicketPriceUSD()
                 : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
 
+            const clampInt = (value, min, max) => {
+                const n = parseInt(value, 10);
+                if (!Number.isFinite(n)) return min;
+                return Math.min(max, Math.max(min, n));
+            };
+
+            const loadPurchaseContext = () => {
+                try {
+                    const raw = localStorage.getItem('lamubi-purchase');
+                    if (!raw) return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                    const parsed = JSON.parse(raw);
+                    return {
+                        cantidadEntradas: clampInt(parsed.cantidadEntradas ?? 1, 1, 10),
+                        hombres: clampInt(parsed.hombres ?? 0, 0, 10),
+                        mujeres: clampInt(parsed.mujeres ?? 0, 0, 10)
+                    };
+                } catch {
+                    return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                }
+            };
+
+            let totalUsd = ticketPriceUsd;
+            if (window.LAMUBI_UTILS?.getFeatureFlag) {
+                const multi = await window.LAMUBI_UTILS.getFeatureFlag('multi_tickets_enabled', false);
+                if (multi) {
+                    const ctx = loadPurchaseContext();
+                    const cantidadEntradas = clampInt(ctx.cantidadEntradas ?? 1, 1, 10);
+                    totalUsd = ticketPriceUsd * cantidadEntradas;
+                }
+            }
+
             // Calcular monto esperado (precio USD * tasa) y redondear a entero
-            const montoEsperado = Math.round(ticketPriceUsd * tasaDolar);
+            const montoEsperado = Math.round(totalUsd * tasaDolar);
             console.log('💰 Monto esperado actualizado y redondeado:', montoEsperado);
             
             // Actualizar cache inmediatamente
@@ -312,8 +343,39 @@ class ValidacionCampos {
                 ? await window.LAMUBI_UTILS.getTicketPriceUSD()
                 : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
 
+            const clampInt = (value, min, max) => {
+                const n = parseInt(value, 10);
+                if (!Number.isFinite(n)) return min;
+                return Math.min(max, Math.max(min, n));
+            };
+
+            const loadPurchaseContext = () => {
+                try {
+                    const raw = localStorage.getItem('lamubi-purchase');
+                    if (!raw) return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                    const parsed = JSON.parse(raw);
+                    return {
+                        cantidadEntradas: clampInt(parsed.cantidadEntradas ?? 1, 1, 10),
+                        hombres: clampInt(parsed.hombres ?? 0, 0, 10),
+                        mujeres: clampInt(parsed.mujeres ?? 0, 0, 10)
+                    };
+                } catch {
+                    return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                }
+            };
+
+            let totalUsd = ticketPriceUsd;
+            if (window.LAMUBI_UTILS?.getFeatureFlag) {
+                const multi = await window.LAMUBI_UTILS.getFeatureFlag('multi_tickets_enabled', false);
+                if (multi) {
+                    const ctx = loadPurchaseContext();
+                    const cantidadEntradas = clampInt(ctx.cantidadEntradas ?? 1, 1, 10);
+                    totalUsd = ticketPriceUsd * cantidadEntradas;
+                }
+            }
+
             // Calcular monto esperado (precio USD * tasa) y redondear a entero
-            const montoEsperado = Math.round(ticketPriceUsd * tasaDolar);
+            const montoEsperado = Math.round(totalUsd * tasaDolar);
             console.log('💰 Monto esperado calculado y redondeado:', montoEsperado);
             
             // Actualizar cache

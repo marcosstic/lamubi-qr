@@ -971,7 +971,18 @@
                     : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
 
                 const purchase = verificationData?.purchase || { cantidadEntradas: 1, hombres: 0, mujeres: 0, totalUsd: ticketPriceUsd };
-                const totalUsd = Number.isFinite(purchase.totalUsd) ? purchase.totalUsd : (ticketPriceUsd * (purchase.cantidadEntradas || 1));
+                const cantidadEntradasNorm = Number.isFinite(Number(purchase.cantidadEntradas))
+                    ? Math.max(1, Math.min(10, parseInt(purchase.cantidadEntradas, 10)))
+                    : 1;
+                const hombresNorm = Number.isFinite(Number(purchase.hombres))
+                    ? Math.max(0, Math.min(10, parseInt(purchase.hombres, 10)))
+                    : 0;
+                const mujeresNorm = Number.isFinite(Number(purchase.mujeres))
+                    ? Math.max(0, Math.min(10, parseInt(purchase.mujeres, 10)))
+                    : 0;
+                const totalUsd = Number.isFinite(Number(purchase.totalUsd))
+                    ? Number(purchase.totalUsd)
+                    : (ticketPriceUsd * cantidadEntradasNorm);
                 
                 // Obtener datos del formulario
                 const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
@@ -1048,6 +1059,10 @@
                     email_temporal: emailTemporal,
                     metodo_pago: paymentMethod,
                     estado: 'pendiente',
+                    cantidad_entradas: cantidadEntradasNorm,
+                    usos_restantes: cantidadEntradasNorm,
+                    cantidad_hombres: hombresNorm,
+                    cantidad_mujeres: mujeresNorm,
                     monto: paymentMethod === 'pago-movil' ? 
                         parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
                         totalUsd, // USD total para Zelle
@@ -1068,6 +1083,12 @@
                     comprobante_nombre: comprobanteNombre,
                     datos_compra: {
                         ...verificationData,
+                        purchase: {
+                            cantidadEntradas: cantidadEntradasNorm,
+                            hombres: hombresNorm,
+                            mujeres: mujeresNorm,
+                            totalUsd
+                        },
                         formData: formData,
                         userAgent: navigator.userAgent,
                         timestamp: new Date().toISOString(),
@@ -1204,13 +1225,44 @@
                     ? await window.LAMUBI_UTILS.getTicketPriceUSD()
                     : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
 
-                const inlineEl = document.getElementById('ticket-price-usd-inline');
-                if (inlineEl) inlineEl.textContent = `$${ticketPriceUsd.toFixed(2)}`;
-                const zelleEl = document.getElementById('ticket-price-usd-zelle');
-                if (zelleEl) zelleEl.textContent = `$${ticketPriceUsd.toFixed(2)}`;
+                function clampInt(value, min, max) {
+                    const n = parseInt(value, 10);
+                    if (!Number.isFinite(n)) return min;
+                    return Math.min(max, Math.max(min, n));
+                }
 
-                // Cargar información de pago
-                const infoPago = await window.TASA_DOLAR_UTILS.mostrarInformacionPago(ticketPriceUsd);
+                function loadPurchaseContext() {
+                    try {
+                        const raw = localStorage.getItem('lamubi-purchase');
+                        if (!raw) return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                        const parsed = JSON.parse(raw);
+                        return {
+                            cantidadEntradas: clampInt(parsed.cantidadEntradas ?? 1, 1, 10),
+                            hombres: clampInt(parsed.hombres ?? 0, 0, 10),
+                            mujeres: clampInt(parsed.mujeres ?? 0, 0, 10)
+                        };
+                    } catch {
+                        return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                    }
+                }
+
+                let totalUsd = ticketPriceUsd;
+                if (window.LAMUBI_UTILS?.getFeatureFlag) {
+                    const multi = await window.LAMUBI_UTILS.getFeatureFlag('multi_tickets_enabled', false);
+                    if (multi) {
+                        const ctx = loadPurchaseContext();
+                        const cantidadEntradas = clampInt(ctx.cantidadEntradas ?? 1, 1, 10);
+                        totalUsd = ticketPriceUsd * cantidadEntradas;
+                    }
+                }
+
+                const inlineEl = document.getElementById('ticket-price-usd-inline');
+                if (inlineEl) inlineEl.textContent = `$${totalUsd.toFixed(2)}`;
+                const zelleEl = document.getElementById('ticket-price-usd-zelle');
+                if (zelleEl) zelleEl.textContent = `$${totalUsd.toFixed(2)}`;
+
+                // Cargar información de pago (en USD total)
+                const infoPago = await window.TASA_DOLAR_UTILS.mostrarInformacionPago(totalUsd);
                 
                 console.log('🎯 Información de pago cargada:', infoPago);
                 

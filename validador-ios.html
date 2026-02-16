@@ -926,6 +926,30 @@
                         }, 5000);
                         return;
                     }
+
+                    const cantidadEntradas = (typeof data.cantidad_entradas !== 'undefined' && data.cantidad_entradas !== null)
+                        ? parseInt(data.cantidad_entradas, 10)
+                        : 1;
+                    const usosRestantes = (typeof data.usos_restantes !== 'undefined' && data.usos_restantes !== null)
+                        ? parseInt(data.usos_restantes, 10)
+                        : 1;
+
+                    if (Number.isFinite(usosRestantes) && usosRestantes <= 0) {
+                        console.log('⚠️ Entradas agotadas para este QR');
+                        this.addConsoleLog('⚠️ Entradas agotadas para este QR', 'warn');
+                        this.showStatus('⚠️ Entradas agotadas para este QR', 'warning');
+
+                        this._qrCooldownByText[qrKey] = Date.now() + this._qrCooldownUsedMs;
+
+                        this.showPermanentAlert(data, 'used');
+
+                        setTimeout(() => {
+                            this.isProcessingQR = false;
+                            console.log('🔓 Bloqueo liberado (entradas agotadas - 5s)');
+                            this.addConsoleLog('🔓 Bloqueo liberado (entradas agotadas - 5s)');
+                        }, 5000);
+                        return;
+                    }
                     
                     if (data.estado !== 'aprobado') {
                         console.log('❌ Ticket no aprobado. Estado:', data.estado);
@@ -958,7 +982,11 @@
                     // Ticket válido
                     console.log('✅ Ticket válido:', data);
                     this.addConsoleLog('✅ Ticket válido para validar: ' + data.email_temporal);
-                    this.showStatus('✅ Ticket válido para validar: ' + data.email_temporal, 'success');
+                    if (Number.isFinite(cantidadEntradas) && cantidadEntradas > 1) {
+                        this.showStatus(`✅ Ticket válido - Quedan ${Number.isFinite(usosRestantes) ? usosRestantes : 1} de ${cantidadEntradas}`, 'success');
+                    } else {
+                        this.showStatus('✅ Ticket válido para validar: ' + data.email_temporal, 'success');
+                    }
                     
                     // 🎫 MOSTRAR ALERTA PERMANENTE PARA APROBADO
                     this.showPermanentAlert(data, 'approved');
@@ -1013,6 +1041,8 @@
                             <div style="text-align: left; margin-bottom: 20px;">
                                 <p><strong>ID:</strong> ${ticketData.id}</p>
                                 <p><strong>Email:</strong> ${ticketData.email_temporal}</p>
+                                <p><strong>Entradas:</strong> ${(ticketData.cantidad_entradas ?? 1)}</p>
+                                <p><strong>Quedan:</strong> ${(ticketData.usos_restantes ?? 1)}</p>
                                 <p><strong>Estado:</strong> <span style="color: #28a745;">${ticketData.estado}</span></p>
                                 <p><strong>QR Usado:</strong> ${ticketData.qr_usado ? 'Sí' : 'No'}</p>
                                 <p><strong>Creado:</strong> ${new Date(ticketData.created_at || ticketData.fecha_creacion).toLocaleString()}</p>
@@ -1041,13 +1071,34 @@
                             }
                             
                             // Actualizar ticket en Supabase
-                            const { data: updatedRows, error } = await window.supabaseClient
+                            const hasUsosRestantes = (typeof ticketData.usos_restantes !== 'undefined' && ticketData.usos_restantes !== null);
+                            const usosActuales = hasUsosRestantes ? parseInt(ticketData.usos_restantes, 10) : null;
+                            const cantidadEntradas = (typeof ticketData.cantidad_entradas !== 'undefined' && ticketData.cantidad_entradas !== null)
+                                ? parseInt(ticketData.cantidad_entradas, 10)
+                                : 1;
+
+                            let updatePayload = {};
+                            if (hasUsosRestantes && Number.isFinite(usosActuales)) {
+                                const nuevosUsos = usosActuales - 1;
+                                updatePayload.usos_restantes = nuevosUsos;
+                                if (nuevosUsos <= 0) {
+                                    updatePayload.qr_usado = true;
+                                }
+                            } else {
+                                updatePayload.qr_usado = true;
+                            }
+
+                            let query = window.supabaseClient
                                 .from('verificaciones_pagos')
-                                .update({ qr_usado: true })
+                                .update(updatePayload)
                                 .eq('id', ticketData.id)
-                                .eq('qr_usado', false)
-                                .eq('estado', 'aprobado')
-                                .select('id');
+                                .eq('estado', 'aprobado');
+
+                            if (updatePayload.qr_usado === true) {
+                                query = query.eq('qr_usado', false);
+                            }
+
+                            const { data: updatedRows, error } = await query.select('id, usos_restantes, qr_usado');
                             
                             if (error) {
                                 console.error('❌ Error actualizando ticket:', error);
@@ -1067,7 +1118,18 @@
                             }
 
                             if (ticketData) {
-                                ticketData.qr_usado = true;
+                                const updated = updatedRows[0] || null;
+                                if (updated) {
+                                    ticketData.qr_usado = !!updated.qr_usado;
+                                    if (typeof updated.usos_restantes !== 'undefined') {
+                                        ticketData.usos_restantes = updated.usos_restantes;
+                                    }
+                                } else {
+                                    ticketData.qr_usado = (updatePayload.qr_usado === true);
+                                    if (typeof updatePayload.usos_restantes !== 'undefined') {
+                                        ticketData.usos_restantes = updatePayload.usos_restantes;
+                                    }
+                                }
                             }
                             
                             console.log('✅ Ticket validado exitosamente');
@@ -1077,7 +1139,14 @@
                                 modal.parentNode.removeChild(modal);
                             }
 
-                            alert('✅ Ticket validado exitosamente');
+                            if (hasUsosRestantes && Number.isFinite(usosActuales) && cantidadEntradas > 1) {
+                                const nuevosUsosUI = Math.max(0, usosActuales - 1);
+                                alert(nuevosUsosUI > 0
+                                    ? `✅ Entrada validada. Quedan ${nuevosUsosUI} de ${cantidadEntradas}`
+                                    : '✅ Última entrada validada. QR agotado.');
+                            } else {
+                                alert('✅ Ticket validado exitosamente');
+                            }
                             
                             // 🔓 LIBERAR BLOQUEO DESPUÉS DE VALIDACIÓN
                             this.isProcessingQR = false;
@@ -1209,25 +1278,27 @@
                             </h3>
                             <button onclick="document.getElementById('permanentAlert').remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #666;">✕</button>
                         </div>
-                        <div style="display: flex; gap: 15px; align-items: flex-start;">
-                            <div style="flex: 1;">
-                                <p style="margin: 5px 0; color: #333; font-weight: bold;">${message}</p>
-                                ${ticketData ? `
-                                    <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 12px;">
-                                        <p style="margin: 3px 0;"><strong>ID:</strong> ${ticketData.id}</p>
-                                        <p style="margin: 3px 0;"><strong>Email:</strong> ${ticketData.email_temporal || 'N/A'}</p>
-                                        <p style="margin: 3px 0;"><strong>Estado:</strong> ${ticketData.estado}</p>
-                                        <p style="margin: 3px 0;"><strong>QR Usado:</strong> ${ticketData.qr_usado ? 'Sí' : 'No'}</p>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="width: 80px; height: 80px; background: white; border: 2px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
-                                    ${ticketData ? ticketData.id : 'QR'}
-                                </div>
-                                <p style="margin: 5px 0; font-size: 10px; color: #666;">CÓDIGO QR</p>
-                            </div>
+                        <div style="background: ${bgColor}; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                            <p style="margin: 0; font-size: 14px; color: #333;">${message}</p>
                         </div>
+                        ${ticketData ? `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="flex: 1;">
+                                    <p style="margin: 3px 0;"><strong>ID:</strong> ${ticketData.id}</p>
+                                    <p style="margin: 3px 0;"><strong>Email:</strong> ${ticketData.email_temporal || 'N/A'}</p>
+                                    <p style="margin: 3px 0;"><strong>Entradas:</strong> ${(ticketData.cantidad_entradas ?? 1)}</p>
+                                    <p style="margin: 3px 0;"><strong>Quedan:</strong> ${(ticketData.usos_restantes ?? 1)}</p>
+                                    <p style="margin: 3px 0;"><strong>Estado:</strong> ${ticketData.estado}</p>
+                                    <p style="margin: 3px 0;"><strong>QR Usado:</strong> ${ticketData.qr_usado ? 'Sí' : 'No'}</p>
+                                </div>
+                                <div style="text-align: center; padding-left: 15px;">
+                                    <div style="background: white; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                                        <div style="font-size: 24px; font-weight: bold; color: #333;">${ticketData.id}</div>
+                                        <div style="font-size: 10px; color: #666;">CÓDIGO QR</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
                     `;
                     
                     // Agregar nueva alerta
