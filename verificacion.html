@@ -605,6 +605,28 @@
         // Load payment method from localStorage
         function loadPaymentMethod() {
             const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
+
+            // Always clear required first to avoid native validation blocking submit
+            document.querySelectorAll('.form-input, .file-upload-input').forEach(input => {
+                input.removeAttribute('required');
+            });
+
+            const submitBtn = document.querySelector('#verification-form button[type="submit"]');
+
+            if (!formData || !formData.paymentMethod) {
+                document.getElementById('payment-method-name').textContent = 'No seleccionado';
+                document.getElementById('contenido-pago-movil').style.display = 'none';
+                document.getElementById('contenido-zelle').style.display = 'none';
+                document.querySelectorAll('.form-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                if (submitBtn) submitBtn.disabled = true;
+                alert('No se encontró el método de pago. Por favor regresa a la página de pago y selecciona un método.');
+                return;
+            }
+
+            if (submitBtn) submitBtn.disabled = false;
+
             if (formData && formData.paymentMethod) {
                 const methodNames = {
                     'pago-movil': 'PAGO MÓVIL',
@@ -626,15 +648,12 @@
                     activeSection.classList.add('active');
                 }
                 
-                // Remove required from all inputs first
-                document.querySelectorAll('.form-input, .file-upload-input').forEach(input => {
-                    input.removeAttribute('required');
-                });
-                
                 // Add required only to active section inputs
-                activeSection.querySelectorAll('.form-input, .file-upload-input').forEach(input => {
-                    input.setAttribute('required', 'required');
-                });
+                if (activeSection) {
+                    activeSection.querySelectorAll('.form-input, .file-upload-input').forEach(input => {
+                        input.setAttribute('required', 'required');
+                    });
+                }
             }
         }
 
@@ -724,7 +743,11 @@
                 console.log('Valor de monto:', monto.value, 'Convertido:', montoNumerico);
                 
                 // Obtener tasa actual
-                const tasaActual = parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 600);
+                const tasaStr = (window.ultimoResultadoPago?.tasa)
+                    || (window.TASA_DOLAR_UTILS?.obtenerTasaDolar ? await window.TASA_DOLAR_UTILS.obtenerTasaDolar() : null)
+                    || window.LAMUBI_UTILS?.tasaDolarActual
+                    || '600';
+                const tasaActual = parseFloat(tasaStr.toString().replace(/\./g, '').replace(',', '.'));
                 const montoEsperado = Math.round(tasaActual * ticketPriceUsd); // Redondear a entero
                 console.log('Tasa actual:', tasaActual, 'Monto esperado (entero):', montoEsperado);
                 
@@ -978,10 +1001,17 @@
                     user_id: userId,
                     email_temporal: emailTemporal,
                     metodo_pago: paymentMethod,
+                    estado: 'pendiente',
                     monto: paymentMethod === 'pago-movil' ? 
                         parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
                         ticketPriceUsd, // USD para Zelle
-                    tasa_dolar: parseFloat(window.TASA_DOLAR_UTILS?.tasaActual?.replace(/\./g, '').replace(',', '.') || window.LAMUBI_UTILS?.tasaDolarActual?.replace(/\./g, '').replace(',', '.') || 600),
+                    tasa_dolar: parseFloat(
+                        ((window.ultimoResultadoPago?.tasa)
+                            || (window.TASA_DOLAR_UTILS?.obtenerTasaDolar ? await window.TASA_DOLAR_UTILS.obtenerTasaDolar() : null)
+                            || window.LAMUBI_UTILS?.tasaDolarActual
+                            || '600'
+                        ).toString().replace(/\./g, '').replace(',', '.')
+                    ),
                     referencia: verificationData.referencia || null,
                     confirmacion_zelle: verificationData.confirmacionZelle || null,
                     email_remitente: verificationData.emailRemitente || null,
