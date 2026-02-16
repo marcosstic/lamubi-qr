@@ -85,6 +85,15 @@ class AdminPanel {
 
         const safe = (v) => (v === null || typeof v === 'undefined' || v === '') ? 'N/A' : v;
         const metodo = record.metodo_pago ? record.metodo_pago.replace('-', ' ').toUpperCase() : 'N/A';
+        const montoLabel = record.metodo_pago === 'pago-movil' ? 'Monto (Bs.)' : 'Monto (USD)';
+        const montoValue = (() => {
+            if (record.monto === null || typeof record.monto === 'undefined') return '0';
+            if (record.metodo_pago === 'pago-movil') {
+                return window.LAMUBI_UTILS?.formatBolivares ? window.LAMUBI_UTILS.formatBolivares(record.monto) : record.monto;
+            }
+            const n = Number(record.monto);
+            return Number.isFinite(n) ? `$${n.toFixed(2)}` : `$${record.monto}`;
+        })();
         const fechaPago = record.fecha_pago ? window.LAMUBI_UTILS.formatDateVenezuela(record.fecha_pago) : 'N/A';
         const fechaVerif = record.fecha_verificacion ? window.LAMUBI_UTILS.formatDateVenezuela(record.fecha_verificacion) : 'N/A';
 
@@ -108,8 +117,8 @@ class AdminPanel {
                         <div style="font-weight: 700;">${metodo}</div>
                     </div>
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
-                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Monto</div>
-                        <div style="font-weight: 700;">$${record.monto ? record.monto.toFixed(2) : '0.00'}</div>
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${montoLabel}</div>
+                        <div style="font-weight: 700;">${montoValue}</div>
                     </div>
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Entradas</div>
@@ -426,7 +435,10 @@ class AdminPanel {
             return;
         }
         
-        const html = activities.map(activity => `
+        const html = activities.map(activity => {
+            const multi = this.getMultiInfo(activity);
+            const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes}`;
+            return `
             <div class="activity-item" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -434,6 +446,9 @@ class AdminPanel {
                         <span class="method-text" style="color: var(--gray); margin-left: 0.5rem;">
                             ${activity.metodo_pago}
                         </span>
+                        <div style="color: var(--gray); font-size: 0.85rem; margin-top: 0.25rem;">
+                            ${multiLine}
+                        </div>
                     </div>
                     <div style="text-align: right;">
                         <span style="color: ${this.getStatusColor(activity.estado)};">
@@ -448,7 +463,8 @@ class AdminPanel {
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
         
         container.innerHTML = html;
     }
@@ -528,7 +544,15 @@ class AdminPanel {
         
         const html = purchases.map(purchase => {
             const multi = this.getMultiInfo(purchase);
-            const multiLine = `Entradas: ${multi.cantidadEntradas} • H: ${multi.hombres} • M: ${multi.mujeres}`;
+            const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes} • H: ${multi.hombres} • M: ${multi.mujeres}`;
+            const montoTexto = (() => {
+                if (purchase.monto === null || typeof purchase.monto === 'undefined') return '0';
+                if (purchase.metodo_pago === 'pago-movil') {
+                    return window.LAMUBI_UTILS?.formatBolivares ? window.LAMUBI_UTILS.formatBolivares(purchase.monto) : purchase.monto;
+                }
+                const n = Number(purchase.monto);
+                return Number.isFinite(n) ? `$${n.toFixed(2)}` : `$${purchase.monto}`;
+            })();
             return `
             <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -546,7 +570,7 @@ class AdminPanel {
                     </div>
                     <div style="text-align: right;">
                         <div style="font-weight: 600; margin-bottom: 0.5rem;">
-                            $${purchase.monto ? purchase.monto.toFixed(2) : '0.00'}
+                            ${montoTexto}
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" 
@@ -610,7 +634,15 @@ class AdminPanel {
         
         const html = tickets.map(ticket => {
             const multi = this.getMultiInfo(ticket);
-            const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes}`;
+            const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes} • H: ${multi.hombres} • M: ${multi.mujeres}`;
+            const montoTexto = (() => {
+                if (ticket.monto === null || typeof ticket.monto === 'undefined') return '0';
+                if (ticket.metodo_pago === 'pago-movil') {
+                    return window.LAMUBI_UTILS?.formatBolivares ? window.LAMUBI_UTILS.formatBolivares(ticket.monto) : ticket.monto;
+                }
+                const n = Number(ticket.monto);
+                return Number.isFinite(n) ? `$${n.toFixed(2)}` : `$${ticket.monto}`;
+            })();
             return `
             <div class="ticket-item" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -635,7 +667,7 @@ class AdminPanel {
                     </div>
                     <div style="text-align: right;">
                         <div style="font-weight: 600; margin-bottom: 0.5rem;">
-                            $${ticket.monto ? ticket.monto.toFixed(2) : '0.00'}
+                            ${montoTexto}
                         </div>
                         <span style="color: ${this.getStatusColor(ticket.estado)};">
                             ${this.formatStatus(ticket.estado)}
