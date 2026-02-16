@@ -462,7 +462,7 @@
             </div>
             <div class="summary-item">
                 <span class="summary-label">Cantidad:</span>
-                <span class="summary-value">1</span>
+                <span class="summary-value" id="summary-quantity">1</span>
             </div>
             <div class="summary-item">
                 <span class="summary-label">Nombre:</span>
@@ -517,12 +517,47 @@
             }
         }
 
+        function clampInt(value, min, max) {
+            const n = parseInt(value, 10);
+            if (!Number.isFinite(n)) return min;
+            return Math.min(max, Math.max(min, n));
+        }
+
+        function loadPurchaseContext() {
+            try {
+                const raw = localStorage.getItem('lamubi-purchase');
+                if (!raw) return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                const parsed = JSON.parse(raw);
+                return {
+                    cantidadEntradas: clampInt(parsed.cantidadEntradas ?? 1, 1, 10),
+                    hombres: clampInt(parsed.hombres ?? 0, 0, 10),
+                    mujeres: clampInt(parsed.mujeres ?? 0, 0, 10)
+                };
+            } catch {
+                return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+            }
+        }
+
         async function loadTicketPrice() {
             try {
                 if (!window.LAMUBI_UTILS?.getTicketPriceUSD) return;
-                const price = await window.LAMUBI_UTILS.getTicketPriceUSD();
-                const el = document.getElementById('summary-total-usd');
-                if (el) el.textContent = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
+                const unitPrice = await window.LAMUBI_UTILS.getTicketPriceUSD();
+                const qtyEl = document.getElementById('summary-quantity');
+                const totalEl = document.getElementById('summary-total-usd');
+
+                let cantidad = 1;
+                if (window.LAMUBI_UTILS?.getFeatureFlag) {
+                    const multi = await window.LAMUBI_UTILS.getFeatureFlag('multi_tickets_enabled', false);
+                    if (multi) {
+                        const ctx = loadPurchaseContext();
+                        cantidad = clampInt(ctx.cantidadEntradas ?? 1, 1, 10);
+                    }
+                }
+
+                if (qtyEl) qtyEl.textContent = String(cantidad);
+
+                const total = unitPrice * cantidad;
+                if (totalEl) totalEl.textContent = `$${Math.round(total) === total ? total.toFixed(0) : total.toFixed(2)}`;
             } catch (e) {
                 // Ignore and keep fallback
             }

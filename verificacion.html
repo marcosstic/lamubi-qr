@@ -700,9 +700,45 @@
             
             let isValid = true;
 
+            function clampInt(value, min, max) {
+                const n = parseInt(value, 10);
+                if (!Number.isFinite(n)) return min;
+                return Math.min(max, Math.max(min, n));
+            }
+
+            function loadPurchaseContext() {
+                try {
+                    const raw = localStorage.getItem('lamubi-purchase');
+                    if (!raw) return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                    const parsed = JSON.parse(raw);
+                    return {
+                        cantidadEntradas: clampInt(parsed.cantidadEntradas ?? 1, 1, 10),
+                        hombres: clampInt(parsed.hombres ?? 0, 0, 10),
+                        mujeres: clampInt(parsed.mujeres ?? 0, 0, 10)
+                    };
+                } catch {
+                    return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                }
+            }
+
             const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
                 ? await window.LAMUBI_UTILS.getTicketPriceUSD()
                 : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+
+            let cantidadEntradas = 1;
+            let hombres = 0;
+            let mujeres = 0;
+            if (window.LAMUBI_UTILS?.getFeatureFlag) {
+                const multi = await window.LAMUBI_UTILS.getFeatureFlag('multi_tickets_enabled', false);
+                if (multi) {
+                    const ctx = loadPurchaseContext();
+                    cantidadEntradas = clampInt(ctx.cantidadEntradas ?? 1, 1, 10);
+                    hombres = clampInt(ctx.hombres ?? 0, 0, 10);
+                    mujeres = clampInt(ctx.mujeres ?? 0, 0, 10);
+                }
+            }
+
+            const totalUsd = ticketPriceUsd * cantidadEntradas;
             
             // Reset all errors
             document.querySelectorAll('.form-group').forEach(group => {
@@ -748,7 +784,7 @@
                     || window.LAMUBI_UTILS?.tasaDolarActual
                     || '600';
                 const tasaActual = parseFloat(tasaStr.toString().replace(/\./g, '').replace(',', '.'));
-                const montoEsperado = Math.round(tasaActual * ticketPriceUsd); // Redondear a entero
+                const montoEsperado = Math.round(tasaActual * totalUsd); // Redondear a entero
                 console.log('Tasa actual:', tasaActual, 'Monto esperado (entero):', montoEsperado);
                 
                 // Convertir monto del usuario a entero para comparación
@@ -853,6 +889,13 @@
                     verificationData.fechaZelle = document.getElementById('fecha-zelle').value;
                 }
 
+                verificationData.purchase = {
+                    cantidadEntradas,
+                    hombres,
+                    mujeres,
+                    totalUsd
+                };
+
                 function parseVenezuelaDateTimeToISO(input) {
                     if (!input || typeof input !== 'string') return null;
 
@@ -926,6 +969,9 @@
                 const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
                     ? await window.LAMUBI_UTILS.getTicketPriceUSD()
                     : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+
+                const purchase = verificationData?.purchase || { cantidadEntradas: 1, hombres: 0, mujeres: 0, totalUsd: ticketPriceUsd };
+                const totalUsd = Number.isFinite(purchase.totalUsd) ? purchase.totalUsd : (ticketPriceUsd * (purchase.cantidadEntradas || 1));
                 
                 // Obtener datos del formulario
                 const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
@@ -1004,7 +1050,7 @@
                     estado: 'pendiente',
                     monto: paymentMethod === 'pago-movil' ? 
                         parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
-                        ticketPriceUsd, // USD para Zelle
+                        totalUsd, // USD total para Zelle
                     tasa_dolar: parseFloat(
                         ((window.ultimoResultadoPago?.tasa)
                             || (window.TASA_DOLAR_UTILS?.obtenerTasaDolar ? await window.TASA_DOLAR_UTILS.obtenerTasaDolar() : null)

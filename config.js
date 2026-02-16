@@ -72,6 +72,51 @@ const CONFIG = {
     }
 };
 
+const getConfiguracionSistemaValue = async (clave) => {
+    try {
+        const now = Date.now();
+        const lastTs = configValueCache.timestampByKey[clave] || 0;
+        if (lastTs && (now - lastTs) < configValueCache.ttl) {
+            return configValueCache.values[clave];
+        }
+
+        if (!window.LAMUBI_UTILS?.supabase) {
+            return null;
+        }
+
+        const { data, error } = await window.LAMUBI_UTILS.supabase
+            .from('configuracion_sistema')
+            .select('valor')
+            .eq('clave', clave)
+            .eq('activo', true)
+            .single();
+
+        if (error || !data) {
+            return null;
+        }
+
+        const value = data.valor;
+        configValueCache.values[clave] = value;
+        configValueCache.timestampByKey[clave] = now;
+        return value;
+    } catch (e) {
+        return null;
+    }
+};
+
+const getFeatureFlag = async (clave, defaultValue = false) => {
+    try {
+        const raw = await getConfiguracionSistemaValue(clave);
+        if (raw === null || raw === undefined) return defaultValue;
+        const normalized = raw.toString().trim().toLowerCase();
+        if (['1', 'true', 'yes', 'si', 'sí', 'on', 'enabled'].includes(normalized)) return true;
+        if (['0', 'false', 'no', 'off', 'disabled'].includes(normalized)) return false;
+        return defaultValue;
+    } catch (e) {
+        return defaultValue;
+    }
+};
+
 // 🕐 Venezuela Timezone Functions
 const venezuelaNow = () => {
     const now = new Date();
@@ -143,6 +188,12 @@ let ticketPriceCache = {
     ttl: 5000
 };
 
+let configValueCache = {
+    values: {},
+    timestampByKey: {},
+    ttl: 5000
+};
+
 const getTicketPriceUSD = async () => {
     try {
         const now = Date.now();
@@ -202,6 +253,8 @@ window.LAMUBI_UTILS = {
     validateEmail,
     validatePhone,
     getTicketPriceUSD,
+    getConfiguracionSistemaValue,
+    getFeatureFlag,
     debugLog,
     supabase: supabaseClient // Incluir cliente en utils para acceso global
 };

@@ -468,13 +468,147 @@
                     <div class="error-message">Formato inválido. Ej: +58 414 123 4567</div>
                 </div>
 
+                <div id="multi-tickets-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="cantidad-entradas" class="form-label">Cantidad de Entradas *</label>
+                        <input type="number" id="cantidad-entradas" name="cantidad-entradas" class="form-input" min="1" max="10" value="1">
+                        <div class="error-message">La cantidad debe ser entre 1 y 10</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantidad-hombres" class="form-label">Hombres *</label>
+                        <input type="number" id="cantidad-hombres" name="cantidad-hombres" class="form-input" min="0" max="10" value="0">
+                        <div class="error-message">Ingresa un número válido</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantidad-mujeres" class="form-label">Mujeres *</label>
+                        <input type="number" id="cantidad-mujeres" name="cantidad-mujeres" class="form-input" min="0" max="10" value="0">
+                        <div class="error-message">Ingresa un número válido</div>
+                    </div>
+
+                    <div class="form-group" id="multi-tickets-summary" style="text-align: center; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+                        <div id="multi-tickets-summary-text" style="font-weight: 600;">Total: 1 entradas | H: 0 | M: 0</div>
+                        <div id="multi-tickets-summary-status" style="margin-top: 0.5rem; font-size: 0.9rem; font-weight: 600; color: #ff6b6b;">❌ Debes distribuir 1 entrada</div>
+                    </div>
+                </div>
+
                 <!-- Submit Button -->
                 <button type="submit" class="submit-button">CONTINUAR AL PAGO</button>
             </form>
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <script>
+        let multiTicketsEnabled = false;
+
+        function clampInt(value, min, max) {
+            const n = parseInt(value, 10);
+            if (!Number.isFinite(n)) return min;
+            return Math.min(max, Math.max(min, n));
+        }
+
+        function loadPurchaseContext() {
+            try {
+                const raw = localStorage.getItem('lamubi-purchase');
+                if (!raw) return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+                const parsed = JSON.parse(raw);
+                return {
+                    cantidadEntradas: clampInt(parsed.cantidadEntradas ?? 1, 1, 10),
+                    hombres: clampInt(parsed.hombres ?? 0, 0, 10),
+                    mujeres: clampInt(parsed.mujeres ?? 0, 0, 10)
+                };
+            } catch {
+                return { cantidadEntradas: 1, hombres: 0, mujeres: 0 };
+            }
+        }
+
+        function savePurchaseContext(ctx) {
+            localStorage.setItem('lamubi-purchase', JSON.stringify(ctx));
+        }
+
+        function updateMultiTicketsState() {
+            if (!multiTicketsEnabled) return { ok: true, cantidad: 1, hombres: 0, mujeres: 0 };
+
+            const cantidadEl = document.getElementById('cantidad-entradas');
+            const hombresEl = document.getElementById('cantidad-hombres');
+            const mujeresEl = document.getElementById('cantidad-mujeres');
+            const summaryTextEl = document.getElementById('multi-tickets-summary-text');
+            const summaryStatusEl = document.getElementById('multi-tickets-summary-status');
+            const submitBtn = document.querySelector('#ticket-form button[type="submit"]');
+
+            const cantidad = clampInt(cantidadEl?.value, 1, 10);
+            let hombres = clampInt(hombresEl?.value, 0, 10);
+            let mujeres = clampInt(mujeresEl?.value, 0, 10);
+
+            hombres = Math.min(hombres, cantidad);
+            mujeres = Math.min(mujeres, cantidad);
+
+            if (cantidadEl) cantidadEl.value = String(cantidad);
+            if (hombresEl) hombresEl.value = String(hombres);
+            if (mujeresEl) mujeresEl.value = String(mujeres);
+
+            const total = hombres + mujeres;
+            const ok = total === cantidad;
+
+            if (summaryTextEl) summaryTextEl.textContent = `Total: ${cantidad} entradas | H: ${hombres} | M: ${mujeres}`;
+            if (summaryStatusEl) {
+                if (ok) {
+                    summaryStatusEl.textContent = '✅ Distribución correcta';
+                    summaryStatusEl.style.color = '#11bb75';
+                } else {
+                    const diff = Math.abs(cantidad - total);
+                    summaryStatusEl.textContent = total < cantidad
+                        ? `❌ Debes distribuir ${diff} entrada${diff === 1 ? '' : 's'}`
+                        : `❌ Te sobran ${diff} entrada${diff === 1 ? '' : 's'}`;
+                    summaryStatusEl.style.color = '#ff6b6b';
+                }
+            }
+
+            if (submitBtn) submitBtn.disabled = !ok;
+            savePurchaseContext({ cantidadEntradas: cantidad, hombres, mujeres });
+            return { ok, cantidad, hombres, mujeres };
+        }
+
+        async function initMultiTickets() {
+            try {
+                if (window.LAMUBI_UTILS?.getFeatureFlag) {
+                    multiTicketsEnabled = await window.LAMUBI_UTILS.getFeatureFlag('multi_tickets_enabled', false);
+                }
+
+                const section = document.getElementById('multi-tickets-section');
+                if (!section) return;
+
+                if (!multiTicketsEnabled) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+                const ctx = loadPurchaseContext();
+                const cantidadEl = document.getElementById('cantidad-entradas');
+                const hombresEl = document.getElementById('cantidad-hombres');
+                const mujeresEl = document.getElementById('cantidad-mujeres');
+                if (cantidadEl) cantidadEl.value = String(ctx.cantidadEntradas);
+                if (hombresEl) hombresEl.value = String(ctx.hombres);
+                if (mujeresEl) mujeresEl.value = String(ctx.mujeres);
+
+                ['input', 'change'].forEach(evt => {
+                    cantidadEl?.addEventListener(evt, updateMultiTicketsState);
+                    hombresEl?.addEventListener(evt, updateMultiTicketsState);
+                    mujeresEl?.addEventListener(evt, updateMultiTicketsState);
+                });
+
+                updateMultiTicketsState();
+            } catch (e) {
+                // Keep default behavior
+            }
+        }
+
+        initMultiTickets();
+
         // Form validation
         document.getElementById('ticket-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -532,6 +666,10 @@
             }
             
             if (isValid) {
+                const mt = updateMultiTicketsState();
+                if (!mt.ok) {
+                    return;
+                }
                 // Store form data
                 const formData = {
                     nombre: nombre.value,
