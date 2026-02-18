@@ -539,9 +539,34 @@
             const summaryStatusEl = document.getElementById('multi-tickets-summary-status');
             const submitBtn = document.querySelector('#ticket-form button[type="submit"]');
 
-            const cantidad = clampInt(cantidadEl?.value, 1, 10);
-            let hombres = clampInt(hombresEl?.value, 0, 10);
-            let mujeres = clampInt(mujeresEl?.value, 0, 10);
+            const rawCantidad = (cantidadEl?.value ?? '').toString().trim();
+            const rawHombres = (hombresEl?.value ?? '').toString().trim();
+            const rawMujeres = (mujeresEl?.value ?? '').toString().trim();
+
+            // Evitar que al borrar el valor se fuerce a "1" mientras el usuario está escribiendo.
+            if (!rawCantidad) {
+                if (summaryTextEl) summaryTextEl.textContent = 'Total: - entradas | H: - | M: -';
+                if (summaryStatusEl) {
+                    summaryStatusEl.textContent = '❌ Indica la cantidad de entradas (1 a 10)';
+                    summaryStatusEl.style.color = '#ff6b6b';
+                }
+                if (submitBtn) submitBtn.disabled = true;
+                return { ok: false, cantidad: 0, hombres: 0, mujeres: 0 };
+            }
+
+            const cantidad = clampInt(rawCantidad, 1, 10);
+            let hombres = rawHombres ? clampInt(rawHombres, 0, 10) : 0;
+            let mujeres = rawMujeres ? clampInt(rawMujeres, 0, 10) : 0;
+
+            // Si el usuario compra 1 sola entrada y deja H/M vacío (o 0), autocompletar según su género.
+            if (cantidad === 1 && hombres === 0 && mujeres === 0) {
+                const genero = document.querySelector('input[name="genero"]:checked');
+                if (genero?.value === 'masculino') {
+                    hombres = 1;
+                } else if (genero?.value === 'femenino') {
+                    mujeres = 1;
+                }
+            }
 
             hombres = Math.min(hombres, cantidad);
             mujeres = Math.min(mujeres, cantidad);
