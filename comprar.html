@@ -568,6 +568,18 @@
                 }
             }
 
+            // Si cantidad=1 y el usuario cambia el género, mantener la distribución consistente (mover el 1).
+            if (cantidad === 1) {
+                const genero = document.querySelector('input[name="genero"]:checked');
+                if (genero?.value === 'masculino') {
+                    hombres = 1;
+                    mujeres = 0;
+                } else if (genero?.value === 'femenino') {
+                    hombres = 0;
+                    mujeres = 1;
+                }
+            }
+
             hombres = Math.min(hombres, cantidad);
             mujeres = Math.min(mujeres, cantidad);
 
@@ -723,6 +735,7 @@
         document.querySelectorAll('.radio-input').forEach(radio => {
             radio.addEventListener('change', function() {
                 document.querySelector('.radio-group').closest('.form-group').classList.remove('error');
+                updateMultiTicketsState();
             });
         });
 
