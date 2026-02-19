@@ -554,9 +554,9 @@ class AdminPanel {
                 return Number.isFinite(n) ? `$${n.toFixed(2)}` : `$${purchase.monto}`;
             })();
             return `
-            <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
+            <div class="pending-purchase-item" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div class="pending-purchase-row" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="pending-purchase-info">
                         <strong>${purchase.email_temporal || 'Usuario no registrado'}</strong>
                         <div style="color: var(--gray); font-size: 0.9rem;">
                             ${purchase.metodo_pago}
@@ -568,11 +568,11 @@ class AdminPanel {
                             ${window.LAMUBI_UTILS.formatDateVenezuela(purchase.fecha_pago)}
                         </div>
                     </div>
-                    <div style="text-align: right;">
+                    <div class="pending-purchase-actions" style="text-align: right;">
                         <div style="font-weight: 600; margin-bottom: 0.5rem;">
                             ${montoTexto}
                         </div>
-                        <div style="display: flex; gap: 0.5rem;">
+                        <div class="action-buttons pending-action-buttons" style="display: flex; gap: 0.5rem;">
                             <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" 
                                     title="Ver comprobante de pago"
                                     onclick="viewComprobante('${purchase.comprobante_url}')">
