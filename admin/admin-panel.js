@@ -949,6 +949,16 @@ window.approvePurchase = async function(purchaseId) {
             .eq('id', purchaseId);
         
         if (error) throw error;
+
+        // Enviar evento a GA4 inmediatamente después del update exitoso
+        if (window.LAMUBI_ANALYTICS?.track) {
+            window.LAMUBI_ANALYTICS.track('purchase_approved', {
+                ticket_id: String(purchaseId),
+                metodo_pago: record?.metodo_pago || '',
+                monto: typeof record?.monto === 'number' ? record.monto : Number(record?.monto) || 0,
+                cantidad_entradas: multi?.cantidadEntradas || 1
+            });
+        }
         
         window.adminPanel.showSuccess('Compra aprobada correctamente');
         window.adminPanel.loadPendingPurchases();

@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎫 Confirmación Ticket LA MUBI</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-B4PMCCZBJN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-B4PMCCZBJN');
+    </script>
+    <script src="assets/analytics.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -537,8 +545,8 @@
         
         const lamubiSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Variables globales
         let ticketData = null;
+        let ticketConfirmedTracked = false;
 
         // Cargar datos del ticket
         async function loadTicketData() {
@@ -568,6 +576,32 @@
                 // Actualizar UI
                 updateTicketDisplay();
                 generateQRCode();
+
+                if (!ticketConfirmedTracked && window.LAMUBI_ANALYTICS?.track) {
+                    ticketConfirmedTracked = true;
+                    const cantidad = (() => {
+                        if (typeof ticketData.cantidad_entradas !== 'undefined' && ticketData.cantidad_entradas !== null) {
+                            const n = parseInt(ticketData.cantidad_entradas, 10);
+                            return Number.isFinite(n) ? n : 1;
+                        }
+                        try {
+                            const rawDatosCompra = typeof ticketData.datos_compra === 'string'
+                                ? JSON.parse(ticketData.datos_compra)
+                                : ticketData.datos_compra;
+                            const n = parseInt(rawDatosCompra?.purchase?.cantidadEntradas, 10);
+                            return Number.isFinite(n) && n >= 1 ? n : 1;
+                        } catch {
+                            return 1;
+                        }
+                    })();
+
+                    window.LAMUBI_ANALYTICS.track('ticket_confirmed', {
+                        ticket_id: String(ticketData.id),
+                        metodo_pago: ticketData.metodo_pago || '',
+                        monto: typeof ticketData.monto === 'number' ? ticketData.monto : Number(ticketData.monto) || 0,
+                        cantidad_entradas: cantidad
+                    });
+                }
                 
                 // Mostrar sección del ticket
                 document.getElementById('loadingSection').style.display = 'none';
