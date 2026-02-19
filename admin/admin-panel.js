@@ -7,8 +7,72 @@ class AdminPanel {
         this.supabase = window.LAMUBI_UTILS.supabase;
         this.currentUser = null;
         this.currentSection = 'dashboard';
+
+        this.pageSizeTickets = 25;
+        this.pageSizePending = 25;
+
+        this.ticketsOffset = 0;
+        this.pendingOffset = 0;
+
+        this.ticketsHasMore = false;
+        this.pendingHasMore = false;
+
+        this.ticketsItems = [];
+        this.pendingItems = [];
+
+        this.allTickets = [];
+        this.allPendingPurchases = [];
+
+        this.ticketsQueryState = {
+            search: '',
+            estado: '',
+            metodo: '',
+            sort: 'actividad_desc'
+        };
+
+        this.pendingQueryState = {
+            search: '',
+            metodo: ''
+        };
         
         this.init();
+    }
+
+    isInconsistentFutureDate(dateValue, hoursThreshold = 6) {
+        if (!dateValue) return false;
+        const d = new Date(dateValue);
+        if (Number.isNaN(d.getTime())) return false;
+        const thresholdMs = hoursThreshold * 60 * 60 * 1000;
+        return d.getTime() > (Date.now() + thresholdMs);
+    }
+
+    normalizeSearchTerm(term) {
+        return (term || '').toString().trim();
+    }
+
+    isNumericTerm(term) {
+        return /^[0-9]+$/.test(term);
+    }
+
+    applySearchToQuery(query, term) {
+        const t = this.normalizeSearchTerm(term);
+        if (!t) return query;
+
+        if (this.isNumericTerm(t)) {
+            const idNum = parseInt(t, 10);
+            if (Number.isFinite(idNum)) {
+                return query.or(`id.eq.${idNum},referencia.ilike.%${t}%,email_temporal.ilike.%${t}%`);
+            }
+        }
+
+        const escaped = t.replace(/,/g, '');
+        return query.or(`email_temporal.ilike.%${escaped}%,referencia.ilike.%${escaped}%`);
+    }
+
+    setLoadMoreButtonVisible(buttonId, isVisible) {
+        const btn = document.getElementById(buttonId);
+        if (!btn) return;
+        btn.style.display = isVisible ? 'block' : 'none';
     }
 
     getMultiInfo(record) {
@@ -84,6 +148,8 @@ class AdminPanel {
         ].join(';');
 
         const safe = (v) => (v === null || typeof v === 'undefined' || v === '') ? 'N/A' : v;
+        const referenciaText = (record.referencia && String(record.referencia).trim()) ? String(record.referencia).trim() : '—';
+        const hasFutureInconsistency = this.isInconsistentFutureDate(record.fecha_pago) || this.isInconsistentFutureDate(record.fecha_verificacion);
         const metodo = record.metodo_pago ? record.metodo_pago.replace('-', ' ').toUpperCase() : 'N/A';
         const montoLabel = record.metodo_pago === 'pago-movil' ? 'Monto (Bs.)' : 'Monto (USD)';
         const montoValue = (() => {
@@ -121,6 +187,10 @@ class AdminPanel {
                         <div style="font-weight: 700;">${montoValue}</div>
                     </div>
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Referencia</div>
+                        <div style="font-weight: 700;">${referenciaText}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Entradas</div>
                         <div style="font-weight: 800;">${multi.cantidadEntradas}</div>
                     </div>
@@ -141,6 +211,7 @@ class AdminPanel {
                     <div>🕐 Pago: ${fechaPago}</div>
                     <div>✅ Verificación: ${fechaVerif}</div>
                     <div>QR usado: ${record.qr_usado ? 'Sí' : 'No'}</div>
+                    ${hasFutureInconsistency ? `<div style=\"color: var(--warning);\">⚠ Fecha inconsistente</div>` : ''}
                 </div>
             </div>
         `;
@@ -284,10 +355,10 @@ class AdminPanel {
                 await this.loadDashboardData();
                 break;
             case 'verification':
-                await this.loadPendingPurchases();
+                await this.loadPendingPurchases(true);
                 break;
             case 'tickets':
-                await this.loadAllTickets();
+                await this.loadAllTickets(true);
                 break;
             case 'config':
                 await this.loadConfigData();
@@ -476,60 +547,64 @@ class AdminPanel {
 
     // 🔍 Filtrar compras pendientes
     filterPendingPurchases(searchTerm = null) {
-        const searchValue = searchTerm || document.getElementById('searchPending').value.toLowerCase();
-        const methodFilter = document.getElementById('filterPendingMethod').value;
-        
-        if (!this.allPendingPurchases) return;
-        
-        const filtered = this.allPendingPurchases.filter(purchase => {
-            const matchesSearch = !searchValue || 
-                (purchase.email_temporal && purchase.email_temporal.toLowerCase().includes(searchValue)) ||
-                purchase.id.toString().includes(searchValue);
-            const matchesMethod = !methodFilter || purchase.metodo_pago === methodFilter;
-            
-            return matchesSearch && matchesMethod;
-        });
-        
-        this.renderPendingPurchases(filtered);
+        const inputValue = (typeof searchTerm === 'string') ? searchTerm : (document.getElementById('searchPending')?.value || '');
+        this.pendingQueryState.search = this.normalizeSearchTerm(inputValue);
+        this.pendingQueryState.metodo = document.getElementById('filterPendingMethod')?.value || '';
+        this.loadPendingPurchases(true);
     }
 
     // 🔍 Filtrar todos los tickets
     filterAllTickets(searchTerm = null) {
-        const searchValue = searchTerm || document.getElementById('searchTickets').value.toLowerCase();
-        const stateFilter = document.getElementById('filterTicketsState').value;
-        const methodFilter = document.getElementById('filterTicketsMethod').value;
-        
-        if (!this.allTickets) return;
-        
-        const filtered = this.allTickets.filter(ticket => {
-            const matchesSearch = !searchValue || 
-                (ticket.email_temporal && ticket.email_temporal.toLowerCase().includes(searchValue)) ||
-                ticket.id.toString().includes(searchValue);
-            const matchesState = !stateFilter || ticket.estado === stateFilter;
-            const matchesMethod = !methodFilter || ticket.metodo_pago === methodFilter;
-            
-            return matchesSearch && matchesState && matchesMethod;
-        });
-        
-        this.renderAllTickets(filtered);
+        const inputValue = (typeof searchTerm === 'string') ? searchTerm : (document.getElementById('searchTickets')?.value || '');
+        this.ticketsQueryState.search = this.normalizeSearchTerm(inputValue);
+        this.ticketsQueryState.estado = document.getElementById('filterTicketsState')?.value || '';
+        this.ticketsQueryState.metodo = document.getElementById('filterTicketsMethod')?.value || '';
+        this.ticketsQueryState.sort = document.getElementById('sortTickets')?.value || 'actividad_desc';
+        this.loadAllTickets(true);
     }
-    async loadPendingPurchases() {
+
+    async loadPendingPurchases(reset = true) {
         try {
-            const { data, error } = await this.supabase
+            if (reset) {
+                this.pendingOffset = 0;
+                this.pendingItems = [];
+            }
+
+            const from = this.pendingOffset;
+            const to = this.pendingOffset + this.pageSizePending - 1;
+
+            let query = this.supabase
                 .from('verificaciones_pagos')
                 .select('*')
-                .eq('estado', 'pendiente')
-                .order('fecha_pago', { ascending: false });
+                .eq('estado', 'pendiente');
+
+            if (this.pendingQueryState.metodo) {
+                query = query.eq('metodo_pago', this.pendingQueryState.metodo);
+            }
+
+            query = this.applySearchToQuery(query, this.pendingQueryState.search);
+            query = query.order('fecha_pago', { ascending: false }).range(from, to);
+
+            const { data, error } = await query;
             
             if (error) throw error;
-            
-            this.allPendingPurchases = data;
-            this.renderPendingPurchases(data);
+
+            const newItems = Array.isArray(data) ? data : [];
+            this.pendingItems = reset ? newItems : this.pendingItems.concat(newItems);
+            this.pendingOffset = this.pendingItems.length;
+            this.pendingHasMore = newItems.length === this.pageSizePending;
+
+            this.allPendingPurchases = this.pendingItems;
+
+            this.renderPendingPurchases(this.pendingItems);
+            this.setLoadMoreButtonVisible('loadMorePendingBtn', this.pendingHasMore);
             
         } catch (error) {
             console.error('Error loading pending purchases:', error);
             document.getElementById('pendingPurchases').innerHTML = 
                 '<p>Error cargando pagos pendientes</p>';
+            this.allPendingPurchases = [];
+            this.setLoadMoreButtonVisible('loadMorePendingBtn', false);
         }
     }
 
@@ -604,22 +679,65 @@ class AdminPanel {
     }
 
     // 🎫 Cargar todos los tickets
-    async loadAllTickets() {
+    async loadAllTickets(reset = true) {
         try {
-            const { data, error } = await this.supabase
+            if (reset) {
+                this.ticketsOffset = 0;
+                this.ticketsItems = [];
+            }
+
+            const from = this.ticketsOffset;
+            const to = this.ticketsOffset + this.pageSizeTickets - 1;
+
+            let query = this.supabase
                 .from('verificaciones_pagos')
-                .select('*')
-                .order('fecha_pago', { ascending: false });
+                .select('*');
+
+            if (this.ticketsQueryState.estado) {
+                query = query.eq('estado', this.ticketsQueryState.estado);
+            }
+
+            if (this.ticketsQueryState.metodo) {
+                query = query.eq('metodo_pago', this.ticketsQueryState.metodo);
+            }
+
+            query = this.applySearchToQuery(query, this.ticketsQueryState.search);
+
+            const sortValue = this.ticketsQueryState.sort || 'actividad_desc';
+            const sortAscending = sortValue.endsWith('_asc');
+            if (sortValue.startsWith('actividad')) {
+                query = query.order('fecha_actualizacion', { ascending: sortAscending, nullsFirst: false });
+            } else if (sortValue.startsWith('verificacion')) {
+                query = query
+                    .order('fecha_verificacion', { ascending: sortAscending, nullsFirst: false })
+                    .order('fecha_actualizacion', { ascending: sortAscending, nullsFirst: false })
+                    .order('fecha_pago', { ascending: sortAscending, nullsFirst: false });
+            } else {
+                query = query.order('fecha_pago', { ascending: sortAscending, nullsFirst: false });
+            }
+
+            query = query.range(from, to);
+
+            const { data, error } = await query;
             
             if (error) throw error;
-            
-            this.allTickets = data;
-            this.renderAllTickets(data);
+
+            const newItems = Array.isArray(data) ? data : [];
+            this.ticketsItems = reset ? newItems : this.ticketsItems.concat(newItems);
+            this.ticketsOffset = this.ticketsItems.length;
+            this.ticketsHasMore = newItems.length === this.pageSizeTickets;
+
+            this.allTickets = this.ticketsItems;
+
+            this.renderAllTickets(this.ticketsItems);
+            this.setLoadMoreButtonVisible('loadMoreTicketsBtn', this.ticketsHasMore);
             
         } catch (error) {
             console.error('Error loading all tickets:', error);
             document.getElementById('allTickets').innerHTML = 
                 '<p>Error cargando tickets</p>';
+            this.allTickets = [];
+            this.setLoadMoreButtonVisible('loadMoreTicketsBtn', false);
         }
     }
 
@@ -635,6 +753,8 @@ class AdminPanel {
         const html = tickets.map(ticket => {
             const multi = this.getMultiInfo(ticket);
             const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes} • H: ${multi.hombres} • M: ${multi.mujeres}`;
+            const referenciaText = (ticket.referencia && String(ticket.referencia).trim()) ? String(ticket.referencia).trim() : '—';
+            const hasFutureInconsistency = this.isInconsistentFutureDate(ticket.fecha_pago) || this.isInconsistentFutureDate(ticket.fecha_verificacion);
             const montoTexto = (() => {
                 if (ticket.monto === null || typeof ticket.monto === 'undefined') return '0';
                 if (ticket.metodo_pago === 'pago-movil') {
@@ -658,11 +778,15 @@ class AdminPanel {
                             ${ticket.metodo_pago} • ${ticket.estado}
                         </div>
                         <div style="color: var(--gray); font-size: 0.85rem;">
+                            Ref: ${referenciaText}
+                        </div>
+                        <div style="color: var(--gray); font-size: 0.85rem;">
                             ${multiLine}
                         </div>
                         <div style="color: var(--gray); font-size: 0.8rem;">
                             🕐 Compra: ${window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_pago)}
                             ${ticket.fecha_verificacion ? `<br>✅ ${ticket.estado === 'aprobado' ? 'Aprobado' : 'Rechazado'}: ${window.LAMUBI_UTILS.formatDateVenezuela(ticket.fecha_verificacion)}` : ''}
+                            ${hasFutureInconsistency ? `<br><span style=\"color: var(--warning);\">⚠ Fecha inconsistente</span>` : ''}
                         </div>
                     </div>
                     <div style="text-align: right;">
@@ -1086,6 +1210,16 @@ window.updateTicketPriceUSD = async function() {
 window.loadDashboardData = () => window.adminPanel.loadDashboardData();
 window.loadPendingPurchases = () => window.adminPanel.loadPendingPurchases();
 window.loadAllTickets = () => window.adminPanel.loadAllTickets();
+
+window.loadMorePendingPurchases = () => {
+    if (!window.adminPanel) return;
+    return window.adminPanel.loadPendingPurchases(false);
+};
+
+window.loadMoreTickets = () => {
+    if (!window.adminPanel) return;
+    return window.adminPanel.loadAllTickets(false);
+};
 
 // 🎯 Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {

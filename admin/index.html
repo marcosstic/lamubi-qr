@@ -853,7 +853,7 @@
                         <div style="flex: 1; min-width: 200px;">
                             <div style="position: relative;">
                                 <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
-                                <input type="text" id="searchPending" placeholder="Buscar por email o ID" 
+                                <input type="text" id="searchPending" placeholder="Buscar por email, ID o referencia" 
                                        style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
                                        oninput="adminPanel.filterPendingPurchases(this.value)">
                             </div>
@@ -872,6 +872,11 @@
                             <div class="spinner"></div>
                             <p>Cargando pagos pendientes...</p>
                         </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button id="loadMorePendingBtn" class="btn btn-secondary" style="width: 100%; display: none;" onclick="loadMorePendingPurchases()">
+                            <i class="fas fa-plus"></i> Cargar más
+                        </button>
                     </div>
                 </div>
             </section>
@@ -900,12 +905,12 @@
                         <div style="flex: 1; min-width: 200px;">
                             <div style="position: relative;">
                                 <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
-                                <input type="text" id="searchTickets" placeholder="Buscar por email o ID" 
+                                <input type="text" id="searchTickets" placeholder="Buscar por email, ID o referencia" 
                                        style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
                                        oninput="adminPanel.filterAllTickets(this.value)">
                             </div>
                         </div>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                             <select id="filterTicketsState" style="padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
                                     onchange="adminPanel.filterAllTickets()">
                                 <option value="">Todos los estados</option>
@@ -919,6 +924,15 @@
                                 <option value="pago-movil">Pago Móvil</option>
                                 <option value="zelle">Zelle</option>
                             </select>
+                            <select id="sortTickets" style="padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--white);"
+                                    onchange="adminPanel.filterAllTickets()">
+                                <option value="actividad_desc">Actividad: más recientes</option>
+                                <option value="actividad_asc">Actividad: más antiguos</option>
+                                <option value="verificacion_desc">Verificación: más recientes</option>
+                                <option value="verificacion_asc">Verificación: más antiguos</option>
+                                <option value="fecha_pago_desc">Compra: más recientes</option>
+                                <option value="fecha_pago_asc">Compra: más antiguos</option>
+                            </select>
                         </div>
                     </div>
                     <div id="allTickets">
@@ -926,6 +940,11 @@
                             <div class="spinner"></div>
                             <p>Cargando tickets...</p>
                         </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button id="loadMoreTicketsBtn" class="btn btn-secondary" style="width: 100%; display: none;" onclick="loadMoreTickets()">
+                            <i class="fas fa-plus"></i> Cargar más
+                        </button>
                     </div>
                 </div>
             </section>
