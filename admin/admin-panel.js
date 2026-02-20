@@ -38,6 +38,37 @@ class AdminPanel {
         this.init();
     }
 
+    ensureTicketDetailModalStyles() {
+        const existing = document.getElementById('lamubiTicketDetailModalStyles');
+        if (existing) return;
+
+        const style = document.createElement('style');
+        style.id = 'lamubiTicketDetailModalStyles';
+        style.textContent = `
+            .lamubi-ticket-detail-card {
+                max-height: calc(100vh - 32px);
+                overflow: auto;
+                box-sizing: border-box;
+            }
+            .lamubi-ticket-detail-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+            @media (max-width: 414px) {
+                .lamubi-ticket-detail-card {
+                    max-height: calc(100vh - 24px);
+                    padding: 14px !important;
+                }
+                .lamubi-ticket-detail-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
     isInconsistentFutureDate(dateValue, hoursThreshold = 6) {
         if (!dateValue) return false;
         const d = new Date(dateValue);
@@ -128,8 +159,42 @@ class AdminPanel {
         };
     }
 
+    getBuyerInfo(record) {
+        const norm = (v) => (typeof v === 'string') ? v.trim() : v;
+        const safe = (v) => (v === null || typeof v === 'undefined' || v === '') ? null : v;
+
+        let telefono = null;
+        let cedula = null;
+        let genero = null;
+        let nombre = null;
+
+        try {
+            const raw = typeof record?.datos_compra === 'string' ? JSON.parse(record.datos_compra) : record?.datos_compra;
+            const form = raw?.formData || null;
+
+            telefono = safe(form?.telefono) || safe(raw?.telefono) || safe(raw?.phone) || null;
+            cedula = safe(form?.documento) || safe(form?.cedula) || safe(raw?.documento) || safe(raw?.cedula) || safe(raw?.dni) || null;
+            genero = safe(form?.genero) || safe(raw?.genero) || safe(raw?.gender) || null;
+            nombre = safe(form?.nombre) || safe(raw?.nombre) || safe(raw?.name) || null;
+        } catch (e) {
+            telefono = null;
+            cedula = null;
+            genero = null;
+            nombre = null;
+        }
+
+        return {
+            telefono: norm(telefono) || null,
+            cedula: norm(cedula) || null,
+            genero: norm(genero) || null,
+            nombre: norm(nombre) || null
+        };
+    }
+
     openTicketDetailModal(record) {
         if (!record) return;
+
+        this.ensureTicketDetailModalStyles();
 
         const multi = this.getMultiInfo(record);
         const modal = document.createElement('div');
@@ -163,13 +228,17 @@ class AdminPanel {
         const fechaPago = record.fecha_pago ? window.LAMUBI_UTILS.formatDateVenezuela(record.fecha_pago) : 'N/A';
         const fechaVerif = record.fecha_verificacion ? window.LAMUBI_UTILS.formatDateVenezuela(record.fecha_verificacion) : 'N/A';
 
+        const buyer = this.getBuyerInfo(record);
+        const comprobanteUrl = record.comprobante_url || null;
+        const comprobanteNombre = record.comprobante_nombre || '';
+
         modal.innerHTML = `
-            <div style="background: #111; border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; width: 100%; max-width: 520px; padding: 18px; color: #fff;">
+            <div class="lamubi-ticket-detail-card" style="background: #111; border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; width: 100%; max-width: 520px; padding: 18px; color: #fff;">
                 <div style="display:flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px;">
                     <div style="font-weight: 800; font-size: 1.1rem;">Detalle del Ticket #${record.id}</div>
                     <button id="lamubiDetailClose" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">Cerrar</button>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="lamubi-ticket-detail-grid">
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Email</div>
                         <div style="font-weight: 700;">${safe(record.email_temporal)}</div>
@@ -205,6 +274,31 @@ class AdminPanel {
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Mujeres</div>
                         <div style="font-weight: 800;">${multi.mujeres}</div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Teléfono</div>
+                        <div style="font-weight: 700;">${buyer.telefono ? buyer.telefono : 'N/A'}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Cédula</div>
+                        <div style="font-weight: 700;">${buyer.cedula ? buyer.cedula : 'N/A'}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Género</div>
+                        <div style="font-weight: 700;">${buyer.genero ? buyer.genero : 'N/A'}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Nombre</div>
+                        <div style="font-weight: 700;">${buyer.nombre ? buyer.nombre : 'N/A'}</div>
+                    </div>
+
+                    <div style="grid-column: 1 / -1; display:flex; gap:10px; align-items:center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px;">
+                        <div style="flex:1; min-width: 0;">
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Comprobante</div>
+                            ${comprobanteUrl ? `<div style="margin-top:6px; color: rgba(255,255,255,0.85); font-size: 0.9rem; overflow:hidden; text-overflow: ellipsis; white-space: nowrap;">${comprobanteNombre || 'Disponible'}</div>` : '<div style="margin-top:6px; color: rgba(255,255,255,0.6);">No disponible</div>'}
+                        </div>
+                        ${comprobanteUrl ? `<div style="width:140px; text-align:right;"><button class="btn" style="padding:0.4rem 0.6rem;" onclick="viewComprobante('${comprobanteUrl}')"><i class=\"fas fa-eye\"></i> Ver</button><br><button class="btn btn-secondary" style="padding:0.35rem 0.6rem; margin-top:6px;" onclick="downloadComprobante('${comprobanteUrl}', '${String(comprobanteNombre || '').replace(/'/g, "\\'")}' )"><i class=\"fas fa-download\"></i> Descargar</button></div>` : ''}
                     </div>
                 </div>
                 <div style="margin-top: 12px; color: rgba(255,255,255,0.7); font-size: 0.85rem; line-height: 1.3;">
@@ -754,6 +848,8 @@ class AdminPanel {
             const multi = this.getMultiInfo(ticket);
             const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes} • H: ${multi.hombres} • M: ${multi.mujeres}`;
             const referenciaText = (ticket.referencia && String(ticket.referencia).trim()) ? String(ticket.referencia).trim() : '—';
+            const buyer = this.getBuyerInfo(ticket);
+            const phoneText = buyer.telefono ? buyer.telefono : '';
             const hasFutureInconsistency = this.isInconsistentFutureDate(ticket.fecha_pago) || this.isInconsistentFutureDate(ticket.fecha_verificacion);
             const montoTexto = (() => {
                 if (ticket.monto === null || typeof ticket.monto === 'undefined') return '0';
@@ -780,6 +876,11 @@ class AdminPanel {
                         <div style="color: var(--gray); font-size: 0.85rem;">
                             Ref: ${referenciaText}
                         </div>
+                        ${phoneText ? `
+                        <div style="color: var(--gray); font-size: 0.85rem;">
+                            Tel: ${phoneText}
+                        </div>
+                        ` : ''}
                         <div style="color: var(--gray); font-size: 0.85rem;">
                             ${multiLine}
                         </div>
@@ -797,7 +898,12 @@ class AdminPanel {
                             ${this.formatStatus(ticket.estado)}
                         </span>
                         ${ticket.qr_usado ? '<div style="color: var(--warning); font-size: 0.8rem;">Usado</div>' : ''}
-                        <div style="margin-top: 0.4rem;">
+                        <div style="margin-top: 0.4rem; display:flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                            ${ticket.comprobante_url ? `
+                            <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="viewComprobante('${ticket.comprobante_url}')">
+                                <i class="fas fa-eye"></i> Capture
+                            </button>
+                            ` : ''}
                             <button class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="showTicketDetail(${ticket.id})">
                                 <i class="fas fa-info-circle"></i> Detalle
                             </button>
@@ -1043,6 +1149,35 @@ window.viewComprobante = function(url) {
         return;
     }
     window.open(url, '_blank');
+};
+
+window.downloadComprobante = async function(url, filename) {
+    try {
+        if (!url) {
+            alert('No hay comprobante disponible para este pago');
+            return;
+        }
+
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) {
+            window.open(url, '_blank');
+            return;
+        }
+
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = (filename && String(filename).trim()) ? String(filename).trim() : 'comprobante';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+    } catch (e) {
+        window.open(url, '_blank');
+    }
 };
 
 window.approvePurchase = async function(purchaseId) {
