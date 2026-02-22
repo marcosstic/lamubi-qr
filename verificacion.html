@@ -602,7 +602,7 @@
                     <div class="form-group">
                         <label class="form-label">Captura del Comprobante Zelle *</label>
                         <div class="file-upload">
-                            <input type="file" id="comprobante-zelle" name="comprobante-zelle" class="file-upload-input" accept="image/*" required>
+                            <input type="file" id="comprobante-zelle" name="comprobante-zelle" class="file-upload-input" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic" required>
                             <label for="comprobante-zelle" class="file-upload-label" id="label-zelle">
                                 <div class="file-upload-icon">📷</div>
                                 <div class="file-upload-text">Haz clic para subir el comprobante</div>
@@ -1012,15 +1012,16 @@
                 // Obtener email del formulario para usuarios no registrados
                 const emailUsuario = formData?.correo || formData?.email || 'usuario@temporal.com';
                 
-                if (paymentMethod === 'zelle' && verificationData.emailRemitente) {
-                    // Para Zelle, detectar si el email está registrado
-                    const resultadoDeteccion = await window.UserDetectionAPI?.detectarUsuario(verificationData.emailRemitente);
+                if (paymentMethod === 'zelle') {
+                    // Para Zelle: en Venezuela el remitente puede ser diferente al comprador.
+                    // Asociar el ticket al comprador (email del formulario) y guardar el remitente por separado.
+                    const resultadoDeteccion = await window.UserDetectionAPI?.detectarUsuario(emailUsuario);
                     
                     if (resultadoDeteccion?.encontrado) {
                         userId = resultadoDeteccion.usuario.id;
                         console.log('✅ Usuario detectado:', resultadoDeteccion.usuario.nombre);
                     } else {
-                        emailTemporal = verificationData.emailRemitente;
+                        emailTemporal = emailUsuario;
                         console.log('📝 Email temporal para no registrado:', emailTemporal);
                     }
                 } else {
@@ -1048,15 +1049,19 @@
                 let comprobanteNombre = null;
                 
                 // Subir comprobante si existe
-                const comprobanteElement = document.getElementById('comprobante-pago-movil') || 
-                                         document.getElementById('comprobante-zelle');
+                const comprobanteElement = paymentMethod === 'zelle'
+                    ? document.getElementById('comprobante-zelle')
+                    : document.getElementById('comprobante-pago-movil');
                 
                 if (comprobanteElement && comprobanteElement.files && comprobanteElement.files[0]) {
                     const comprobanteFile = comprobanteElement.files[0];
+                    const uploadRef = paymentMethod === 'zelle'
+                        ? (verificationData.confirmacionZelle || 'sin_confirmacion')
+                        : (verificationData.referencia || 'sin_referencia');
                     const uploadResult = await window.VERIFICACION_UPLOAD.subirComprobante(
                         comprobanteFile,
                         paymentMethod,
-                        verificationData.referencia || 'sin_referencia'
+                        uploadRef
                     );
                     
                     if (uploadResult.success) {

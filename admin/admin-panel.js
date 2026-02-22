@@ -214,6 +214,9 @@ class AdminPanel {
 
         const safe = (v) => (v === null || typeof v === 'undefined' || v === '') ? 'N/A' : v;
         const referenciaText = (record.referencia && String(record.referencia).trim()) ? String(record.referencia).trim() : '—';
+        const confirmacionZelleText = (record.confirmacion_zelle && String(record.confirmacion_zelle).trim()) ? String(record.confirmacion_zelle).trim() : '—';
+        const refLabel = record.metodo_pago === 'zelle' ? 'Confirmación Zelle' : 'Referencia';
+        const refValue = record.metodo_pago === 'zelle' ? confirmacionZelleText : referenciaText;
         const hasFutureInconsistency = this.isInconsistentFutureDate(record.fecha_pago) || this.isInconsistentFutureDate(record.fecha_verificacion);
         const metodo = record.metodo_pago ? record.metodo_pago.replace('-', ' ').toUpperCase() : 'N/A';
         const montoLabel = record.metodo_pago === 'pago-movil' ? 'Monto (Bs.)' : 'Monto (USD)';
@@ -256,8 +259,8 @@ class AdminPanel {
                         <div style="font-weight: 700;">${montoValue}</div>
                     </div>
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
-                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Referencia</div>
-                        <div style="font-weight: 700;">${referenciaText}</div>
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${refLabel}</div>
+                        <div style="font-weight: 700;">${refValue}</div>
                     </div>
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Entradas</div>
@@ -848,6 +851,9 @@ class AdminPanel {
             const multi = this.getMultiInfo(ticket);
             const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes} • H: ${multi.hombres} • M: ${multi.mujeres}`;
             const referenciaText = (ticket.referencia && String(ticket.referencia).trim()) ? String(ticket.referencia).trim() : '—';
+            const confirmacionZelleText = (ticket.confirmacion_zelle && String(ticket.confirmacion_zelle).trim()) ? String(ticket.confirmacion_zelle).trim() : '—';
+            const refLabel = ticket.metodo_pago === 'zelle' ? 'Conf' : 'Ref';
+            const refValue = ticket.metodo_pago === 'zelle' ? confirmacionZelleText : referenciaText;
             const buyer = this.getBuyerInfo(ticket);
             const phoneText = buyer.telefono ? buyer.telefono : '';
             const hasFutureInconsistency = this.isInconsistentFutureDate(ticket.fecha_pago) || this.isInconsistentFutureDate(ticket.fecha_verificacion);
@@ -874,7 +880,7 @@ class AdminPanel {
                             ${ticket.metodo_pago} • ${ticket.estado}
                         </div>
                         <div style="color: var(--gray); font-size: 0.85rem;">
-                            Ref: ${referenciaText}
+                            ${refLabel}: ${refValue}
                         </div>
                         ${phoneText ? `
                         <div style="color: var(--gray); font-size: 0.85rem;">
