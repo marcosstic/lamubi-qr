@@ -176,6 +176,98 @@
             overflow-y: auto;
         }
 
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+        }
+
+        .auth-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #333;
+            text-align: center;
+        }
+
+        .auth-subtitle {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .auth-field {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.15);
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .auth-error {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .auth-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .auth-userbar {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .auth-userbar .user {
+            color: rgba(255,255,255,0.92);
+            font-weight: 700;
+            font-size: 0.95rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .auth-userbar .logout {
+            padding: 10px 12px;
+            min-height: 40px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            font-weight: 700;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             body {
@@ -219,6 +311,11 @@
             <p>LA MUBI - Sistema Optimizado para iPhone</p>
         </div>
 
+        <div id="authUserbar" class="auth-userbar">
+            <div id="authUserText" class="user"></div>
+            <button id="authLogoutBtn" class="logout" type="button">Salir</button>
+        </div>
+
         <!-- Scanner Card -->
         <div class="scanner-card">
             <div id="status" class="status" style="display: none;"></div>
@@ -256,6 +353,21 @@
         <button id="consoleBtn" class="btn btn-primary" style="position: fixed; bottom: 170px; right: 10px; width: auto; padding: 10px; font-size: 12px; z-index: 9999;">
             📱 Console
         </button>
+    </div>
+
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-title">Iniciar sesión</div>
+            <div class="auth-subtitle">Acceso requerido para validar tickets</div>
+            <div id="authError" class="auth-error"></div>
+            <form id="authForm">
+                <input id="authEmail" class="auth-field" type="email" autocomplete="username" placeholder="Correo" required>
+                <input id="authPassword" class="auth-field" type="password" autocomplete="current-password" placeholder="Contraseña" required>
+                <div class="auth-actions">
+                    <button id="authLoginBtn" class="btn btn-primary" type="submit" style="flex:1;">Entrar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Scripts -->
@@ -1369,18 +1481,170 @@ video.paused: ${this.qrDetectionHelper?.videoElement?.paused || 'N/A'}
             }
         }
 
-        // Inicializar cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('📱 DOM listo, iniciando Validador QR Universal...');
+       // Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', async () => {
+    const AUTH_STORAGE_KEY = 'lamubi_admin_user';
+    const allowedRoles = new Set(['admin_scanner', 'super_admin']);
 
-            // Hacer addConsoleLog disponible globalmente
-            if (typeof window.addConsoleLog === 'undefined') {
-                const validatorInstance = new ValidadorQRUniversal();
-                window.addConsoleLog = validatorInstance.addConsoleLog.bind(validatorInstance);
-            } else {
-                new ValidadorQRUniversal();
+    const getSupabaseClient = () => {
+        if (window.supabaseClient) return window.supabaseClient;
+        if (window.LAMUBI_UTILS?.supabase) return window.LAMUBI_UTILS.supabase;
+
+        try {
+            if (window.supabase?.createClient && window.CONFIG?.SUPABASE?.URL && window.CONFIG?.SUPABASE?.ANON_KEY) {
+                window.supabaseClient = window.supabase.createClient(CONFIG.SUPABASE.URL, CONFIG.SUPABASE.ANON_KEY);
+                return window.supabaseClient;
+            }
+        } catch (e) {
+            // ignore
+        }
+        return null;
+    };
+
+    const supabase = getSupabaseClient();
+
+    const overlay = document.getElementById('authOverlay');
+    const form = document.getElementById('authForm');
+    const emailEl = document.getElementById('authEmail');
+    const passEl = document.getElementById('authPassword');
+    const errEl = document.getElementById('authError');
+    const loginBtn = document.getElementById('authLoginBtn');
+    const userbar = document.getElementById('authUserbar');
+    const userText = document.getElementById('authUserText');
+    const logoutBtn = document.getElementById('authLogoutBtn');
+
+    let validatorInstance = null;
+
+    const setErr = (msg) => {
+        if (!errEl) return;
+        errEl.textContent = msg || '';
+        errEl.style.display = msg ? 'block' : 'none';
+    };
+
+    const showOverlay = () => {
+        if (overlay) overlay.style.display = 'flex';
+        if (userbar) userbar.style.display = 'none';
+    };
+
+    const hideOverlay = () => {
+        if (overlay) overlay.style.display = 'none';
+        if (userbar) userbar.style.display = 'flex';
+    };
+
+    const readSession = () => {
+        const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!raw) return null;
+        try { return JSON.parse(raw); } catch { return null; }
+    };
+
+    const saveSession = (admin) => {
+        const session = {
+            id: admin.id,
+            nombre: admin.nombre,
+            correo: admin.correo,
+            rol: admin.rol,
+            permisos: admin.permisos,
+            loginTime: new Date().toISOString()
+        };
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+        return session;
+    };
+
+    const clearSession = () => localStorage.removeItem(AUTH_STORAGE_KEY);
+
+    const initValidator = () => {
+        if (validatorInstance) return;
+        validatorInstance = new ValidadorQRUniversal();
+        if (typeof window.addConsoleLog === 'undefined') {
+            window.addConsoleLog = validatorInstance.addConsoleLog.bind(validatorInstance);
+        }
+    };
+
+    const applyAuthorized = (session) => {
+        if (userText) userText.textContent = `${session.correo} (${session.rol})`;
+        hideOverlay();
+        initValidator();
+    };
+
+    const validateStoredSession = async () => {
+        const session = readSession();
+        if (!session?.id || !supabase) return null;
+
+        const { data, error } = await supabase
+            .from('administradores')
+            .select('*')
+            .eq('id', session.id)
+            .eq('activo', true)
+            .single();
+
+        if (error || !data) return null;
+        if (!allowedRoles.has(String(data.rol))) return null;
+        return data;
+    };
+
+    const requireAuth = async () => {
+        setErr('');
+        const admin = await validateStoredSession();
+        if (!admin) {
+            clearSession();
+            showOverlay();
+            return;
+        }
+        applyAuthorized(saveSession(admin));
+    };
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            clearSession();
+            try { validatorInstance && validatorInstance.stopCamera(); } catch {}
+            validatorInstance = null;
+            showOverlay();
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            setErr('');
+
+            if (!supabase) {
+                setErr('Supabase no está disponible');
+                return;
+            }
+
+            const email = (emailEl?.value || '').trim();
+            const password = passEl?.value || '';
+            if (!email || !password) {
+                setErr('Ingresa correo y contraseña');
+                return;
+            }
+
+            if (loginBtn) loginBtn.disabled = true;
+            try {
+                const { data, error } = await supabase
+                    .from('administradores')
+                    .select('*')
+                    .eq('correo', email)
+                    .eq('password', password)
+                    .eq('activo', true)
+                    .single();
+
+                if (error || !data) throw new Error('Credenciales incorrectas');
+                if (!allowedRoles.has(String(data.rol))) throw new Error('No autorizado para escanear');
+
+                applyAuthorized(saveSession(data));
+            } catch (err) {
+                setErr(err?.message || 'Error iniciando sesión');
+                clearSession();
+                showOverlay();
+            } finally {
+                if (loginBtn) loginBtn.disabled = false;
             }
         });
+    }
+
+    await requireAuth();
+});
     </script>
 
 </body>
