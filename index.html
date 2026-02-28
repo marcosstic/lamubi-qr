@@ -432,6 +432,125 @@
             box-shadow: 0 10px 25px rgba(187, 17, 117, 0.4);
         }
 
+        /* SOLD OUT Styles */
+        .sold-out-container {
+            text-align: center;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.2), rgba(255, 51, 102, 0.1));
+            border: 2px solid #ff3366;
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            animation: soldOutGlow 2s ease-in-out infinite alternate;
+        }
+
+        .sold-out-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: soldOutShimmer 3s infinite;
+        }
+
+        @keyframes soldOutGlow {
+            0% { box-shadow: 0 0 20px rgba(255, 51, 102, 0.4); }
+            100% { box-shadow: 0 0 40px rgba(255, 51, 102, 0.8); }
+        }
+
+        @keyframes soldOutShimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .sold-out-main {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #ff3366;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 0.5rem;
+            animation: soldOutPulse 1.5s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(255, 51, 102, 0.8);
+        }
+
+        .sold-out-secondary {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--white);
+            opacity: 0.9;
+        }
+
+        @keyframes soldOutPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .sold-out-small {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.2), rgba(255, 51, 102, 0.1));
+            border: 2px solid #ff3366;
+            border-radius: 15px;
+            animation: soldOutGlow 2s ease-in-out infinite alternate;
+        }
+
+        .sold-out-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ff3366;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.3rem;
+            animation: soldOutPulse 1.5s ease-in-out infinite;
+        }
+
+        .sold-out-info {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--white);
+            opacity: 0.9;
+        }
+
+        /* Responsive adjustments for SOLD OUT */
+        @media (max-width: 768px) {
+            .sold-out-main {
+                font-size: 2rem;
+            }
+            
+            .sold-out-secondary {
+                font-size: 1rem;
+            }
+            
+            .sold-out-text {
+                font-size: 1.2rem;
+            }
+            
+            .sold-out-info {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 414px) {
+            .sold-out-main {
+                font-size: 1.8rem;
+            }
+            
+            .sold-out-secondary {
+                font-size: 0.9rem;
+            }
+            
+            .sold-out-text {
+                font-size: 1rem;
+            }
+            
+            .sold-out-info {
+                font-size: 0.8rem;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .logo-img {
@@ -605,10 +724,17 @@
                 <span class="counter-number" id="available-tickets">47</span>
                 <span class="counter-total">/ 100</span>
             </div>
-            <button class="main-cta-button" id="main-cta" onclick="window.location.href='comprar.html'">
+            <!-- Botón original comentado para poder revertir después del evento -->
+            <!-- <button class="main-cta-button" id="main-cta" onclick="window.location.href='comprar.html'">
                 <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
                 <div class="cta-pulse"></div>
-            </button>
+            </button> -->
+            
+            <!-- SOLD OUT - Mensaje temporal -->
+            <div class="sold-out-container">
+                <div class="sold-out-main">🔴 SOLD OUT 🔴</div>
+                <div class="sold-out-secondary">📍 Últimas entradas en puerta</div>
+            </div>
         </div>
     </section>
 
@@ -652,7 +778,14 @@
                         <li>✓ Zona principal</li>
                         <li>✓ Experiencia completa La Mubi</li>
                     </ul>
-                    <button class="ticket-button" onclick="window.location.href='comprar.html'">COMPRAR ENTRADA</button>
+                    <!-- Botón original comentado para poder revertir después del evento -->
+                    <!-- <button class="ticket-button" onclick="window.location.href='comprar.html'">COMPRAR ENTRADA</button> -->
+                    
+                    <!-- SOLD OUT - Mensaje temporal -->
+                    <div class="sold-out-small">
+                        <div class="sold-out-text">🔴 SOLD OUT</div>
+                        <div class="sold-out-info">📍 En puerta</div>
+                    </div>
                 </div>
             </div>
         </div>
