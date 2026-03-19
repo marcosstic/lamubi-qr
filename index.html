@@ -201,6 +201,13 @@
             text-transform: uppercase;
         }
 
+        .counter-label-urgency {
+            color: #ff4444;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
         .counter-number {
             color: var(--primary);
             font-weight: 900;
@@ -720,9 +727,9 @@
         
         <div class="main-cta-container">
             <div class="availability-counter">
-                <span class="counter-label">ENTRADAS DISPONIBLES</span>
-                <span class="counter-number" id="available-tickets">650</span>
-                <span class="counter-total">/ 700</span>
+                <span class="counter-label counter-label-urgency">entradas vendidas 27 de 700 disponibles</span>
+                <span class="counter-number" id="available-tickets" style="display:none;">685</span>
+                <span class="counter-total" style="display:none;">/ 700</span>
             </div>
             <button class="main-cta-button" id="main-cta" onclick="window.location.href='comprar.html'">
                 <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
@@ -801,10 +808,10 @@
             }
         }
 
-        // Countdown dinámico hacia evento LA MUBI (28-Feb-2026 19:00 Venezuela)
+        // Countdown dinámico hacia evento LA MUBI (18-Abr-2026 20:00 Venezuela)
         function updateCountdown() {
-            // Fecha objetivo: 28 de febrero 2026, 19:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-02-28T19:00:00-04:00');
+            // Fecha objetivo: 18 de abril 2026, 20:00 hora Venezuela (America/Caracas)
+            const eventDate = new Date('2026-04-18T20:00:00-04:00');
 
             setInterval(() => {
                 // Obtener hora actual en Venezuela usando helper existente
@@ -862,7 +869,7 @@
 
         // Contador dinámico de entradas
         function updateTicketCounter() {
-            const availableTickets = 650;
+            const availableTickets = 685;
             const totalTickets = 700;
             
             // Simular reducción de entradas cada 30 segundos
