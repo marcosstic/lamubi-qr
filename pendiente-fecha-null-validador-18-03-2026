@@ -1,0 +1,4 @@
+3) Validación QR OK
+qr_usado = true para el ticket 396
+Esto confirma que el validador está funcionando y escribe en BD.
+Nota: fecha_uso te quedó null. No bloquea nada (ya marcó qr_usado=true), pero si quieres, luego revisamos por qué no está guardando la fecha (puede ser lógica del validador o un UPDATE parcial).

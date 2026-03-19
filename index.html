@@ -724,17 +724,10 @@
                 <span class="counter-number" id="available-tickets">47</span>
                 <span class="counter-total">/ 100</span>
             </div>
-            <!-- Botón original comentado para poder revertir después del evento -->
-            <!-- <button class="main-cta-button" id="main-cta" onclick="window.location.href='comprar.html'">
+            <button class="main-cta-button" id="main-cta" onclick="window.location.href='comprar.html'">
                 <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
                 <div class="cta-pulse"></div>
-            </button> -->
-            
-            <!-- SOLD OUT - Mensaje temporal -->
-            <div class="sold-out-container">
-                <div class="sold-out-main">🔴 SOLD OUT 🔴</div>
-                <div class="sold-out-secondary">📍 Últimas entradas en puerta</div>
-            </div>
+            </button>
         </div>
     </section>
 
@@ -778,14 +771,7 @@
                         <li>✓ Zona principal</li>
                         <li>✓ Experiencia completa La Mubi</li>
                     </ul>
-                    <!-- Botón original comentado para poder revertir después del evento -->
-                    <!-- <button class="ticket-button" onclick="window.location.href='comprar.html'">COMPRAR ENTRADA</button> -->
-                    
-                    <!-- SOLD OUT - Mensaje temporal -->
-                    <div class="sold-out-small">
-                        <div class="sold-out-text">🔴 SOLD OUT</div>
-                        <div class="sold-out-info">📍 En puerta</div>
-                    </div>
+                    <button class="ticket-button" onclick="window.location.href='comprar.html'">COMPRAR ENTRADA</button>
                 </div>
             </div>
         </div>
@@ -895,12 +881,15 @@
         }
 
         // Efecto de pulsación intensa al hacer clic en CTA
-        document.getElementById('main-cta').addEventListener('click', function() {
-            this.style.transform = 'translateY(-2px) scale(0.98)';
-            setTimeout(() => {
-                this.style.transform = 'translateY(-5px) scale(1.05)';
-            }, 150);
-        });
+        const mainCta = document.getElementById('main-cta');
+        if (mainCta) {
+            mainCta.addEventListener('click', function() {
+                this.style.transform = 'translateY(-2px) scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = 'translateY(-5px) scale(1.05)';
+                }, 150);
+            });
+        }
 
         async function loadTicketPrice() {
             try {
