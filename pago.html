@@ -301,6 +301,30 @@
             color: var(--secondary);
         }
 
+        .payment-card.disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(187, 17, 117, 0.06), rgba(244, 60, 184, 0.03));
+            border-color: rgba(187, 17, 117, 0.15);
+        }
+
+        .payment-card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .payment-card.disabled .payment-title,
+        .payment-card.disabled .payment-description,
+        .payment-card.disabled .payment-details {
+            color: rgba(34, 34, 34, 0.7);
+        }
+
+        .payment-unavailable {
+            font-weight: 700;
+            color: rgba(34, 34, 34, 0.9);
+        }
+
         .payment-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
@@ -509,13 +533,12 @@
                 </div>
 
                 <!-- Zelle -->
-                <div class="payment-card" data-method="zelle">
+                <div class="payment-card disabled" data-method="zelle" aria-disabled="true">
                     <div class="payment-icon">💳</div>
                     <h3 class="payment-title">ZELLE</h3>
-                    <p class="payment-description">Transferencia instantánea desde EE.UU.</p>
+                    <p class="payment-description">No disponible temporalmente</p>
                     <div class="payment-details">
-                        <strong>Email:</strong> troconizjessica@gmail.com<br>
-                        <strong>Nombre:</strong> Jessica Troconiz
+                        <p class="payment-unavailable">zelle no disponible temporalmente</p>
                     </div>
                 </div>
 
@@ -589,6 +612,10 @@
 
         document.querySelectorAll('.payment-card').forEach(card => {
             card.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) {
+                    return;
+                }
+
                 // Remove previous selection
                 document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('selected'));
                 
