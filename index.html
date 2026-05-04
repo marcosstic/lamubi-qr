@@ -126,10 +126,22 @@
             font-size: 1.5rem;
             font-weight: 600;
             color: var(--white);
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             z-index: 10;
             position: relative;
             text-align: center;
+        }
+
+        .event-date {
+            font-size: 1rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 1.5rem;
+            z-index: 10;
+            position: relative;
+            text-align: center;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
 
         /* Countdown */
@@ -705,6 +717,7 @@
         </div>
         
         <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
+        <p class="event-date">30 de mayo 2026 · 18:00 · Coro, Venezuela</p>
         
         <div class="countdown">
             <div class="countdown-item">
@@ -727,12 +740,12 @@
         
         <div class="main-cta-container">
             <div class="availability-counter">
-                <span class="counter-label counter-label-urgency">entradas vendidas 701 de 800 disponibles</span>
+                <span class="counter-label counter-label-urgency">entradas vendidas 33 de 600 disponibles</span>
                 <span class="counter-number" id="available-tickets" style="display:none;">685</span>
                 <span class="counter-total" style="display:none;">/ 700</span>
             </div>
-            <button class="main-cta-button" id="main-cta" disabled style="opacity: 0.7; cursor: not-allowed;">
-                <span class="cta-text" id="cta-price-text">entradas disponibles en el evento de la mubi, web deshabilitada temporalmente</span>
+            <button class="main-cta-button" id="main-cta" type="button">
+                <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
                 <div class="cta-pulse"></div>
             </button>
         </div>
@@ -777,7 +790,7 @@
                         <li>✓ Zona principal</li>
                         <li>✓ Experiencia completa La Mubi</li>
                     </ul>
-                    <button class="ticket-button" disabled style="opacity: 0.7; cursor: not-allowed;">entradas disponibles en el evento de la mubi</button>
+                    <button class="ticket-button" type="button">COMPRAR ENTRADA GENERAL</button>
                 </div>
             </div>
         </div>
@@ -807,10 +820,10 @@
             }
         }
 
-        // Countdown dinámico hacia evento LA MUBI (18-Abr-2026 20:00 Venezuela)
+        // Countdown dinámico hacia evento LA MUBI (30-May-2026 18:00 Venezuela)
         function updateCountdown() {
-            // Fecha objetivo: 18 de abril 2026, 20:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-04-18T20:00:00-04:00');
+            // Fecha objetivo: 30 de mayo 2026, 18:00 hora Venezuela (America/Caracas)
+            const eventDate = new Date('2026-05-30T18:00:00-04:00');
 
             setInterval(() => {
                 // Obtener hora actual en Venezuela usando helper existente
@@ -888,6 +901,28 @@
 
         // Efecto de pulsación intensa al hacer clic en CTA
         const mainCta = document.getElementById('main-cta');
+        const ticketButtons = Array.from(document.querySelectorAll('.ticket-button'));
+
+        const navigateToPurchase = () => {
+            window.location.href = 'comprar.html';
+        };
+
+        const enablePurchaseButtons = () => {
+            if (mainCta) {
+                mainCta.disabled = false;
+                mainCta.style.cursor = 'pointer';
+                mainCta.style.opacity = '';
+                mainCta.addEventListener('click', navigateToPurchase);
+            }
+
+            ticketButtons.forEach(button => {
+                button.disabled = false;
+                button.style.cursor = 'pointer';
+                button.style.opacity = '';
+                button.addEventListener('click', navigateToPurchase);
+            });
+        };
+
         if (mainCta) {
             mainCta.addEventListener('click', function() {
                 this.style.transform = 'translateY(-2px) scale(0.98)';
@@ -899,23 +934,31 @@
 
         async function loadTicketPrice() {
             try {
-                if (!window.LAMUBI_UTILS?.getTicketPriceUSD) return;
-                const price = await window.LAMUBI_UTILS.getTicketPriceUSD();
+                const price = await window.LAMUBI_UTILS?.getTicketPriceUSD?.();
+                if (typeof price !== 'number' || !Number.isFinite(price)) {
+                    return;
+                }
+
                 const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
                 const cta = document.getElementById('cta-price-text');
                 if (cta) cta.textContent = `COMPRAR ENTRADA GENERAL - ${formatted}`;
                 const card = document.getElementById('ticket-price-card');
                 if (card) card.textContent = formatted;
             } catch (e) {
-                // Ignore and keep fallback
+                // Keep fallback price and continue
             }
+        }
+
+        async function initPurchaseWorkflow() {
+            await loadTicketPrice();
+            enablePurchaseButtons();
         }
 
         // Inicializar
         createParticles();
         updateCountdown();
         updateTicketCounter();
-        // loadTicketPrice(); // Deshabilitado para mantener mensaje de web deshabilitada
+        initPurchaseWorkflow();
     </script>
 
     <script src="assets/whatsapp-widget.js" defer></script>
