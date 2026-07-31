@@ -799,6 +799,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script>
+        // ============================================
+        // CONFIGURACIÓN DE BLOQUEO DE COMPRAS
+        // ============================================
+        const COMPRAS_BLOQUEADAS = true; // Cambiar a false para desbloquear
+        // ============================================
+
         // Crear partículas dinámicas
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
@@ -908,18 +914,26 @@
         };
 
         const enablePurchaseButtons = () => {
+            const shouldDisable = COMPRAS_BLOQUEADAS;
+
             if (mainCta) {
-                mainCta.disabled = false;
-                mainCta.style.cursor = 'pointer';
-                mainCta.style.opacity = '';
-                mainCta.addEventListener('click', navigateToPurchase);
+                mainCta.disabled = shouldDisable;
+                mainCta.style.cursor = shouldDisable ? 'not-allowed' : 'pointer';
+                mainCta.style.opacity = shouldDisable ? '0.5' : '';
+
+                if (!shouldDisable) {
+                    mainCta.addEventListener('click', navigateToPurchase);
+                }
             }
 
             ticketButtons.forEach(button => {
-                button.disabled = false;
-                button.style.cursor = 'pointer';
-                button.style.opacity = '';
-                button.addEventListener('click', navigateToPurchase);
+                button.disabled = shouldDisable;
+                button.style.cursor = shouldDisable ? 'not-allowed' : 'pointer';
+                button.style.opacity = shouldDisable ? '0.5' : '';
+
+                if (!shouldDisable) {
+                    button.addEventListener('click', navigateToPurchase);
+                }
             });
         };
 
