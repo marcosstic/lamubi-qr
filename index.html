@@ -303,6 +303,41 @@
             transform: translateY(-2px) scale(1.02);
         }
 
+        .main-cta-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            background: linear-gradient(45deg, #666, #888);
+            pointer-events: none;
+        }
+
+        .main-cta-button:disabled:hover {
+            transform: none;
+            box-shadow: 0 15px 40px rgba(187, 17, 117, 0.5);
+            background: linear-gradient(45deg, #666, #888);
+        }
+
+        .sold-out-message {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #ff4444;
+            text-align: center;
+            margin-top: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: soldOutPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes soldOutPulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.02);
+            }
+        }
+
         /* Sección de Experiencia */
         .experience {
             padding: 5rem 2rem;
@@ -449,6 +484,19 @@
         .ticket-button:hover {
             transform: scale(1.05);
             box-shadow: 0 10px 25px rgba(187, 17, 117, 0.4);
+        }
+
+        .ticket-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            background: linear-gradient(45deg, #666, #888);
+            pointer-events: none;
+        }
+
+        .ticket-button:disabled:hover {
+            transform: none;
+            box-shadow: none;
+            background: linear-gradient(45deg, #666, #888);
         }
 
         /* SOLD OUT Styles */
@@ -745,10 +793,11 @@
                 <span class="counter-number" id="available-tickets" style="display:none;">685</span>
                 <span class="counter-total" style="display:none;">/ 700</span>
             </div>
-            <button class="main-cta-button" id="main-cta" type="button">
+            <button class="main-cta-button" id="main-cta" type="button" disabled>
                 <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
                 <div class="cta-pulse"></div>
             </button>
+            <p class="sold-out-message">SOLD OUT, ultimas entradas disponibles para comprar en puerta</p>
         </div>
     </section>
 
@@ -791,7 +840,7 @@
                         <li>✓ Zona principal</li>
                         <li>✓ Experiencia completa La Mubi</li>
                     </ul>
-                    <button class="ticket-button" type="button">COMPRAR ENTRADA GENERAL</button>
+                    <button class="ticket-button" type="button" disabled>SOLD OUT, ultimas entradas disponibles para comprar en puerta</button>
                 </div>
             </div>
         </div>
@@ -910,9 +959,10 @@
         const mainCta = document.getElementById('main-cta');
         const ticketButtons = Array.from(document.querySelectorAll('.ticket-button'));
 
-        const navigateToPurchase = () => {
-            window.location.href = 'comprar.html';
-        };
+        // Funcionalidad de navegación desactivada - SOLD OUT
+        // const navigateToPurchase = () => {
+        //     window.location.href = 'comprar.html';
+        // };
 
         const enablePurchaseButtons = () => {
             const shouldDisable = COMPRAS_BLOQUEADAS;
