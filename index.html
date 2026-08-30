@@ -303,41 +303,6 @@
             transform: translateY(-2px) scale(1.02);
         }
 
-        .main-cta-button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-            background: linear-gradient(45deg, #666, #888);
-            pointer-events: none;
-        }
-
-        .main-cta-button:disabled:hover {
-            transform: none;
-            box-shadow: 0 15px 40px rgba(187, 17, 117, 0.5);
-            background: linear-gradient(45deg, #666, #888);
-        }
-
-        .sold-out-message {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: #ff4444;
-            text-align: center;
-            margin-top: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            animation: soldOutPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes soldOutPulse {
-            0%, 100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.8;
-                transform: scale(1.02);
-            }
-        }
-
         /* Sección de Experiencia */
         .experience {
             padding: 5rem 2rem;
@@ -486,19 +451,6 @@
             box-shadow: 0 10px 25px rgba(187, 17, 117, 0.4);
         }
 
-        .ticket-button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-            background: linear-gradient(45deg, #666, #888);
-            pointer-events: none;
-        }
-
-        .ticket-button:disabled:hover {
-            transform: none;
-            box-shadow: none;
-            background: linear-gradient(45deg, #666, #888);
-        }
-
         /* SOLD OUT Styles */
         .sold-out-container {
             text-align: center;
@@ -622,12 +574,6 @@
         @media (max-width: 768px) {
             .logo-img {
                 max-width: 280px;
-            }
-
-            .sold-out-message {
-                font-size: 1.2rem;
-                line-height: 1.4;
-                padding: 0 1rem;
             }
             
             .countdown {
@@ -771,7 +717,6 @@
         </div>
         
         <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
-        <p class="event-date">29 AGOSTO - STUFFA</p>
         <p class="event-date">18 SEPTIEMBRE-LUNA MARACAIBO - LOS DE LA NASA - TROCO B-DAY BASH</p>
         
         <div class="countdown">
@@ -795,15 +740,14 @@
         
         <div class="main-cta-container">
             <div class="availability-counter">
-                <span class="counter-label counter-label-urgency">stuffa entradas vendidas 422 de 700 disponibles</span>
-                <span class="counter-number" id="available-tickets" style="display:none;">685</span>
-                <span class="counter-total" style="display:none;">/ 700</span>
+                <span class="counter-label counter-label-urgency">entradas vendidas 56 de 500 disponibles</span>
+                <span class="counter-number" id="available-tickets" style="display:none;">56</span>
+                <span class="counter-total" style="display:none;">/ 500</span>
             </div>
-            <button class="main-cta-button" id="main-cta" type="button" disabled>
+            <button class="main-cta-button" id="main-cta" type="button">
                 <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
                 <div class="cta-pulse"></div>
             </button>
-            <p class="sold-out-message">SOLD OUT, ultimas entradas disponibles para comprar en puerta</p>
         </div>
     </section>
 
@@ -846,7 +790,7 @@
                         <li>✓ Zona principal</li>
                         <li>✓ Experiencia completa La Mubi</li>
                     </ul>
-                    <button class="ticket-button" type="button" disabled>SOLD OUT, ultimas entradas disponibles para comprar en puerta</button>
+                    <button class="ticket-button" type="button">COMPRAR ENTRADA GENERAL</button>
                 </div>
             </div>
         </div>
@@ -882,10 +826,10 @@
             }
         }
 
-        // Countdown dinámico hacia evento LA MUBI (29-Ago-2026 19:00 Venezuela)
+        // Countdown dinámico hacia evento LA MUBI (18-Sep-2026 21:00 Venezuela)
         function updateCountdown() {
-            // Fecha objetivo: 29 de agosto 2026, 19:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-08-29T19:00:00-04:00');
+            // Fecha objetivo: 18 de septiembre 2026, 21:00 hora Venezuela (America/Caracas)
+            const eventDate = new Date('2026-09-18T21:00:00-04:00');
 
             setInterval(() => {
                 // Obtener hora actual en Venezuela usando helper existente
@@ -965,10 +909,9 @@
         const mainCta = document.getElementById('main-cta');
         const ticketButtons = Array.from(document.querySelectorAll('.ticket-button'));
 
-        // Funcionalidad de navegación desactivada - SOLD OUT
-        // const navigateToPurchase = () => {
-        //     window.location.href = 'comprar.html';
-        // };
+        const navigateToPurchase = () => {
+            window.location.href = 'comprar.html';
+        };
 
         const enablePurchaseButtons = () => {
             const shouldDisable = COMPRAS_BLOQUEADAS;
