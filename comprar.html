@@ -541,14 +541,25 @@
 
                     if (data && !error) {
                         eventoNombre = data.nombre;
-                        // Actualizar título del formulario
+                        // Actualizar título del formulario solo si NO es evento General (id=1)
                         const formTitle = document.querySelector('.form-title');
                         const formSubtitle = document.querySelector('.form-subtitle');
-                        if (formTitle) {
-                            formTitle.textContent = `COMPLETA TUS DATOS - ${eventoNombre}`;
-                        }
-                        if (formSubtitle) {
-                            formSubtitle.textContent = `Reserva tu entrada para ${eventoNombre}`;
+                        if (eventoId !== 1) {
+                            // Para eventos específicos (Pool Night, etc.), mostrar nombre
+                            if (formTitle) {
+                                formTitle.textContent = `COMPLETA TUS DATOS - ${eventoNombre}`;
+                            }
+                            if (formSubtitle) {
+                                formSubtitle.textContent = `Reserva tu entrada para ${eventoNombre}`;
+                            }
+                        } else {
+                            // Para evento General, usar texto original
+                            if (formTitle) {
+                                formTitle.textContent = 'COMPLETA TUS DATOS';
+                            }
+                            if (formSubtitle) {
+                                formSubtitle.textContent = 'Reserva tu entrada para la experiencia La Mubi';
+                            }
                         }
                     }
                 }
