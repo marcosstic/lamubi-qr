@@ -738,9 +738,34 @@
                 }
             }
 
-            const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
-                ? await window.LAMUBI_UTILS.getTicketPriceUSD()
-                : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+            // Leer evento_id del formData
+            const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
+            const eventoId = formData?.eventoId || 1;
+
+            // Lógica híbrida de precio
+            let ticketPriceUsd;
+            if (eventoId === 1) {
+                // Evento General: usar configuracion_sistema
+                ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
+                    ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+                    : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+            } else {
+                // Otros eventos (Pool Night): consultar tabla eventos
+                if (window.LAMUBI_UTILS?.supabase) {
+                    const { data, error } = await window.LAMUBI_UTILS.supabase
+                        .from('eventos')
+                        .select('precio_usd')
+                        .eq('id', eventoId)
+                        .single();
+                    if (data && !error) {
+                        ticketPriceUsd = data.precio_usd;
+                    } else {
+                        ticketPriceUsd = 5.00; // Fallback
+                    }
+                } else {
+                    ticketPriceUsd = 5.00; // Fallback
+                }
+            }
 
             let cantidadEntradas = 1;
             let hombres = 0;
@@ -763,8 +788,8 @@
             });
             
             // Get current payment method
-            const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
-            const paymentMethod = formData ? formData.paymentMethod : null;
+            const formDataPayment = JSON.parse(localStorage.getItem('lamubi-form-data'));
+            const paymentMethod = formDataPayment ? formDataPayment.paymentMethod : null;
             
             console.log('Método de pago detectado:', paymentMethod);
             
@@ -811,6 +836,12 @@
                 if (montoUsuarioEntero !== montoEsperado) {
                     console.log('Error: monto no coincide con tasa * precio');
                     monto.closest('.form-group').classList.add('error');
+                    // Actualizar mensaje de error con monto esperado correcto
+                    const errorMessage = monto.closest('.form-group').querySelector('.error-message');
+                    if (errorMessage) {
+                        const montoFormateado = montoEsperado.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                        errorMessage.textContent = `Monto incorrecto. Debe ser exactamente: Bs. ${montoFormateado},00`;
+                    }
                     isValid = false;
                 }
                 
@@ -983,9 +1014,34 @@
             try {
                 console.log('🎯 Guardando verificación en BD...', verificationData);
 
-                const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
-                    ? await window.LAMUBI_UTILS.getTicketPriceUSD()
-                    : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+                // Leer evento_id del formData
+                const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
+                const eventoId = formData?.eventoId || 1;
+
+                // Lógica híbrida de precio
+                let ticketPriceUsd;
+                if (eventoId === 1) {
+                    // Evento General: usar configuracion_sistema
+                    ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
+                        ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+                        : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+                } else {
+                    // Otros eventos (Pool Night): consultar tabla eventos
+                    if (window.LAMUBI_UTILS?.supabase) {
+                        const { data, error } = await window.LAMUBI_UTILS.supabase
+                            .from('eventos')
+                            .select('precio_usd')
+                            .eq('id', eventoId)
+                            .single();
+                        if (data && !error) {
+                            ticketPriceUsd = data.precio_usd;
+                        } else {
+                            ticketPriceUsd = 5.00; // Fallback
+                        }
+                    } else {
+                        ticketPriceUsd = 5.00; // Fallback
+                    }
+                }
 
                 const purchase = verificationData?.purchase || { cantidadEntradas: 1, hombres: 0, mujeres: 0, totalUsd: ticketPriceUsd };
                 const cantidadEntradasNorm = Number.isFinite(Number(purchase.cantidadEntradas))
@@ -1002,15 +1058,15 @@
                     : (ticketPriceUsd * cantidadEntradasNorm);
                 
                 // Obtener datos del formulario
-                const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
-                const paymentMethod = formData?.paymentMethod;
+                const formDataPayment = JSON.parse(localStorage.getItem('lamubi-form-data'));
+                const paymentMethod = formDataPayment?.paymentMethod;
                 
                 // Detectar si el usuario está registrado
                 let userId = null;
                 let emailTemporal = null;
                 
                 // Obtener email del formulario para usuarios no registrados
-                const emailUsuario = formData?.correo || formData?.email || 'usuario@temporal.com';
+                const emailUsuario = formDataPayment?.correo || formDataPayment?.email || 'usuario@temporal.com';
                 
                 if (paymentMethod === 'zelle') {
                     // Para Zelle: en Venezuela el remitente puede ser diferente al comprador.
@@ -1085,7 +1141,7 @@
                     usos_restantes: cantidadEntradasNorm,
                     cantidad_hombres: hombresNorm,
                     cantidad_mujeres: mujeresNorm,
-                    evento_id: formData.eventoId || 1, // Usar evento_id del formData o default 1
+                    evento_id: formData.eventoId || 1, // Usar evento_id del formData (línea 1018) o default 1
                     monto: paymentMethod === 'pago-movil' ? 
                         parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
                         totalUsd, // USD total para Zelle
@@ -1243,10 +1299,35 @@
                 }
                 
                 console.log('✅ Scripts cargados, obteniendo tasa dólar...');
-                
-                const ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
-                    ? await window.LAMUBI_UTILS.getTicketPriceUSD()
-                    : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+
+                // Leer evento_id del formData
+                const formDataEvento = JSON.parse(localStorage.getItem('lamubi-form-data'));
+                const eventoId = formDataEvento?.eventoId || 1;
+
+                // Lógica híbrida de precio
+                let ticketPriceUsd;
+                if (eventoId === 1) {
+                    // Evento General: usar configuracion_sistema
+                    ticketPriceUsd = window.LAMUBI_UTILS?.getTicketPriceUSD
+                        ? await window.LAMUBI_UTILS.getTicketPriceUSD()
+                        : (window.LAMUBI_CONFIG?.TICKETS?.PRECIO_USD ?? 5.00);
+                } else {
+                    // Otros eventos (Pool Night): consultar tabla eventos
+                    if (window.LAMUBI_UTILS?.supabase) {
+                        const { data, error } = await window.LAMUBI_UTILS.supabase
+                            .from('eventos')
+                            .select('precio_usd')
+                            .eq('id', eventoId)
+                            .single();
+                        if (data && !error) {
+                            ticketPriceUsd = data.precio_usd;
+                        } else {
+                            ticketPriceUsd = 5.00; // Fallback
+                        }
+                    } else {
+                        ticketPriceUsd = 5.00; // Fallback
+                    }
+                }
 
                 function clampInt(value, min, max) {
                     const n = parseInt(value, 10);
