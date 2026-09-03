@@ -1085,6 +1085,7 @@
                     usos_restantes: cantidadEntradasNorm,
                     cantidad_hombres: hombresNorm,
                     cantidad_mujeres: mujeresNorm,
+                    evento_id: formData.eventoId || 1, // Usar evento_id del formData o default 1
                     monto: paymentMethod === 'pago-movil' ? 
                         parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
                         totalUsd, // USD total para Zelle

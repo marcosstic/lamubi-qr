@@ -520,6 +520,42 @@
     <script src="config.js"></script>
     <script>
         let multiTicketsEnabled = false;
+        let eventoId = 1; // Default: evento General
+        let eventoNombre = 'LA MUBI EXPERIENCE'; // Default
+
+        // Leer evento_id del localStorage y obtener nombre del evento
+        async function loadEventoInfo() {
+            try {
+                const storedEventoId = localStorage.getItem('lamubi-evento-id');
+                if (storedEventoId) {
+                    eventoId = parseInt(storedEventoId, 10);
+                }
+
+                // Consultar tabla eventos para obtener nombre
+                if (window.LAMUBI_UTILS?.supabase) {
+                    const { data, error } = await window.LAMUBI_UTILS.supabase
+                        .from('eventos')
+                        .select('nombre')
+                        .eq('id', eventoId)
+                        .single();
+
+                    if (data && !error) {
+                        eventoNombre = data.nombre;
+                        // Actualizar título del formulario
+                        const formTitle = document.querySelector('.form-title');
+                        const formSubtitle = document.querySelector('.form-subtitle');
+                        if (formTitle) {
+                            formTitle.textContent = `COMPLETA TUS DATOS - ${eventoNombre}`;
+                        }
+                        if (formSubtitle) {
+                            formSubtitle.textContent = `Reserva tu entrada para ${eventoNombre}`;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error cargando info del evento:', e);
+            }
+        }
 
         function clampInt(value, min, max) {
             const n = parseInt(value, 10);
@@ -734,6 +770,8 @@
                     telefono: telefono.value
                 };
                 
+                // Guardar evento_id en formData
+                formData.eventoId = eventoId;
                 localStorage.setItem('lamubi-form-data', JSON.stringify(formData));
                 
                 // Redirect to payment page
@@ -776,6 +814,11 @@
             }
             e.target.value = value;
         });
+    </script>
+
+    <script>
+        // Cargar info del evento al iniciar
+        document.addEventListener('DOMContentLoaded', loadEventoInfo);
     </script>
 
     <script src="assets/whatsapp-widget.js" defer></script>

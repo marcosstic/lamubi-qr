@@ -436,6 +436,10 @@
                 <h3>🎫 Detalles del Ticket</h3>
                 <div class="info-grid">
                     <div class="info-item">
+                        <span class="info-label">Evento:</span>
+                        <span class="info-value" id="ticketEvento">-</span>
+                    </div>
+                    <div class="info-item">
                         <span class="info-label">ID Ticket:</span>
                         <span class="info-value" id="ticketId">-</span>
                     </div>
@@ -572,6 +576,9 @@
 
                 ticketData = data;
                 
+                // Cargar nombre del evento
+                await loadEventoNombre();
+                
                 // Actualizar UI
                 updateTicketDisplay();
                 generateQRCode();
@@ -614,10 +621,32 @@
             }
         }
 
+        let eventoNombre = 'LA MUBI EXPERIENCE'; // Default
+
+        // Cargar nombre del evento desde tabla eventos
+        async function loadEventoNombre() {
+            try {
+                if (ticketData.evento_id && window.LAMUBI_UTILS?.supabase) {
+                    const { data, error } = await window.LAMUBI_UTILS.supabase
+                        .from('eventos')
+                        .select('nombre')
+                        .eq('id', ticketData.evento_id)
+                        .single();
+
+                    if (data && !error) {
+                        eventoNombre = data.nombre;
+                    }
+                }
+            } catch (e) {
+                console.error('Error cargando nombre del evento:', e);
+            }
+        }
+
         // Actualizar display del ticket
         function updateTicketDisplay() {
             if (!ticketData) return;
 
+            document.getElementById('ticketEvento').textContent = eventoNombre;
             document.getElementById('ticketId').textContent = ticketData.id;
             document.getElementById('qrTicketId').textContent = ticketData.id;
             document.getElementById('qrCodeText').textContent = ticketData.id;

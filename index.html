@@ -517,13 +517,11 @@
         }
 
         .sold-out-text {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1rem;
+            font-weight: 600;
             color: #ff3366;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 0.3rem;
-            animation: soldOutPulse 1.5s ease-in-out infinite;
         }
 
         .sold-out-info {
@@ -531,6 +529,98 @@
             font-weight: 500;
             color: var(--white);
             opacity: 0.9;
+        }
+
+        /* Upcoming Events Section */
+        .upcoming-events {
+            padding: 5rem 2rem;
+            background: linear-gradient(180deg, var(--black), #0a0a0a);
+        }
+
+        .event-info {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .upcoming-event-date {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .ticket-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            background: linear-gradient(45deg, #666, #888);
+            pointer-events: none;
+        }
+
+        .ticket-button:disabled:hover {
+            transform: none;
+            box-shadow: none;
+            background: linear-gradient(45deg, #666, #888);
+        }
+
+        .main-cta-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            background: linear-gradient(45deg, #666, #888);
+            pointer-events: none;
+        }
+
+        .main-cta-button:disabled:hover {
+            transform: none;
+            box-shadow: none;
+            background: linear-gradient(45deg, #666, #888);
+        }
+
+        .pool-night-button {
+            background: linear-gradient(45deg, #00ffff, #0066ff) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3) !important;
+            animation: poolNightPulse 2s ease-in-out infinite alternate;
+        }
+
+        .pool-night-button .cta-text {
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 102, 255, 0.6);
+        }
+
+        .pool-night-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .pool-night-button:disabled:hover {
+            transform: none;
+            background: linear-gradient(45deg, #00ffff, #0066ff) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3) !important;
+        }
+
+        @keyframes poolNightPulse {
+            0% {
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 30px rgba(0, 255, 255, 0.7), 0 0 60px rgba(0, 102, 255, 0.5);
+            }
+        }
+
+        .pool-night-counter {
+            margin-top: 1rem;
+            padding: 0.5rem 0;
+            border: none !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            animation: none !important;
+        }
+
+        .pool-night-counter .counter-label {
+            color: #00ffff;
+            text-shadow: none;
+            line-height: 1.5;
         }
 
         /* Responsive adjustments for SOLD OUT */
@@ -719,6 +809,7 @@
         <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
         <p class="event-date">19 SEPTIEMBRE - STUFFA - I LOVE REGGAETON</p>
         <p class="event-date">18 SEPTIEMBRE-LUNA MARACAIBO - LOS DE LA NASA - TROCO B-DAY BASH</p>
+        <p class="event-date">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON</p>
         
         <div class="countdown">
             <div class="countdown-item">
@@ -752,6 +843,13 @@
                 <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
                 <div class="cta-pulse"></div>
             </button>
+            <button class="main-cta-button pool-night-button" type="button">
+                <span class="cta-text">POOL NIGHT - $5 - COMPRAR ENTRADA</span>
+                <div class="cta-pulse"></div>
+            </button>
+            <div class="availability-counter pool-night-counter">
+                <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON</span>
+            </div>
         </div>
     </section>
 
@@ -861,6 +959,31 @@
             }, 1000);
         }
 
+        // Countdown dinámico hacia evento Pool Night (03-Oct-2026 19:00 Venezuela)
+        function updatePoolNightCountdown() {
+            // Fecha objetivo: 3 de octubre 2026, 19:00 hora Venezuela (America/Caracas)
+            const eventDate = new Date('2026-10-03T19:00:00-04:00');
+
+            setInterval(() => {
+                // Obtener hora actual en Venezuela usando helper existente
+                const now = new Date(window.LAMUBI_UTILS.venezuelaNow());
+                const diff = eventDate - now;
+
+                if (diff <= 0) {
+                    // Evento ya pasó o está ocurriendo
+                    return;
+                }
+
+                // Pool Night countdown se puede mostrar en consola o en elementos futuros
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                console.log(`Pool Night: ${days}d ${hours}h ${minutes}m ${seconds}s`);
+            }, 1000);
+        }
+
         // Efecto parallax suave al scroll
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;
@@ -913,7 +1036,9 @@
         const mainCta = document.getElementById('main-cta');
         const ticketButtons = Array.from(document.querySelectorAll('.ticket-button'));
 
-        const navigateToPurchase = () => {
+        const navigateToPurchase = (eventoId = 1) => {
+            // Guardar evento_id en localStorage
+            localStorage.setItem('lamubi-evento-id', String(eventoId));
             window.location.href = 'comprar.html';
         };
 
@@ -926,7 +1051,10 @@
                 mainCta.style.opacity = shouldDisable ? '0.5' : '';
 
                 if (!shouldDisable) {
-                    mainCta.addEventListener('click', navigateToPurchase);
+                    mainCta.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        navigateToPurchase(1); // General usa evento_id=1
+                    });
                 }
             }
 
@@ -939,6 +1067,15 @@
                     button.addEventListener('click', navigateToPurchase);
                 }
             });
+
+            // Event listener específico para Pool Night (evento_id=3)
+            const poolNightButton = document.querySelector('.pool-night-button');
+            if (poolNightButton) {
+                poolNightButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navigateToPurchase(3); // Pool Night usa evento_id=3
+                });
+            }
         };
 
         if (mainCta) {
@@ -975,6 +1112,7 @@
         // Inicializar
         createParticles();
         updateCountdown();
+        updatePoolNightCountdown();
         updateTicketCounter();
         initPurchaseWorkflow();
     </script>

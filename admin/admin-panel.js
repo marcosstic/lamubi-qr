@@ -27,6 +27,7 @@ class AdminPanel {
             search: '',
             estado: '',
             metodo: '',
+            evento: '',
             sort: 'actividad_desc'
         };
 
@@ -656,6 +657,7 @@ class AdminPanel {
         this.ticketsQueryState.search = this.normalizeSearchTerm(inputValue);
         this.ticketsQueryState.estado = document.getElementById('filterTicketsState')?.value || '';
         this.ticketsQueryState.metodo = document.getElementById('filterTicketsMethod')?.value || '';
+        this.ticketsQueryState.evento = document.getElementById('filterTicketsEvent')?.value || '';
         this.ticketsQueryState.sort = document.getElementById('sortTickets')?.value || 'actividad_desc';
         this.loadAllTickets(true);
     }
@@ -796,6 +798,10 @@ class AdminPanel {
 
             if (this.ticketsQueryState.metodo) {
                 query = query.eq('metodo_pago', this.ticketsQueryState.metodo);
+            }
+
+            if (this.ticketsQueryState.evento) {
+                query = query.eq('evento_id', parseInt(this.ticketsQueryState.evento, 10));
             }
 
             query = this.applySearchToQuery(query, this.ticketsQueryState.search);
