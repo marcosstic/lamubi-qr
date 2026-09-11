@@ -82,16 +82,25 @@ UPDATE eventos SET nombre = 'LA MUBI EXPERIENCE' WHERE id = 1;
 **Solución:** Usar instancia local `lamubiSupabase` definida en confirmacion.html
 **Ubicación:** confirmacion.html línea 629-646
 
+### Error 5: Esquema de base de datos incorrecto
+**Problema:** Intentaba insertar `fecha_evento` (timestamp) pero la tabla `eventos` usa `fecha` (date) y `hora` (character varying) separados
+**Solución:** Usar campos correctos: `fecha` (date) y `hora` (character varying)
+**Esquema correcto:**
+```sql
+INSERT INTO eventos (nombre, precio_usd, capacidad, activo, fecha, hora, ubicacion, ciudad)
+VALUES ('NOMBRE EVENTO', PRECIO, CAPACIDAD, true, 'YYYY-MM-DD', 'HH:MM', 'UBICACION', 'CIUDAD');
+```
+
 ## Guía Paso a Paso para Agregar Nuevo Evento
 
 ### Paso 1: Base de Datos
 ```sql
--- Insertar nuevo evento
-INSERT INTO eventos (nombre, precio_usd, capacidad, activo, fecha_evento)
-VALUES ('NOMBRE DEL EVENTO', PRECIO_USD, CAPACIDAD, true, 'FECHA');
+-- Insertar nuevo evento (IMPORTANTE: usar fecha y hora separados)
+INSERT INTO eventos (nombre, precio_usd, capacidad, activo, fecha, hora, ubicacion, ciudad)
+VALUES ('NOMBRE DEL EVENTO', PRECIO_USD, CAPACIDAD, true, 'YYYY-MM-DD', 'HH:MM', 'UBICACION', 'CIUDAD');
 -- Ejemplo:
-INSERT INTO eventos (nombre, precio_usd, capacidad, activo, fecha_evento)
-VALUES ('LA MUBI BEACH PARTY', 7.00, 3000, true, '2027-01-15');
+INSERT INTO eventos (nombre, precio_usd, capacidad, activo, fecha, hora, ubicacion, ciudad)
+VALUES ('LA MUBI BEACH PARTY', 7.00, 3000, true, '2027-01-15', '20:00', 'Maracaibo', 'Maracaibo');
 ```
 
 ### Paso 2: index.html

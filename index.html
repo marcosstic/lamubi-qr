@@ -608,6 +608,81 @@
             }
         }
 
+        .reggaeton-button {
+            background: linear-gradient(45deg, #ff0040, #ffcc00, #00ff40) !important;
+            box-shadow: 0 0 20px rgba(255, 0, 64, 0.5), 0 0 40px rgba(255, 204, 0, 0.3) !important;
+            animation: reggaetonPulse 2s ease-in-out infinite alternate;
+        }
+
+        .reggaeton-button .cta-text {
+            text-shadow: 0 0 10px rgba(255, 0, 64, 0.8), 0 0 20px rgba(255, 204, 0, 0.6);
+        }
+
+        .reggaeton-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .reggaeton-button:disabled:hover {
+            transform: none;
+            background: linear-gradient(45deg, #ff0040, #ffcc00, #00ff40) !important;
+            box-shadow: 0 0 20px rgba(255, 0, 64, 0.5), 0 0 40px rgba(255, 204, 0, 0.3) !important;
+        }
+
+        @keyframes reggaetonPulse {
+            0% {
+                box-shadow: 0 0 20px rgba(255, 0, 64, 0.5), 0 0 40px rgba(255, 204, 0, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 30px rgba(255, 0, 64, 0.7), 0 0 60px rgba(255, 204, 0, 0.5);
+            }
+        }
+
+        .reggaeton-counter {
+            margin-top: 1rem;
+            padding: 0.5rem 0;
+            border: none !important;
+            animation: none !important;
+        }
+
+        .reggaeton-counter .counter-label {
+            color: #ffcc00;
+            text-shadow: none;
+            line-height: 1.5;
+        }
+
+        .nasa-button {
+            background: linear-gradient(45deg, #0a0e27, #00ff9d, #7b2cbf) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.5), 0 0 40px rgba(123, 44, 191, 0.3) !important;
+            animation: nasaPulse 2s ease-in-out infinite alternate;
+        }
+
+        .nasa-button .cta-text {
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.8), 0 0 20px rgba(123, 44, 191, 0.6);
+        }
+
+        .nasa-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .nasa-button:disabled:hover {
+            transform: none;
+            background: linear-gradient(45deg, #0a0e27, #00ff9d, #7b2cbf) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.5), 0 0 40px rgba(123, 44, 191, 0.3) !important;
+        }
+
+        @keyframes nasaPulse {
+            0% {
+                box-shadow: 0 0 20px rgba(0, 255, 157, 0.5), 0 0 40px rgba(123, 44, 191, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 30px rgba(0, 255, 157, 0.7), 0 0 60px rgba(123, 44, 191, 0.5);
+            }
+        }
+
         .pool-night-counter {
             margin-top: 1rem;
             padding: 0.5rem 0;
@@ -839,16 +914,23 @@
             <div class="availability-counter">
                 <span class="counter-label counter-label-urgency">19 SEPTIEMBRE - STUFFA - I LOVE REGGAETON</span>
             </div>
-            <button class="main-cta-button" id="main-cta" type="button">
-                <span class="cta-text" id="cta-price-text">COMPRAR ENTRADA GENERAL - $5</span>
+            <button class="main-cta-button nasa-button" id="main-cta" type="button">
+                <span class="cta-text" id="cta-price-text">LOS DE LA NASA - TROCO B-DAY BASH</span>
                 <div class="cta-pulse"></div>
             </button>
             <button class="main-cta-button pool-night-button" type="button">
                 <span class="cta-text">POOL NIGHT - $5 - COMPRAR ENTRADA</span>
                 <div class="cta-pulse"></div>
             </button>
+            <button class="main-cta-button reggaeton-button" type="button">
+                <span class="cta-text">I LOVE REGGAETON - STUFFA - $3 - COMPRAR ENTRADA</span>
+                <div class="cta-pulse"></div>
+            </button>
             <div class="availability-counter pool-night-counter">
                 <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON</span>
+            </div>
+            <div class="availability-counter reggaeton-counter">
+                <span class="counter-label counter-label-urgency">19 SEPTIEMBRE - STUFFA - I LOVE REGGAETON</span>
             </div>
         </div>
     </section>
@@ -1076,6 +1158,15 @@
                     navigateToPurchase(3); // Pool Night usa evento_id=3
                 });
             }
+
+            // Event listener específico para Reggaeton Stuffa (evento_id=4)
+            const reggaetonButton = document.querySelector('.reggaeton-button');
+            if (reggaetonButton) {
+                reggaetonButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navigateToPurchase(4); // Reggaeton Stuffa usa evento_id=4
+                });
+            }
         };
 
         if (mainCta) {
@@ -1096,7 +1187,7 @@
 
                 const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
                 const cta = document.getElementById('cta-price-text');
-                if (cta) cta.textContent = `COMPRAR ENTRADA GENERAL - ${formatted}`;
+                if (cta) cta.textContent = `LOS DE LA NASA - TROCO B-DAY BASH - ${formatted}`;
                 const card = document.getElementById('ticket-price-card');
                 if (card) card.textContent = formatted;
             } catch (e) {
