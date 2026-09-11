@@ -740,8 +740,21 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            .hero {
+                padding-top: 2rem;
+                padding-bottom: 1rem;
+            }
+            
+            .logo-container {
+                margin-bottom: 1rem;
+            }
+            
             .logo-img {
                 max-width: 280px;
+            }
+            
+            .event-date {
+                margin-bottom: 1rem;
             }
             
             .countdown {
@@ -858,15 +871,70 @@
             
             .main-cta-button {
                 padding: 1rem 2rem;
-                font-size: 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Móviles medianos (375px-414px) */
+        @media (max-width: 414px) and (min-width: 375px) {
+            .logo-img {
+                max-width: 220px;
             }
             
-            .cards-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                padding: 0 1rem;
+            .main-cta-button {
+                padding: 1rem 2rem;
+                font-size: 0.9rem;
             }
             
+            .availability-counter {
+                padding: 0.5rem 0.8rem;
+            }
+            
+            .counter-label {
+                font-size: 0.55rem;
+            }
+        }
+
+        /* Móviles pequeños (320px-375px) */
+        @media (max-width: 375px) {
+            .logo-img {
+                max-width: 180px;
+            }
+            
+            .event-date {
+                font-size: 0.8rem;
+            }
+            
+            .main-cta-button {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .main-cta-button .cta-text {
+                font-size: 0.75rem;
+                line-height: 1.2;
+            }
+            
+            .availability-counter {
+                padding: 0.4rem 0.6rem;
+            }
+            
+            .counter-label {
+                font-size: 0.5rem;
+            }
+            
+            .countdown-item {
+                min-width: 50px;
+                padding: 0.5rem;
+            }
+            
+            .countdown-number {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Tickets grid responsive */
+        @media (max-width: 768px) {
             .tickets-grid {
                 grid-template-columns: 1fr;
                 gap: 1rem;
@@ -1190,7 +1258,7 @@
 
                 const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
                 const cta = document.getElementById('cta-price-text');
-                if (cta) cta.textContent = `LOS DE LA NASA - TROCO B-DAY BASH - ${formatted}`;
+                if (cta) cta.textContent = `LOS DE LA NASA - TROCO B-DAY BASH - ${formatted} - COMPRAR ENTRADA`;
                 const card = document.getElementById('ticket-price-card');
                 if (card) card.textContent = formatted;
             } catch (e) {
