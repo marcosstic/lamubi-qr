@@ -42,13 +42,16 @@
 
         /* Hero Section */
         .hero {
-            height: 100vh;
+            min-height: 100vh;
+            height: auto;
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
-            overflow: hidden;
+            overflow-y: auto;
+            padding-top: 3rem;
+            padding-bottom: 2rem;
         }
 
         /* Partículas 3D */
@@ -305,7 +308,7 @@
 
         /* Sección de Experiencia */
         .experience {
-            padding: 5rem 2rem;
+            padding: 3rem 2rem;
             background: linear-gradient(180deg, var(--black), #0a0a0a);
             position: relative;
         }
@@ -799,7 +802,7 @@
         /* iPhone XS específico */
         @media (max-width: 414px) {
             .hero {
-                padding: 1rem;
+                padding: 2rem 1rem 1rem 1rem;
             }
             
             .logo-img {
