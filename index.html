@@ -686,6 +686,78 @@
             }
         }
 
+        /* Modal para evento NASA bloqueado */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(45deg, #0a0e27, #7b2cbf);
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2rem;
+            color: #fff;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-text {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                max-width: 90%;
+                padding: 1.5rem;
+            }
+            
+            .modal-text {
+                font-size: 1rem;
+            }
+            
+            .modal-close {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 414px) {
+            .modal-content {
+                max-width: 95%;
+                padding: 1rem;
+            }
+            
+            .modal-text {
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+            
+            .modal-close {
+                font-size: 1.3rem;
+            }
+        }
+
         .pool-night-counter {
             margin-top: 1rem;
             padding: 0.5rem 0;
@@ -1006,6 +1078,14 @@
         </div>
     </section>
 
+    <!-- Modal para evento NASA bloqueado -->
+    <div id="nasa-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" id="nasa-modal-close">&times;</span>
+            <p class="modal-text">ENTRADAS DISPONIBLES SOLO EN PUERTA PARA EVENTO LOS DE LA NASA - TROCO B-DAY BASH</p>
+        </div>
+    </div>
+
     <!-- Experience Section -->
     <section class="experience">
         <div class="container">
@@ -1058,6 +1138,14 @@
         // CONFIGURACIÓN DE BLOQUEO DE COMPRAS
         // ============================================
         const COMPRAS_BLOQUEADAS = false; // Cambiar a false para desbloquear
+        
+        // Configuración específica por evento
+        const EVENT_CONFIG = {
+            nasa: {
+                enabled: false, // Cambiar a true para reactivar compras del evento NASA
+                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
+            }
+        };
         // ============================================
 
         // Crear partículas dinámicas
@@ -1206,7 +1294,14 @@
                 if (!shouldDisable) {
                     mainCta.addEventListener('click', function(e) {
                         e.preventDefault();
-                        navigateToPurchase(1); // General usa evento_id=1
+                        
+                        // Verificar configuración del evento NASA
+                        if (!EVENT_CONFIG.nasa.enabled) {
+                            // Mostrar modal en lugar de redirigir
+                            document.getElementById('nasa-modal').style.display = 'flex';
+                        } else {
+                            navigateToPurchase(1); // General usa evento_id=1
+                        }
                     });
                 }
             }
@@ -1239,6 +1334,24 @@
                 });
             }
         };
+
+        // Funcionalidad para cerrar modal NASA
+        const nasaModal = document.getElementById('nasa-modal');
+        const nasaModalClose = document.getElementById('nasa-modal-close');
+        
+        if (nasaModalClose) {
+            nasaModalClose.addEventListener('click', function() {
+                nasaModal.style.display = 'none';
+            });
+        }
+        
+        if (nasaModal) {
+            nasaModal.addEventListener('click', function(e) {
+                if (e.target === nasaModal) {
+                    nasaModal.style.display = 'none';
+                }
+            });
+        }
 
         if (mainCta) {
             mainCta.addEventListener('click', function() {
