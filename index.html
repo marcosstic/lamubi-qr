@@ -655,108 +655,37 @@
             line-height: 1.5;
         }
 
-        .nasa-button {
-            background: linear-gradient(45deg, #0a0e27, #00ff9d, #7b2cbf) !important;
-            box-shadow: 0 0 20px rgba(0, 255, 157, 0.5), 0 0 40px rgba(123, 44, 191, 0.3) !important;
-            animation: nasaPulse 2s ease-in-out infinite alternate;
+        .project-x-button {
+            background: linear-gradient(45deg, #00ff00, #39ff14, #00ff7f) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6), 0 0 40px rgba(57, 255, 20, 0.4) !important;
+            animation: projectXPulse 2s ease-in-out infinite alternate;
         }
 
-        .nasa-button .cta-text {
-            text-shadow: 0 0 10px rgba(0, 255, 157, 0.8), 0 0 20px rgba(123, 44, 191, 0.6);
+        .project-x-button .cta-text {
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.9), 0 0 20px rgba(57, 255, 20, 0.7);
         }
 
-        .nasa-button:disabled {
+        .project-x-button:disabled {
             cursor: not-allowed;
             opacity: 0.7;
             pointer-events: none;
         }
 
-        .nasa-button:disabled:hover {
+        .project-x-button:disabled:hover {
             transform: none;
-            background: linear-gradient(45deg, #0a0e27, #00ff9d, #7b2cbf) !important;
-            box-shadow: 0 0 20px rgba(0, 255, 157, 0.5), 0 0 40px rgba(123, 44, 191, 0.3) !important;
+            background: linear-gradient(45deg, #00ff00, #39ff14, #00ff7f) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6), 0 0 40px rgba(57, 255, 20, 0.4) !important;
         }
 
-        @keyframes nasaPulse {
+        @keyframes projectXPulse {
             0% {
-                box-shadow: 0 0 20px rgba(0, 255, 157, 0.5), 0 0 40px rgba(123, 44, 191, 0.3);
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.6), 0 0 40px rgba(57, 255, 20, 0.4);
             }
             100% {
-                box-shadow: 0 0 30px rgba(0, 255, 157, 0.7), 0 0 60px rgba(123, 44, 191, 0.5);
+                box-shadow: 0 0 30px rgba(0, 255, 0, 0.8), 0 0 60px rgba(57, 255, 20, 0.6);
             }
         }
 
-        /* Modal para evento NASA bloqueado */
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: linear-gradient(45deg, #0a0e27, #7b2cbf);
-            padding: 2rem;
-            border-radius: 15px;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 0 30px rgba(0, 255, 157, 0.5);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 2rem;
-            color: #fff;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .modal-text {
-            color: #fff;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            .modal-content {
-                max-width: 90%;
-                padding: 1.5rem;
-            }
-            
-            .modal-text {
-                font-size: 1rem;
-            }
-            
-            .modal-close {
-                font-size: 1.5rem;
-            }
-        }
-
-        @media (max-width: 414px) {
-            .modal-content {
-                max-width: 95%;
-                padding: 1rem;
-            }
-            
-            .modal-text {
-                font-size: 0.9rem;
-                line-height: 1.4;
-            }
-            
-            .modal-close {
-                font-size: 1.3rem;
-            }
-        }
 
         .pool-night-counter {
             margin-top: 1rem;
@@ -1050,15 +979,15 @@
         
         <div class="main-cta-container">
             <div class="availability-counter">
-                <span class="counter-label counter-label-urgency">LOS DE LA NASA - TROCO B-DAY BASH entradas vendidas 144 de 1000 disponibles</span>
+                <span class="counter-label counter-label-urgency">LA MUBI EN VALERA - VOCAS entradas vendidas 144 de 1000 disponibles</span>
                 <span class="counter-number" id="available-tickets" style="display:none;">144</span>
                 <span class="counter-total" style="display:none;">/ 1000</span>
             </div>
             <div class="availability-counter">
                 <span class="counter-label counter-label-urgency">19 SEPTIEMBRE - STUFFA - I LOVE REGGAETON</span>
             </div>
-            <button class="main-cta-button nasa-button" id="main-cta" type="button">
-                <span class="cta-text" id="cta-price-text">LOS DE LA NASA - TROCO B-DAY BASH</span>
+            <button class="main-cta-button project-x-button" id="main-cta" type="button">
+                <span class="cta-text" id="cta-price-text">LA MUBI EN VALERA - VOCAS</span>
                 <div class="cta-pulse"></div>
             </button>
             <button class="main-cta-button pool-night-button" type="button">
@@ -1077,14 +1006,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Modal para evento NASA bloqueado -->
-    <div id="nasa-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="modal-close" id="nasa-modal-close">&times;</span>
-            <p class="modal-text">ENTRADAS DISPONIBLES SOLO EN PUERTA PARA EVENTO LOS DE LA NASA - TROCO B-DAY BASH</p>
-        </div>
-    </div>
 
     <!-- Experience Section -->
     <section class="experience">
@@ -1138,14 +1059,6 @@
         // CONFIGURACIÓN DE BLOQUEO DE COMPRAS
         // ============================================
         const COMPRAS_BLOQUEADAS = false; // Cambiar a false para desbloquear
-        
-        // Configuración específica por evento
-        const EVENT_CONFIG = {
-            nasa: {
-                enabled: false, // Cambiar a true para reactivar compras del evento NASA
-                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
-            }
-        };
         // ============================================
 
         // Crear partículas dinámicas
@@ -1294,14 +1207,7 @@
                 if (!shouldDisable) {
                     mainCta.addEventListener('click', function(e) {
                         e.preventDefault();
-                        
-                        // Verificar configuración del evento NASA
-                        if (!EVENT_CONFIG.nasa.enabled) {
-                            // Mostrar modal en lugar de redirigir
-                            document.getElementById('nasa-modal').style.display = 'flex';
-                        } else {
-                            navigateToPurchase(1); // General usa evento_id=1
-                        }
+                        navigateToPurchase(1); // General usa evento_id=1
                     });
                 }
             }
@@ -1335,24 +1241,6 @@
             }
         };
 
-        // Funcionalidad para cerrar modal NASA
-        const nasaModal = document.getElementById('nasa-modal');
-        const nasaModalClose = document.getElementById('nasa-modal-close');
-        
-        if (nasaModalClose) {
-            nasaModalClose.addEventListener('click', function() {
-                nasaModal.style.display = 'none';
-            });
-        }
-        
-        if (nasaModal) {
-            nasaModal.addEventListener('click', function(e) {
-                if (e.target === nasaModal) {
-                    nasaModal.style.display = 'none';
-                }
-            });
-        }
-
         if (mainCta) {
             mainCta.addEventListener('click', function() {
                 this.style.transform = 'translateY(-2px) scale(0.98)';
@@ -1371,7 +1259,7 @@
 
                 const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
                 const cta = document.getElementById('cta-price-text');
-                if (cta) cta.textContent = `LOS DE LA NASA - TROCO B-DAY BASH - ${formatted} - COMPRAR ENTRADA`;
+                if (cta) cta.textContent = `LA MUBI EN VALERA - VOCAS - ${formatted} - COMPRAR ENTRADA`;
                 const card = document.getElementById('ticket-price-card');
                 if (card) card.textContent = formatted;
             } catch (e) {
