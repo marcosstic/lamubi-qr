@@ -954,9 +954,8 @@
         </div>
         
         <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
-        <p class="event-date">19 SEPTIEMBRE - STUFFA - I LOVE REGGAETON</p>
-        <p class="event-date">18 SEPTIEMBRE-LUNA MARACAIBO - LOS DE LA NASA - TROCO B-DAY BASH</p>
         <p class="event-date">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON</p>
+        <p class="event-date">26 DE SEPTIEMBRE - VOCAS - LA MUBI EN VALERA</p>
         
         <div class="countdown">
             <div class="countdown-item">
@@ -979,12 +978,12 @@
         
         <div class="main-cta-container">
             <div class="availability-counter">
-                <span class="counter-label counter-label-urgency">LA MUBI EN VALERA - VOCAS entradas vendidas 144 de 1000 disponibles</span>
-                <span class="counter-number" id="available-tickets" style="display:none;">144</span>
-                <span class="counter-total" style="display:none;">/ 1000</span>
+                <span class="counter-label counter-label-urgency">26 de septiembre LA MUBI EN VALERA - VOCAS entradas vendidas 224 de 700 disponibles</span>
+                <span class="counter-number" id="available-tickets" style="display:none;">224</span>
+                <span class="counter-total" style="display:none;">/ 700</span>
             </div>
             <div class="availability-counter">
-                <span class="counter-label counter-label-urgency">19 SEPTIEMBRE - STUFFA - I LOVE REGGAETON</span>
+                <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON entradas vendidas 267 de 2500 disponibles</span>
             </div>
             <button class="main-cta-button project-x-button" id="main-cta" type="button">
                 <span class="cta-text" id="cta-price-text">LA MUBI EN VALERA - VOCAS</span>
@@ -998,12 +997,6 @@
                 <span class="cta-text">I LOVE REGGAETON - STUFFA - $3 - COMPRAR ENTRADA</span>
                 <div class="cta-pulse"></div>
             </button>
-            <div class="availability-counter pool-night-counter">
-                <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON</span>
-            </div>
-            <div class="availability-counter reggaeton-counter">
-                <span class="counter-label counter-label-urgency">19 SEPTIEMBRE - STUFFA - I LOVE REGGAETON</span>
-            </div>
         </div>
     </section>
 
@@ -1082,10 +1075,10 @@
             }
         }
 
-        // Countdown dinámico hacia evento LA MUBI (18-Sep-2026 21:00 Venezuela)
+        // Countdown dinámico hacia evento LA MUBI EN VALERA (26-Sep-2026 21:00 Venezuela)
         function updateCountdown() {
-            // Fecha objetivo: 18 de septiembre 2026, 21:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-09-18T21:00:00-04:00');
+            // Fecha objetivo: 26 de septiembre 2026, 21:00 hora Venezuela (America/Caracas)
+            const eventDate = new Date('2026-09-26T21:00:00-04:00');
 
             setInterval(() => {
                 // Obtener hora actual en Venezuela usando helper existente
@@ -1110,31 +1103,6 @@
                 document.getElementById('hours').textContent = hours;
                 document.getElementById('minutes').textContent = minutes;
                 document.getElementById('seconds').textContent = seconds;
-            }, 1000);
-        }
-
-        // Countdown dinámico hacia evento Pool Night (03-Oct-2026 19:00 Venezuela)
-        function updatePoolNightCountdown() {
-            // Fecha objetivo: 3 de octubre 2026, 19:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-10-03T19:00:00-04:00');
-
-            setInterval(() => {
-                // Obtener hora actual en Venezuela usando helper existente
-                const now = new Date(window.LAMUBI_UTILS.venezuelaNow());
-                const diff = eventDate - now;
-
-                if (diff <= 0) {
-                    // Evento ya pasó o está ocurriendo
-                    return;
-                }
-
-                // Pool Night countdown se puede mostrar en consola o en elementos futuros
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                console.log(`Pool Night: ${days}d ${hours}h ${minutes}m ${seconds}s`);
             }, 1000);
         }
 
@@ -1275,7 +1243,6 @@
         // Inicializar
         createParticles();
         updateCountdown();
-        updatePoolNightCountdown();
         updateTicketCounter();
         initPurchaseWorkflow();
     </script>
