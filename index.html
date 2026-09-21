@@ -686,6 +686,11 @@
             }
         }
 
+        /* Clase reutilizable para ocultar eventos deshabilitados */
+        .event-hidden {
+            display: none !important;
+        }
+
         /* Modal para evento Reggaeton bloqueado */
         .modal {
             position: fixed;
@@ -1141,6 +1146,14 @@
             }
         };
         // ============================================
+
+        // Ocultar eventos deshabilitados al cargar
+        if (!EVENT_CONFIG.reggaeton.enabled) {
+            const reggaetonButton = document.querySelector('.reggaeton-button');
+            if (reggaetonButton) {
+                reggaetonButton.classList.add('event-hidden');
+            }
+        }
 
         // Crear partículas dinámicas
         function createParticles() {
