@@ -612,6 +612,12 @@ class ValidacionCampos {
                 fechaZelleCampo.value = this.generarTimestampVenezuela();
                 console.log('✅ Timestamp asignado al campo fecha-zelle:', fechaZelleCampo.value);
             }
+        } else if (metodo === 'binance') {
+            const fechaBinanceCampo = document.getElementById('fecha-binance');
+            if (fechaBinanceCampo && fechaBinanceCampo.type === 'hidden') {
+                fechaBinanceCampo.value = this.generarTimestampVenezuela();
+                console.log('✅ Timestamp asignado al campo fecha-binance:', fechaBinanceCampo.value);
+            }
         }
     }
 

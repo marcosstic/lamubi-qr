@@ -281,9 +281,12 @@ window.VERIFICACION_UPLOAD = verificacionUpload;
 document.addEventListener('DOMContentLoaded', function() {
     // Configurar upload para pago móvil
     verificacionUpload.configurarUpload('comprobante-pago-movil', 'label-pago-movil', 'file-name-pago-movil');
-    
+
     // Configurar upload para Zelle
     verificacionUpload.configurarUpload('comprobante-zelle', 'label-zelle', 'file-name-zelle');
-    
+
+    // Configurar upload para Binance
+    verificacionUpload.configurarUpload('comprobante-binance', 'label-binance', 'file-name-binance');
+
     console.log('🎯 Sistema de upload configurado');
 });

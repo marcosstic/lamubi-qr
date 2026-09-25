@@ -216,8 +216,9 @@ class AdminPanel {
         const safe = (v) => (v === null || typeof v === 'undefined' || v === '') ? 'N/A' : v;
         const referenciaText = (record.referencia && String(record.referencia).trim()) ? String(record.referencia).trim() : '—';
         const confirmacionZelleText = (record.confirmacion_zelle && String(record.confirmacion_zelle).trim()) ? String(record.confirmacion_zelle).trim() : '—';
-        const refLabel = record.metodo_pago === 'zelle' ? 'Confirmación Zelle' : 'Referencia';
-        const refValue = record.metodo_pago === 'zelle' ? confirmacionZelleText : referenciaText;
+        const confirmacionBinanceText = (record.confirmacion_binance && String(record.confirmacion_binance).trim()) ? String(record.confirmacion_binance).trim() : '—';
+        const refLabel = record.metodo_pago === 'zelle' ? 'Confirmación Zelle' : (record.metodo_pago === 'binance' ? 'Confirmación Binance' : 'Referencia');
+        const refValue = record.metodo_pago === 'zelle' ? confirmacionZelleText : (record.metodo_pago === 'binance' ? confirmacionBinanceText : referenciaText);
         const hasFutureInconsistency = this.isInconsistentFutureDate(record.fecha_pago) || this.isInconsistentFutureDate(record.fecha_verificacion);
         const metodo = record.metodo_pago ? record.metodo_pago.replace('-', ' ').toUpperCase() : 'N/A';
         const montoLabel = record.metodo_pago === 'pago-movil' ? 'Monto (Bs.)' : 'Monto (USD)';
@@ -858,8 +859,9 @@ class AdminPanel {
             const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes} • H: ${multi.hombres} • M: ${multi.mujeres}`;
             const referenciaText = (ticket.referencia && String(ticket.referencia).trim()) ? String(ticket.referencia).trim() : '—';
             const confirmacionZelleText = (ticket.confirmacion_zelle && String(ticket.confirmacion_zelle).trim()) ? String(ticket.confirmacion_zelle).trim() : '—';
-            const refLabel = ticket.metodo_pago === 'zelle' ? 'Conf' : 'Ref';
-            const refValue = ticket.metodo_pago === 'zelle' ? confirmacionZelleText : referenciaText;
+            const confirmacionBinanceText = (ticket.confirmacion_binance && String(ticket.confirmacion_binance).trim()) ? String(ticket.confirmacion_binance).trim() : '—';
+            const refLabel = ticket.metodo_pago === 'zelle' ? 'Conf' : (ticket.metodo_pago === 'binance' ? 'Conf' : 'Ref');
+            const refValue = ticket.metodo_pago === 'zelle' ? confirmacionZelleText : (ticket.metodo_pago === 'binance' ? confirmacionBinanceText : referenciaText);
             const buyer = this.getBuyerInfo(ticket);
             const phoneText = buyer.telefono ? buyer.telefono : '';
             const hasFutureInconsistency = this.isInconsistentFutureDate(ticket.fecha_pago) || this.isInconsistentFutureDate(ticket.fecha_verificacion);

@@ -545,6 +545,20 @@
                     </div>
                 </div>
 
+                <!-- Contenido para Binance -->
+                <div id="contenido-binance" style="display: none;">
+                    <div style="text-align: center; padding: 1rem 0;">
+                        <div style="font-size: 1.1rem; color: #999; margin-bottom: 0.5rem;">Monto a transferir:</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #f3ba2f; margin-bottom: 0.5rem;"><span id="ticket-price-usd-binance">$5.00</span> USD</div>
+                        <div style="font-size: 0.8rem; color: #666;">
+                            <i class="fas fa-info-circle"></i> Pago a través de Binance Pay (USDT/USDC)
+                        </div>
+                        <div style="font-size: 0.9rem; color: #f3ba2f; margin-top: 0.5rem; font-weight: 600;">
+                            <strong>Correo:</strong> vdjtroc@gmail.com
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <form id="verification-form">
@@ -609,7 +623,37 @@
                                 <div class="file-name" id="file-name-zelle"></div>
                             </label>
                         </div>
-                        <div class="error-message">Sube una imagen del comprobante</div>
+                        <div class="error-message">Sube una imagen del comprobante (JPG, PNG, WebP, HEIC - Máx 5MB)</div>
+                    </div>
+                </div>
+
+                <!-- Binance Section -->
+                <div class="form-section" id="binance-section">
+                    <div class="form-group">
+                        <label for="confirmacion-binance" class="form-label">Número de Transacción Binance *</label>
+                        <input type="text" id="confirmacion-binance" name="confirmacion-binance" class="form-input" placeholder="Ej: 7F8A2B3C4D5E6F7G" required>
+                        <div class="error-message">Ingresa el número de transacción</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email-remitente-binance" class="form-label">Email del Remitente *</label>
+                        <input type="email" id="email-remitente-binance" name="email-remitente-binance" class="form-input" placeholder="tu@email.com" required>
+                        <div class="error-message">Ingresa un email válido</div>
+                    </div>
+
+                    <input type="hidden" id="fecha-binance" name="fecha-binance">
+
+                    <div class="form-group">
+                        <label class="form-label">Captura del Comprobante Binance *</label>
+                        <div class="file-upload">
+                            <input type="file" id="comprobante-binance" name="comprobante-binance" class="file-upload-input" accept="image/jpeg,image/jpg,image/png,image/webp,image/heic" required>
+                            <label for="comprobante-binance" class="file-upload-label" id="label-binance">
+                                <div class="file-upload-icon">📷</div>
+                                <div class="file-upload-text">Haz clic para subir el comprobante</div>
+                                <div class="file-name" id="file-name-binance"></div>
+                            </label>
+                        </div>
+                        <div class="error-message">Sube una imagen del comprobante (JPG, PNG, WebP, HEIC - Máx 5MB)</div>
                     </div>
                 </div>
 
@@ -647,9 +691,10 @@
             if (formData && formData.paymentMethod) {
                 const methodNames = {
                     'pago-movil': 'PAGO MÓVIL',
-                    'zelle': 'ZELLE'
+                    'zelle': 'ZELLE',
+                    'binance': 'BINANCE'
                 };
-                
+
                 document.getElementById('payment-method-name').textContent = methodNames[formData.paymentMethod];
                 
                 // Mostrar contenido dinámico según método
@@ -677,11 +722,12 @@
         // Mostrar contenido dinámico según método de pago
         function mostrarContenidoMetodo(metodo) {
             console.log(`🎯 Mostrando contenido para método: ${metodo}`);
-            
+
             // Ocultar todos los contenidos
             document.getElementById('contenido-pago-movil').style.display = 'none';
             document.getElementById('contenido-zelle').style.display = 'none';
-            
+            document.getElementById('contenido-binance').style.display = 'none';
+
             // Mostrar contenido correspondiente
             if (metodo === 'pago-movil') {
                 document.getElementById('contenido-pago-movil').style.display = 'block';
@@ -689,6 +735,9 @@
             } else if (metodo === 'zelle') {
                 document.getElementById('contenido-zelle').style.display = 'block';
                 console.log('✅ Contenido Zelle mostrado');
+            } else if (metodo === 'binance') {
+                document.getElementById('contenido-binance').style.display = 'block';
+                console.log('✅ Contenido Binance mostrado');
             }
         }
 
@@ -862,20 +911,41 @@
                     confirmacion.closest('.form-group').classList.add('error');
                     isValid = false;
                 }
-                
+
                 const email = document.getElementById('email-remitente');
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailPattern.test(email.value)) {
                     email.closest('.form-group').classList.add('error');
                     isValid = false;
                 }
-                
+
                 const comprobante = document.getElementById('comprobante-zelle');
                 if (!comprobante.files || !comprobante.files[0]) {
                     comprobante.closest('.form-group').classList.add('error');
                     isValid = false;
                 }
-                
+
+            } else if (paymentMethod === 'binance') {
+                // Validate Binance fields
+                const confirmacion = document.getElementById('confirmacion-binance');
+                if (confirmacion.value.trim().length < 5) {
+                    confirmacion.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+
+                const email = document.getElementById('email-remitente-binance');
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email.value)) {
+                    email.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+
+                const comprobante = document.getElementById('comprobante-binance');
+                if (!comprobante.files || !comprobante.files[0]) {
+                    comprobante.closest('.form-group').classList.add('error');
+                    isValid = false;
+                }
+
             } else if (paymentMethod === 'efectivo') {
                 // Validate Efectivo fields
                 const codigo = document.getElementById('codigo-verificacion');
@@ -935,6 +1005,10 @@
                     verificationData.confirmacionZelle = document.getElementById('confirmacion-zelle').value;
                     verificationData.emailRemitente = document.getElementById('email-remitente').value;
                     verificationData.fechaZelle = document.getElementById('fecha-zelle').value;
+                } else if (paymentMethod === 'binance') {
+                    verificationData.confirmacionBinance = document.getElementById('confirmacion-binance').value;
+                    verificationData.emailRemitenteBinance = document.getElementById('email-remitente-binance').value;
+                    verificationData.fechaBinance = document.getElementById('fecha-binance').value;
                 }
 
                 verificationData.purchase = {
@@ -984,6 +1058,13 @@
                         throw new Error('Fecha Zelle inválida');
                     }
                     verificationData.fechaZelle = iso;
+                }
+                if (verificationData.fechaBinance) {
+                    const iso = parseVenezuelaDateTimeToISO(verificationData.fechaBinance);
+                    if (!iso) {
+                        throw new Error('Fecha Binance inválida');
+                    }
+                    verificationData.fechaBinance = iso;
                 }
                 
                 // Guardar en base de datos en lugar de localStorage
@@ -1105,15 +1186,25 @@
                 let comprobanteNombre = null;
                 
                 // Subir comprobante si existe
-                const comprobanteElement = paymentMethod === 'zelle'
-                    ? document.getElementById('comprobante-zelle')
-                    : document.getElementById('comprobante-pago-movil');
-                
+                let comprobanteElement;
+                if (paymentMethod === 'zelle') {
+                    comprobanteElement = document.getElementById('comprobante-zelle');
+                } else if (paymentMethod === 'binance') {
+                    comprobanteElement = document.getElementById('comprobante-binance');
+                } else {
+                    comprobanteElement = document.getElementById('comprobante-pago-movil');
+                }
+
                 if (comprobanteElement && comprobanteElement.files && comprobanteElement.files[0]) {
                     const comprobanteFile = comprobanteElement.files[0];
-                    const uploadRef = paymentMethod === 'zelle'
-                        ? (verificationData.confirmacionZelle || 'sin_confirmacion')
-                        : (verificationData.referencia || 'sin_referencia');
+                    let uploadRef;
+                    if (paymentMethod === 'zelle') {
+                        uploadRef = verificationData.confirmacionZelle || 'sin_confirmacion';
+                    } else if (paymentMethod === 'binance') {
+                        uploadRef = verificationData.confirmacionBinance || 'sin_confirmacion';
+                    } else {
+                        uploadRef = verificationData.referencia || 'sin_referencia';
+                    }
                     const uploadResult = await window.VERIFICACION_UPLOAD.subirComprobante(
                         comprobanteFile,
                         paymentMethod,
@@ -1142,9 +1233,9 @@
                     cantidad_hombres: hombresNorm,
                     cantidad_mujeres: mujeresNorm,
                     evento_id: formData.eventoId || 1, // Usar evento_id del formData (línea 1018) o default 1
-                    monto: paymentMethod === 'pago-movil' ? 
-                        parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) : 
-                        totalUsd, // USD total para Zelle
+                    monto: paymentMethod === 'pago-movil' ?
+                        parseFloat(verificationData.monto.replace(/\./g, '').replace(',', '.')) :
+                        totalUsd, // USD total para Zelle y Binance
                     tasa_dolar: parseFloat(
                         ((window.ultimoResultadoPago?.tasa)
                             || (window.TASA_DOLAR_UTILS?.obtenerTasaDolar ? await window.TASA_DOLAR_UTILS.obtenerTasaDolar() : null)
@@ -1154,10 +1245,15 @@
                     ),
                     referencia: verificationData.referencia || null,
                     confirmacion_zelle: verificationData.confirmacionZelle || null,
-                    email_remitente: verificationData.emailRemitente || null,
-                    fecha_pago: paymentMethod === 'pago-movil' ? 
-                        verificationData.fechaPago : 
-                        verificationData.fechaZelle,
+                    confirmacion_binance: verificationData.confirmacionBinance || null,
+                    email_remitente: paymentMethod === 'binance' ?
+                        (verificationData.emailRemitenteBinance || null) :
+                        (verificationData.emailRemitente || null),
+                    fecha_pago: paymentMethod === 'pago-movil' ?
+                        verificationData.fechaPago :
+                        (paymentMethod === 'zelle' ?
+                            verificationData.fechaZelle :
+                            verificationData.fechaBinance),
                     comprobante_url: comprobanteUrl,
                     comprobante_nombre: comprobanteNombre,
                     datos_compra: {
@@ -1364,6 +1460,8 @@
                 if (inlineEl) inlineEl.textContent = `$${totalUsd.toFixed(2)}`;
                 const zelleEl = document.getElementById('ticket-price-usd-zelle');
                 if (zelleEl) zelleEl.textContent = `$${totalUsd.toFixed(2)}`;
+                const binanceEl = document.getElementById('ticket-price-usd-binance');
+                if (binanceEl) binanceEl.textContent = `$${totalUsd.toFixed(2)}`;
 
                 // Cargar información de pago (en USD total)
                 const infoPago = await window.TASA_DOLAR_UTILS.mostrarInformacionPago(totalUsd);
