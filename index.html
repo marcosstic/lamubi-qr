@@ -707,9 +707,9 @@
 
         .modal-content {
             background: linear-gradient(45deg, #0a0e27, #7b2cbf);
-            padding: 2rem;
+            padding: 3rem;
             border-radius: 15px;
-            max-width: 400px;
+            max-width: 600px;
             text-align: center;
             position: relative;
             box-shadow: 0 0 30px rgba(0, 255, 157, 0.5);
@@ -719,17 +719,17 @@
             position: absolute;
             top: 10px;
             right: 15px;
-            font-size: 2rem;
             color: #fff;
+            font-size: 2rem;
             cursor: pointer;
             line-height: 1;
         }
 
         .modal-text {
             color: #fff;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: 600;
-            margin-top: 1rem;
+            line-height: 1.5;
         }
 
         @media (max-width: 768px) {
@@ -1032,7 +1032,6 @@
         
         <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
         <p class="event-date">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON</p>
-        <p class="event-date">26 DE SEPTIEMBRE - VOCAS - LA MUBI EN VALERA</p>
         
         <div class="countdown">
             <div class="countdown-item">
@@ -1055,12 +1054,7 @@
         
         <div class="main-cta-container">
             <div class="availability-counter">
-                <span class="counter-label counter-label-urgency">26 de septiembre LA MUBI EN VALERA - VOCAS entradas vendidas 224 de 700 disponibles</span>
-                <span class="counter-number" id="available-tickets" style="display:none;">224</span>
-                <span class="counter-total" style="display:none;">/ 700</span>
-            </div>
-            <div class="availability-counter">
-                <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON entradas vendidas 422 de 2500 disponibles</span>
+                <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON entradas vendidas 488 de 2000 disponibles</span>
             </div>
             <button class="main-cta-button project-x-button" id="main-cta" type="button">
                 <span class="cta-text" id="cta-price-text">LA MUBI EN VALERA - VOCAS</span>
@@ -1080,6 +1074,14 @@
                 <div class="modal-content">
                     <span class="modal-close" id="reggaeton-modal-close">&times;</span>
                     <p class="modal-text">ENTRADAS RESTANTES DISPONIBLES PARA COMPRAR EN PUERTA - I LOVE REGGAETON</p>
+                </div>
+            </div>
+
+            <!-- Modal para evento Valera bloqueado -->
+            <div id="valera-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="modal-close" id="valera-modal-close">&times;</span>
+                    <p class="modal-text">ÚLTIMAS ENTRADAS DISPONIBLES EN PUERTA - LA MUBI EN VALERA - VOCAS</p>
                 </div>
             </div>
         </div>
@@ -1176,10 +1178,10 @@
             }
         }
 
-        // Countdown dinámico hacia evento LA MUBI EN VALERA (26-Sep-2026 21:00 Venezuela)
+        // Countdown dinámico hacia evento POOL NIGHT (03-Oct-2026 19:00 Venezuela)
         function updateCountdown() {
-            // Fecha objetivo: 26 de septiembre 2026, 21:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-09-26T21:00:00-04:00');
+            // Fecha objetivo: 3 de octubre 2026, 19:00 hora Venezuela (America/Caracas)
+            const eventDate = new Date('2026-10-03T19:00:00-04:00');
 
             setInterval(() => {
                 // Obtener hora actual en Venezuela usando helper existente
@@ -1276,7 +1278,11 @@
                 if (!shouldDisable) {
                     mainCta.addEventListener('click', function(e) {
                         e.preventDefault();
-                        navigateToPurchase(1); // General usa evento_id=1
+                        // Mostrar modal de Valera en lugar de navegar
+                        const valeraModal = document.getElementById('valera-modal');
+                        if (valeraModal) {
+                            valeraModal.style.display = 'block';
+                        }
                     });
                 }
             }
@@ -1320,17 +1326,35 @@
         // Funcionalidad para cerrar modal Reggaeton
         const reggaetonModal = document.getElementById('reggaeton-modal');
         const reggaetonModalClose = document.getElementById('reggaeton-modal-close');
-        
+
         if (reggaetonModalClose) {
             reggaetonModalClose.addEventListener('click', function() {
                 reggaetonModal.style.display = 'none';
             });
         }
-        
+
         if (reggaetonModal) {
             reggaetonModal.addEventListener('click', function(e) {
                 if (e.target === reggaetonModal) {
                     reggaetonModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Funcionalidad para cerrar modal Valera
+        const valeraModal = document.getElementById('valera-modal');
+        const valeraModalClose = document.getElementById('valera-modal-close');
+
+        if (valeraModalClose) {
+            valeraModalClose.addEventListener('click', function() {
+                valeraModal.style.display = 'none';
+            });
+        }
+
+        if (valeraModal) {
+            valeraModal.addEventListener('click', function(e) {
+                if (e.target === valeraModal) {
+                    valeraModal.style.display = 'none';
                 }
             });
         }
