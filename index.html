@@ -1054,7 +1054,7 @@
         
         <div class="main-cta-container">
             <div class="availability-counter">
-                <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON entradas vendidas 488 de 2000 disponibles</span>
+                <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON entradas vendidas 531 de 2000 disponibles</span>
             </div>
             <button class="main-cta-button project-x-button" id="main-cta" type="button">
                 <span class="cta-text" id="cta-price-text">LA MUBI EN VALERA - VOCAS</span>
@@ -1145,6 +1145,10 @@
             reggaeton: {
                 enabled: false, // Cambiar a true para reactivar compras del evento Reggaeton
                 disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
+            },
+            valera: {
+                enabled: false, // Cambiar a true para reactivar compras del evento Valera
+                disabledText: 'ÚLTIMAS ENTRADAS DISPONIBLES EN PUERTA'
             }
         };
         // ============================================
@@ -1154,6 +1158,13 @@
             const reggaetonButton = document.querySelector('.reggaeton-button');
             if (reggaetonButton) {
                 reggaetonButton.classList.add('event-hidden');
+            }
+        }
+
+        if (!EVENT_CONFIG.valera.enabled) {
+            const valeraButton = document.querySelector('.project-x-button');
+            if (valeraButton) {
+                valeraButton.classList.add('event-hidden');
             }
         }
 
