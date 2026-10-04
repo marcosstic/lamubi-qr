@@ -1084,6 +1084,14 @@
                     <p class="modal-text">ÚLTIMAS ENTRADAS DISPONIBLES EN PUERTA - LA MUBI EN VALERA - VOCAS</p>
                 </div>
             </div>
+
+            <!-- Modal para evento Pool Night bloqueado -->
+            <div id="poolnight-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="modal-close" id="poolnight-modal-close">&times;</span>
+                    <p class="modal-text">ENTRADAS DISPONIBLES EN PUERTA - LA MUBI POOL NIGHT BY NEON</p>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -1149,6 +1157,10 @@
             valera: {
                 enabled: false, // Cambiar a true para reactivar compras del evento Valera
                 disabledText: 'ÚLTIMAS ENTRADAS DISPONIBLES EN PUERTA'
+            },
+            poolnight: {
+                enabled: false, // Cambiar a true para reactivar compras del evento Pool Night
+                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
             }
         };
         // ============================================
@@ -1313,7 +1325,16 @@
             if (poolNightButton) {
                 poolNightButton.addEventListener('click', function(e) {
                     e.preventDefault();
-                    navigateToPurchase(3); // Pool Night usa evento_id=3
+
+                    if (!EVENT_CONFIG.poolnight.enabled) {
+                        // Mostrar modal en lugar de redirigir
+                        const poolnightModal = document.getElementById('poolnight-modal');
+                        if (poolnightModal) {
+                            poolnightModal.style.display = 'block';
+                        }
+                    } else {
+                        navigateToPurchase(3); // Pool Night usa evento_id=3
+                    }
                 });
             }
 
@@ -1366,6 +1387,24 @@
             valeraModal.addEventListener('click', function(e) {
                 if (e.target === valeraModal) {
                     valeraModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Funcionalidad para cerrar modal Pool Night
+        const poolnightModal = document.getElementById('poolnight-modal');
+        const poolnightModalClose = document.getElementById('poolnight-modal-close');
+
+        if (poolnightModalClose) {
+            poolnightModalClose.addEventListener('click', function() {
+                poolnightModal.style.display = 'none';
+            });
+        }
+
+        if (poolnightModal) {
+            poolnightModal.addEventListener('click', function(e) {
+                if (e.target === poolnightModal) {
+                    poolnightModal.style.display = 'none';
                 }
             });
         }
