@@ -1031,7 +1031,7 @@
         </div>
         
         <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
-        <p class="event-date">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON</p>
+        <p class="event-date">17 octubre - reggaeton life</p>
         
         <div class="countdown">
             <div class="countdown-item">
@@ -1053,7 +1053,7 @@
         </div>
         
         <div class="main-cta-container">
-            <div class="availability-counter">
+            <div class="availability-counter" id="pool-counter">
                 <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON entradas vendidas 531 de 2000 disponibles</span>
             </div>
             <button class="main-cta-button project-x-button" id="main-cta" type="button">
@@ -1065,7 +1065,7 @@
                 <div class="cta-pulse"></div>
             </button>
             <button class="main-cta-button reggaeton-button" type="button">
-                <span class="cta-text">I LOVE REGGAETON - STUFFA - $3 - COMPRAR ENTRADA</span>
+                <span class="cta-text">REGGAETON LIFE - $3 - COMPRAR ENTRADA</span>
                 <div class="cta-pulse"></div>
             </button>
             
@@ -1151,7 +1151,7 @@
         // Configuración específica por evento
         const EVENT_CONFIG = {
             reggaeton: {
-                enabled: false, // Cambiar a true para reactivar compras del evento Reggaeton
+                enabled: true, // Cambiar a true para reactivar compras del evento Reggaeton
                 disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
             },
             valera: {
@@ -1180,6 +1180,18 @@
             }
         }
 
+        if (!EVENT_CONFIG.poolnight.enabled) {
+            const poolNightButton = document.querySelector('.pool-night-button');
+            if (poolNightButton) {
+                poolNightButton.classList.add('event-hidden');
+            }
+
+            const poolCounter = document.getElementById('pool-counter');
+            if (poolCounter) {
+                poolCounter.classList.add('event-hidden');
+            }
+        }
+
         // Crear partículas dinámicas
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
@@ -1201,10 +1213,10 @@
             }
         }
 
-        // Countdown dinámico hacia evento POOL NIGHT (03-Oct-2026 19:00 Venezuela)
+        // Countdown dinámico hacia evento REGGAETON LIFE (17-Oct-2026 19:00 Venezuela)
         function updateCountdown() {
-            // Fecha objetivo: 3 de octubre 2026, 19:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-10-03T19:00:00-04:00');
+            // Fecha objetivo: 17 de octubre 2026, 19:00 hora Venezuela (America/Caracas)
+            const eventDate = new Date('2026-10-17T19:00:00-04:00');
 
             setInterval(() => {
                 // Obtener hora actual en Venezuela usando helper existente
