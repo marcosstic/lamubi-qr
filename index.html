@@ -642,6 +642,37 @@
             }
         }
 
+        .terror-button {
+            background: linear-gradient(45deg, #ff6600, #990000, #ff6600) !important;
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(153, 0, 0, 0.3) !important;
+            animation: terrorPulse 2s ease-in-out infinite alternate;
+        }
+
+        .terror-button .cta-text {
+            text-shadow: 0 0 10px rgba(255, 102, 0, 0.8), 0 0 20px rgba(153, 0, 0, 0.6);
+        }
+
+        .terror-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .terror-button:disabled:hover {
+            transform: none;
+            background: linear-gradient(45deg, #ff6600, #990000, #ff6600) !important;
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(153, 0, 0, 0.3) !important;
+        }
+
+        @keyframes terrorPulse {
+            0% {
+                box-shadow: 0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(153, 0, 0, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 30px rgba(255, 102, 0, 0.8), 0 0 60px rgba(153, 0, 0, 0.5);
+            }
+        }
+
         .reggaeton-counter {
             margin-top: 1rem;
             padding: 0.5rem 0;
@@ -1031,7 +1062,8 @@
         </div>
         
         <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
-        <p class="event-date">17 octubre - REGGAETON LIFE - CLUB QUIMICO - Preventa $4</p>
+        <p class="event-date">24 OCTUBRE - LA MUBI DEL TERROR - STUFFA - preventa $4</p>
+        <p class="event-date" style="font-size: 0.9rem; margin-top: 0.5rem;">17 octubre - REGGAETON LIFE - CLUB QUIMICO - Preventa $4</p>
         
         <div class="countdown">
             <div class="countdown-item">
@@ -1054,10 +1086,10 @@
         
         <div class="main-cta-container">
             <div class="availability-counter" id="pool-counter">
-                <span class="counter-label counter-label-urgency">03 OCTUBRE - LA MUBI POOL NIGHT BY NEON entradas vendidas 531 de 2000 disponibles</span>
+                <span class="counter-label counter-label-urgency">24 OCTUBRE - LA MUBI DEL TERROR - STUFFA entradas vendidas 10 de 700 disponibles - preventa $4</span>
             </div>
             <button class="main-cta-button project-x-button" id="main-cta" type="button">
-                <span class="cta-text" id="cta-price-text">LA MUBI EN VALERA - VOCAS</span>
+                <span class="cta-text" id="cta-price-text">LA MUBI DEL TERROR - STUFFA</span>
                 <div class="cta-pulse"></div>
             </button>
             <button class="main-cta-button pool-night-button" type="button">
@@ -1150,6 +1182,10 @@
 
         // Configuración específica por evento
         const EVENT_CONFIG = {
+            terror: {
+                enabled: true, // Cambiar a true para reactivar compras del evento Terror
+                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
+            },
             reggaeton: {
                 enabled: true, // Cambiar a true para reactivar compras del evento Reggaeton
                 disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
@@ -1176,7 +1212,9 @@
         if (!EVENT_CONFIG.valera.enabled) {
             const valeraButton = document.querySelector('.project-x-button');
             if (valeraButton) {
-                valeraButton.classList.add('event-hidden');
+                valeraButton.classList.remove('event-hidden');
+                valeraButton.classList.add('terror-button');
+                valeraButton.classList.remove('project-x-button');
             }
         }
 
@@ -1184,11 +1222,6 @@
             const poolNightButton = document.querySelector('.pool-night-button');
             if (poolNightButton) {
                 poolNightButton.classList.add('event-hidden');
-            }
-
-            const poolCounter = document.getElementById('pool-counter');
-            if (poolCounter) {
-                poolCounter.classList.add('event-hidden');
             }
         }
 
@@ -1213,10 +1246,10 @@
             }
         }
 
-        // Countdown dinámico hacia evento REGGAETON LIFE (17-Oct-2026 19:00 Venezuela)
+        // Countdown dinámico hacia evento LA MUBI DEL TERROR (24-Oct-2026 21:00 Venezuela)
         function updateCountdown() {
-            // Fecha objetivo: 17 de octubre 2026, 19:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-10-17T19:00:00-04:00');
+            // Fecha objetivo: 24 de octubre 2026, 21:00 hora Venezuela (America/Caracas)
+            const eventDate = new Date('2026-10-24T21:00:00-04:00');
 
             setInterval(() => {
                 // Obtener hora actual en Venezuela usando helper existente
@@ -1313,10 +1346,15 @@
                 if (!shouldDisable) {
                     mainCta.addEventListener('click', function(e) {
                         e.preventDefault();
-                        // Mostrar modal de Valera en lugar de navegar
-                        const valeraModal = document.getElementById('valera-modal');
-                        if (valeraModal) {
-                            valeraModal.style.display = 'block';
+                        // Verificar configuración del evento Terror
+                        if (!EVENT_CONFIG.terror.enabled) {
+                            // Mostrar modal en lugar de redirigir
+                            const valeraModal = document.getElementById('valera-modal');
+                            if (valeraModal) {
+                                valeraModal.style.display = 'block';
+                            }
+                        } else {
+                            navigateToPurchase(5); // Terror usa evento_id=5
                         }
                     });
                 }
@@ -1449,7 +1487,7 @@
 
                 const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
                 const cta = document.getElementById('cta-price-text');
-                if (cta) cta.textContent = `LA MUBI EN VALERA - VOCAS - ${formatted} - COMPRAR ENTRADA`;
+                if (cta) cta.textContent = `LA MUBI DEL TERROR - STUFFA - ${formatted} - COMPRAR ENTRADA`;
                 const card = document.getElementById('ticket-price-card');
                 if (card) card.textContent = formatted;
             } catch (e) {
