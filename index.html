@@ -1205,8 +1205,7 @@
         if (!EVENT_CONFIG.reggaeton.enabled) {
             const reggaetonButton = document.querySelector('.reggaeton-button');
             if (reggaetonButton) {
-                reggaetonButton.style.cursor = 'pointer';
-                reggaetonButton.style.opacity = '1';
+                reggaetonButton.classList.add('event-hidden');
             }
         }
 
