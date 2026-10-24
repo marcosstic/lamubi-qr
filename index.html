@@ -1116,6 +1116,14 @@
                 </div>
             </div>
 
+            <!-- Modal para evento Terror bloqueado -->
+            <div id="terror-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="modal-close" id="terror-modal-close">&times;</span>
+                    <p class="modal-text">ENTRADAS DISPONIBLES SOLO EN PUERTA EN STUFFA</p>
+                </div>
+            </div>
+
             <!-- Modal para evento Pool Night bloqueado -->
             <div id="poolnight-modal" class="modal" style="display: none;">
                 <div class="modal-content">
@@ -1182,8 +1190,8 @@
         // Configuración específica por evento
         const EVENT_CONFIG = {
             terror: {
-                enabled: true, // Cambiar a true para reactivar compras del evento Terror
-                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
+                enabled: false, // Cambiar a true para reactivar compras del evento Terror
+                disabledText: 'ENTRADAS DISPONIBLES SOLO EN PUERTA EN STUFFA'
             },
             reggaeton: {
                 enabled: false, // Cambiar a true para reactivar compras del evento Reggaeton
@@ -1348,9 +1356,9 @@
                         // Verificar configuración del evento Terror
                         if (!EVENT_CONFIG.terror.enabled) {
                             // Mostrar modal en lugar de redirigir
-                            const valeraModal = document.getElementById('valera-modal');
-                            if (valeraModal) {
-                                valeraModal.style.display = 'block';
+                            const terrorModal = document.getElementById('terror-modal');
+                            if (terrorModal) {
+                                terrorModal.style.display = 'block';
                             }
                         } else {
                             navigateToPurchase(5); // Terror usa evento_id=5
@@ -1454,6 +1462,24 @@
             poolnightModal.addEventListener('click', function(e) {
                 if (e.target === poolnightModal) {
                     poolnightModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Funcionalidad para cerrar modal Terror
+        const terrorModal = document.getElementById('terror-modal');
+        const terrorModalClose = document.getElementById('terror-modal-close');
+
+        if (terrorModalClose) {
+            terrorModalClose.addEventListener('click', function() {
+                terrorModal.style.display = 'none';
+            });
+        }
+
+        if (terrorModal) {
+            terrorModal.addEventListener('click', function(e) {
+                if (e.target === terrorModal) {
+                    terrorModal.style.display = 'none';
                 }
             });
         }
