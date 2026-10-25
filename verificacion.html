@@ -1343,6 +1343,49 @@
     <script src="config.js"></script>
     <script src="user-detection-api.js"></script>
     <script>
+        // ============================================
+        // CONFIGURACIÓN DE BLOQUEO DE COMPRAS
+        // ============================================
+        const EVENT_CONFIG = {
+            terror: {
+                enabled: false, // Cambiar a true para reactivar compras del evento Terror
+                disabledText: 'ENTRADAS DISPONIBLES SOLO EN PUERTA EN STUFFA'
+            },
+            reggaeton: {
+                enabled: false, // Cambiar a true para reactivar compras del evento Reggaeton
+                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA Y POR WHATSAPP'
+            },
+            valera: {
+                enabled: false, // Cambiar a true para reactivar compras del evento Valera
+                disabledText: 'ÚLTIMAS ENTRADAS DISPONIBLES EN PUERTA'
+            },
+            poolnight: {
+                enabled: false, // Cambiar a true para reactivar compras del evento Pool Night
+                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
+            }
+        };
+
+        // Verificar si el evento está deshabilitado al cargar
+        function checkEventDisabled() {
+            const formData = JSON.parse(localStorage.getItem('lamubi-form-data'));
+            const eventoId = formData?.eventoId || 1;
+
+            if (eventoId === 5 && !EVENT_CONFIG.terror.enabled) {
+                // Mostrar mensaje de bloqueo
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; color: #fff; font-family: 'Montserrat', sans-serif; text-align: center; padding: 2rem;">
+                        <div>
+                            <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #bb1175;">VENTAS CERRADAS</h1>
+                            <p style="font-size: 1.2rem; margin-bottom: 2rem;">${EVENT_CONFIG.terror.disabledText}</p>
+                            <a href="index.html" style="color: #f43cb8; text-decoration: none; font-size: 1rem;">Volver al inicio</a>
+                        </div>
+                    </div>
+                `;
+                return true;
+            }
+            return false;
+        }
+
         // 🔧 FORZAR INICIALIZACIÓN DE SUPABASE
         console.log('🔧 Forzando inicialización de Supabase...');
         
@@ -1367,6 +1410,13 @@
                 });
             }
         }, 200); // Aumentado a 200ms
+
+        // Verificar si el evento está deshabilitado al cargar
+        setTimeout(() => {
+            if (checkEventDisabled()) {
+                return; // Detener ejecución si el evento está bloqueado
+            }
+        }, 300);
     </script>
     
     <script src="tasa-dolar-verificacion.js"></script>
@@ -1377,6 +1427,11 @@
     <script>
         // Función para inicializar tasa dólar en verificación
         window.cargarTasaDolarVerificacion = async function() {
+            // Verificar si el evento está deshabilitado antes de cargar
+            if (checkEventDisabled()) {
+                return; // Detener ejecución si el evento está bloqueado
+            }
+
             try {
                 console.log('🎯 Iniciando carga de tasa dólar...');
                 
