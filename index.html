@@ -198,6 +198,19 @@
             position: relative;
         }
 
+        /* Contenedor modular de botones de eventos */
+        .event-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .event-actions:empty {
+            display: none;
+        }
+
         .availability-counter {
             display: flex;
             align-items: center;
@@ -207,6 +220,8 @@
             border: 2px solid var(--primary);
             border-radius: 50px;
             animation: counterGlow 2s ease-in-out infinite alternate;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .counter-label {
@@ -221,6 +236,10 @@
             font-weight: 700;
             font-size: 1.2rem;
             text-transform: uppercase;
+            line-height: 1.25;
+            text-align: center;
+            white-space: normal;
+            overflow-wrap: anywhere;
         }
 
         .counter-number {
@@ -1062,75 +1081,32 @@
         </div>
         
         <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
-        <p class="event-date">24 OCTUBRE - LA MUBI DEL TERROR - STUFFA - preventa $5</p>
+        <p class="event-date" id="event-date-label">EVENTO PRÓXIMAMENTE</p>
         
         <div class="countdown">
             <div class="countdown-item">
-                <span class="countdown-number" id="days">15</span>
+                <span class="countdown-number" id="days">0</span>
                 <span class="countdown-label">DÍAS</span>
             </div>
             <div class="countdown-item">
-                <span class="countdown-number" id="hours">12</span>
+                <span class="countdown-number" id="hours">0</span>
                 <span class="countdown-label">HORAS</span>
             </div>
             <div class="countdown-item">
-                <span class="countdown-number" id="minutes">34</span>
+                <span class="countdown-number" id="minutes">0</span>
                 <span class="countdown-label">MIN</span>
             </div>
             <div class="countdown-item">
-                <span class="countdown-number" id="seconds">56</span>
+                <span class="countdown-number" id="seconds">0</span>
                 <span class="countdown-label">SEG</span>
             </div>
         </div>
         
         <div class="main-cta-container">
             <div class="availability-counter" id="pool-counter">
-                <span class="counter-label counter-label-urgency">24 OCTUBRE - LA MUBI DEL TERROR - STUFFA entradas vendidas 487 de 700 disponibles - preventa $5</span>
+                <span class="counter-label counter-label-urgency" id="event-counter-label">0 vendidas de 0 disponibles</span>
             </div>
-            <button class="main-cta-button project-x-button" id="main-cta" type="button">
-                <span class="cta-text" id="cta-price-text">LA MUBI DEL TERROR - STUFFA</span>
-                <div class="cta-pulse"></div>
-            </button>
-            <button class="main-cta-button pool-night-button" type="button">
-                <span class="cta-text">POOL NIGHT - $5 - COMPRAR ENTRADA</span>
-                <div class="cta-pulse"></div>
-            </button>
-            <button class="main-cta-button reggaeton-button" type="button">
-                <span class="cta-text">REGGAETON LIFE - CLUB QUIMICO - $4 - COMPRAR ENTRADA</span>
-                <div class="cta-pulse"></div>
-            </button>
-            
-            <!-- Modal para evento Reggaeton bloqueado -->
-            <div id="reggaeton-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="modal-close" id="reggaeton-modal-close">&times;</span>
-                    <p class="modal-text">ENTRADAS DISPONIBLES EN PUERTA Y POR WHATSAPP</p>
-                </div>
-            </div>
-
-            <!-- Modal para evento Valera bloqueado -->
-            <div id="valera-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="modal-close" id="valera-modal-close">&times;</span>
-                    <p class="modal-text">ÚLTIMAS ENTRADAS DISPONIBLES EN PUERTA - LA MUBI EN VALERA - VOCAS</p>
-                </div>
-            </div>
-
-            <!-- Modal para evento Terror bloqueado -->
-            <div id="terror-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="modal-close" id="terror-modal-close">&times;</span>
-                    <p class="modal-text">ENTRADAS DISPONIBLES SOLO EN PUERTA EN STUFFA</p>
-                </div>
-            </div>
-
-            <!-- Modal para evento Pool Night bloqueado -->
-            <div id="poolnight-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="modal-close" id="poolnight-modal-close">&times;</span>
-                    <p class="modal-text">ENTRADAS DISPONIBLES EN PUERTA - LA MUBI POOL NIGHT BY NEON</p>
-                </div>
-            </div>
+            <div id="event-actions" class="event-actions"></div>
         </div>
     </section>
 
@@ -1181,62 +1157,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
+    <script src="assets/events-config.js"></script>
+    <script src="assets/events-ui.js"></script>
     <script>
-        // ============================================
-        // CONFIGURACIÓN DE BLOQUEO DE COMPRAS
-        // ============================================
-        const COMPRAS_BLOQUEADAS = false; // Cambiar a false para desbloquear
-
-        // Configuración específica por evento
-        const EVENT_CONFIG = {
-            terror: {
-                enabled: false, // Cambiar a true para reactivar compras del evento Terror
-                disabledText: 'ENTRADAS DISPONIBLES SOLO EN PUERTA EN STUFFA'
-            },
-            reggaeton: {
-                enabled: false, // Cambiar a true para reactivar compras del evento Reggaeton
-                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA Y POR WHATSAPP'
-            },
-            valera: {
-                enabled: false, // Cambiar a true para reactivar compras del evento Valera
-                disabledText: 'ÚLTIMAS ENTRADAS DISPONIBLES EN PUERTA'
-            },
-            poolnight: {
-                enabled: false, // Cambiar a true para reactivar compras del evento Pool Night
-                disabledText: 'ENTRADAS DISPONIBLES EN PUERTA'
-            }
-        };
-        // ============================================
-
-        // Ocultar eventos deshabilitados al cargar
-        if (!EVENT_CONFIG.reggaeton.enabled) {
-            const reggaetonButton = document.querySelector('.reggaeton-button');
-            if (reggaetonButton) {
-                reggaetonButton.classList.add('event-hidden');
-            }
-        }
-
-        if (!EVENT_CONFIG.valera.enabled) {
-            const valeraButton = document.querySelector('.project-x-button');
-            if (valeraButton) {
-                valeraButton.classList.remove('event-hidden');
-                valeraButton.classList.add('terror-button');
-                valeraButton.classList.remove('project-x-button');
-            }
-        }
-
-        if (!EVENT_CONFIG.poolnight.enabled) {
-            const poolNightButton = document.querySelector('.pool-night-button');
-            if (poolNightButton) {
-                poolNightButton.classList.add('event-hidden');
-            }
-        }
-
         // Crear partículas dinámicas
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
+            if (!particlesContainer) return;
+
             const particleCount = 50;
-            
+
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
@@ -1244,51 +1174,22 @@
                 particle.style.top = Math.random() * 100 + '%';
                 particle.style.animationDelay = Math.random() * 6 + 's';
                 particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                
+
                 // Variar colores entre acento y secundario
                 particle.style.background = Math.random() > 0.5 ? 'var(--accent)' : 'var(--secondary)';
                 particle.style.boxShadow = `0 0 ${Math.random() * 15 + 5}px ${Math.random() > 0.5 ? 'var(--accent)' : 'var(--secondary)'}`;
-                
+
                 particlesContainer.appendChild(particle);
             }
-        }
-
-        // Countdown dinámico hacia evento LA MUBI DEL TERROR (24-Oct-2026 21:00 Venezuela)
-        function updateCountdown() {
-            // Fecha objetivo: 24 de octubre 2026, 21:00 hora Venezuela (America/Caracas)
-            const eventDate = new Date('2026-10-24T21:00:00-04:00');
-
-            setInterval(() => {
-                // Obtener hora actual en Venezuela usando helper existente
-                const now = new Date(window.LAMUBI_UTILS.venezuelaNow());
-                const diff = eventDate - now;
-
-                if (diff <= 0) {
-                    // Evento ya pasó o está ocurriendo
-                    document.getElementById('days').textContent = '0';
-                    document.getElementById('hours').textContent = '0';
-                    document.getElementById('minutes').textContent = '0';
-                    document.getElementById('seconds').textContent = '0';
-                    return;
-                }
-
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                document.getElementById('days').textContent = days;
-                document.getElementById('hours').textContent = hours;
-                document.getElementById('minutes').textContent = minutes;
-                document.getElementById('seconds').textContent = seconds;
-            }, 1000);
         }
 
         // Efecto parallax suave al scroll
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;
             const particles = document.querySelector('.particles');
-            particles.style.transform = `translateY(${scrolled * 0.5}px)`;
+            if (particles) {
+                particles.style.transform = `translateY(${scrolled * 0.5}px)`;
+            }
         });
 
         // Efecto 3D en las cards con el mouse
@@ -1297,192 +1198,20 @@
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                
+
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-                
+
                 const rotateX = (y - centerY) / 10;
                 const rotateY = (centerX - x) / 10;
-                
+
                 card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
             });
-            
+
             card.addEventListener('mouseleave', () => {
                 card.style.transform = 'rotateX(0) rotateY(0) scale(1)';
             });
         });
-
-        // Contador dinámico de entradas
-        function updateTicketCounter() {
-            const availableTickets = 685;
-            const totalTickets = 700;
-            
-            // Simular reducción de entradas cada 30 segundos
-            setInterval(() => {
-                const currentAvailable = parseInt(document.getElementById('available-tickets').textContent);
-                if (currentAvailable > 10) {
-                    document.getElementById('available-tickets').textContent = currentAvailable - 1;
-                    
-                    // Efecto de alerta cuando quedan pocas entradas
-                    if (currentAvailable <= 20) {
-                        document.querySelector('.availability-counter').style.animation = 'counterGlow 0.5s ease-in-out infinite alternate';
-                        document.querySelector('.availability-counter').style.borderColor = 'var(--secondary)';
-                    }
-                }
-            }, 30000); // Cada 30 segundos
-        }
-
-        // Efecto de pulsación intensa al hacer clic en CTA
-        const mainCta = document.getElementById('main-cta');
-        const ticketButtons = Array.from(document.querySelectorAll('.ticket-button')).filter(btn => btn.id !== 'general-ticket-button');
-
-        const navigateToPurchase = (eventoId = 1) => {
-            // Guardar evento_id en localStorage
-            localStorage.setItem('lamubi-evento-id', String(eventoId));
-            window.location.href = 'comprar.html';
-        };
-
-        const enablePurchaseButtons = () => {
-            const shouldDisable = COMPRAS_BLOQUEADAS;
-
-            if (mainCta) {
-                mainCta.disabled = shouldDisable;
-                mainCta.style.cursor = shouldDisable ? 'not-allowed' : 'pointer';
-                mainCta.style.opacity = shouldDisable ? '0.5' : '';
-
-                if (!shouldDisable) {
-                    mainCta.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        // Verificar configuración del evento Terror
-                        if (!EVENT_CONFIG.terror.enabled) {
-                            // Mostrar modal en lugar de redirigir
-                            const terrorModal = document.getElementById('terror-modal');
-                            if (terrorModal) {
-                                terrorModal.style.display = 'block';
-                            }
-                        } else {
-                            navigateToPurchase(5); // Terror usa evento_id=5
-                        }
-                    });
-                }
-            }
-
-            ticketButtons.forEach(button => {
-                button.disabled = shouldDisable;
-                button.style.cursor = shouldDisable ? 'not-allowed' : 'pointer';
-                button.style.opacity = shouldDisable ? '0.5' : '';
-
-                if (!shouldDisable) {
-                    button.addEventListener('click', navigateToPurchase);
-                }
-            });
-
-            // Event listener específico para Pool Night (evento_id=3)
-            const poolNightButton = document.querySelector('.pool-night-button');
-            if (poolNightButton) {
-                poolNightButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    if (!EVENT_CONFIG.poolnight.enabled) {
-                        // Mostrar modal en lugar de redirigir
-                        const poolnightModal = document.getElementById('poolnight-modal');
-                        if (poolnightModal) {
-                            poolnightModal.style.display = 'block';
-                        }
-                    } else {
-                        navigateToPurchase(3); // Pool Night usa evento_id=3
-                    }
-                });
-            }
-
-            // Event listener específico para Reggaeton Stuffa (evento_id=4)
-            const reggaetonButton = document.querySelector('.reggaeton-button');
-            if (reggaetonButton) {
-                reggaetonButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Verificar configuración del evento Reggaeton
-                    if (!EVENT_CONFIG.reggaeton.enabled) {
-                        // Mostrar modal en lugar de redirigir
-                        document.getElementById('reggaeton-modal').style.display = 'flex';
-                    } else {
-                        navigateToPurchase(4); // Reggaeton Stuffa usa evento_id=4
-                    }
-                });
-            }
-        };
-
-        // Funcionalidad para cerrar modal Reggaeton
-        const reggaetonModal = document.getElementById('reggaeton-modal');
-        const reggaetonModalClose = document.getElementById('reggaeton-modal-close');
-
-        if (reggaetonModalClose) {
-            reggaetonModalClose.addEventListener('click', function() {
-                reggaetonModal.style.display = 'none';
-            });
-        }
-
-        if (reggaetonModal) {
-            reggaetonModal.addEventListener('click', function(e) {
-                if (e.target === reggaetonModal) {
-                    reggaetonModal.style.display = 'none';
-                }
-            });
-        }
-
-        // Funcionalidad para cerrar modal Valera
-        const valeraModal = document.getElementById('valera-modal');
-        const valeraModalClose = document.getElementById('valera-modal-close');
-
-        if (valeraModalClose) {
-            valeraModalClose.addEventListener('click', function() {
-                valeraModal.style.display = 'none';
-            });
-        }
-
-        if (valeraModal) {
-            valeraModal.addEventListener('click', function(e) {
-                if (e.target === valeraModal) {
-                    valeraModal.style.display = 'none';
-                }
-            });
-        }
-
-        // Funcionalidad para cerrar modal Pool Night
-        const poolnightModal = document.getElementById('poolnight-modal');
-        const poolnightModalClose = document.getElementById('poolnight-modal-close');
-
-        if (poolnightModalClose) {
-            poolnightModalClose.addEventListener('click', function() {
-                poolnightModal.style.display = 'none';
-            });
-        }
-
-        if (poolnightModal) {
-            poolnightModal.addEventListener('click', function(e) {
-                if (e.target === poolnightModal) {
-                    poolnightModal.style.display = 'none';
-                }
-            });
-        }
-
-        // Funcionalidad para cerrar modal Terror
-        const terrorModal = document.getElementById('terror-modal');
-        const terrorModalClose = document.getElementById('terror-modal-close');
-
-        if (terrorModalClose) {
-            terrorModalClose.addEventListener('click', function() {
-                terrorModal.style.display = 'none';
-            });
-        }
-
-        if (terrorModal) {
-            terrorModal.addEventListener('click', function(e) {
-                if (e.target === terrorModal) {
-                    terrorModal.style.display = 'none';
-                }
-            });
-        }
 
         // Bloquear botón ENTRADAS GENERAL
         const generalTicketButton = document.getElementById('general-ticket-button');
@@ -1494,42 +1223,24 @@
             });
         }
 
-        if (mainCta) {
-            mainCta.addEventListener('click', function() {
-                this.style.transform = 'translateY(-2px) scale(0.98)';
-                setTimeout(() => {
-                    this.style.transform = 'translateY(-5px) scale(1.05)';
-                }, 150);
-            });
-        }
-
-        async function loadTicketPrice() {
+        // Mantener el precio de la tarjeta de entradas sincronizado con la BD.
+        async function updateTicketPriceCard() {
             try {
                 const price = await window.LAMUBI_UTILS?.getTicketPriceUSD?.();
-                if (typeof price !== 'number' || !Number.isFinite(price)) {
-                    return;
-                }
+                if (typeof price !== 'number' || !Number.isFinite(price)) return;
 
                 const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
-                const cta = document.getElementById('cta-price-text');
-                if (cta) cta.textContent = `LA MUBI DEL TERROR - STUFFA - ${formatted} - COMPRAR ENTRADA`;
                 const card = document.getElementById('ticket-price-card');
                 if (card) card.textContent = formatted;
-            } catch (e) {
-                // Keep fallback price and continue
+            } catch (error) {
+                // Mantener el precio fallback si la consulta falla.
             }
         }
 
-        async function initPurchaseWorkflow() {
-            await loadTicketPrice();
-            enablePurchaseButtons();
-        }
-
-        // Inicializar
+        // Fecha, contador, countdown y botones de eventos se gestionan
+        // de forma modular en assets/events-config.js y assets/events-ui.js.
         createParticles();
-        updateCountdown();
-        updateTicketCounter();
-        initPurchaseWorkflow();
+        updateTicketPriceCard();
     </script>
 
     <script src="assets/whatsapp-widget.js" defer></script>
