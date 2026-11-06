@@ -32,7 +32,7 @@ Documento operativo de los dos eventos habilitados en la landing.
 | Fecha | Sábado 28/11/2026 |
 | Hora | 9:00 PM (America/Caracas, UTC-4) |
 | Ciudad | Trujillo |
-| Lugar | Trujillo (sede exacta pendiente) |
+| Lugar | 11:11 Good Vibes - Snack and Bar, Trujillo |
 | Precio | $5 preventa |
 | Capacidad | 700 |
 | DJs | Abrahan, Troco y Yeibeat |

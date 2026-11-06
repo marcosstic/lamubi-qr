@@ -118,8 +118,8 @@
                 counter: { vendidas: 0, disponibles: 700 },
                 card: {
                     shortDate: '28 DE NOVIEMBRE',
-                    venue: 'Trujillo, Venezuela',
-                    city: '',
+                    venue: '11:11 Good Vibes - Snack and Bar',
+                    city: 'Trujillo',
                     priceLabel: '$5',
                     badge: 'PREVENTA',
                     accent: 'aqua',

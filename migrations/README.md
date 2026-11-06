@@ -17,6 +17,8 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 |---|---|
 | `20261106_001_add_eventos_perreo_pool_trujillo.sql` | Inserta los eventos 6 y 7. |
 | `20261106_001_rollback.sql` | Revierte solo esos dos eventos, únicamente si no tienen tickets. |
+| `20261106_002_update_evento_7_ubicacion.sql` | Actualiza la ubicación del evento 7 a 11:11 Good Vibes - Snack and Bar. |
+| `20261106_002_rollback.sql` | Restaura la ubicación anterior del evento 7. |
 | `consultar-contadores-eventos.sql` | Consulta de solo lectura para actualizar los contadores estáticos. |
 
 ## Cómo ejecutar
