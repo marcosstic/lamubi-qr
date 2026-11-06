@@ -1,0 +1,537 @@
+/* ============================================================
+   LA MUBI - Tarjetas de próximos eventos
+   Estilos aislados. No modifica clases existentes.
+   ============================================================ */
+
+.events-showcase {
+    padding: 5rem 2rem;
+    background: linear-gradient(180deg, var(--black), #0a0a0a);
+    position: relative;
+    overflow: hidden;
+}
+
+.events-showcase::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: 50%;
+    width: 70vw;
+    height: 70vw;
+    max-width: 900px;
+    max-height: 900px;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(187, 17, 117, 0.16) 0%, transparent 65%);
+    pointer-events: none;
+}
+
+.events-showcase .container {
+    position: relative;
+    z-index: 1;
+}
+
+.events-showcase-subtitle {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    margin-top: -1.75rem;
+    margin-bottom: 2.5rem;
+}
+
+.events-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.events-cards-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 2rem;
+}
+
+/* Tarjeta */
+.event-card {
+    --card-accent: var(--secondary);
+    --card-accent-soft: rgba(244, 60, 184, 0.22);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: 2rem;
+    border-radius: 24px;
+    border: 1px solid rgba(244, 60, 184, 0.35);
+    background:
+        linear-gradient(145deg, rgba(187, 17, 117, 0.18), rgba(8, 8, 8, 0.94) 55%),
+        #050505;
+    box-shadow:
+        0 22px 55px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+        opacity 0.6s ease,
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
+    will-change: transform;
+}
+
+.event-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.event-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--card-accent-soft), transparent 42%);
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.event-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+        320px circle at var(--mx, 50%) var(--my, 0%),
+        rgba(255, 255, 255, 0.12),
+        transparent 62%
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+
+.event-card:hover {
+    z-index: 2;
+    border-color: var(--card-accent);
+    box-shadow:
+        0 28px 70px rgba(187, 17, 117, 0.32),
+        0 0 32px rgba(244, 60, 184, 0.18);
+}
+
+.event-card:hover::after {
+    opacity: 1;
+}
+
+.event-card[data-accent="aqua"] {
+    --card-accent: #33e6ff;
+    --card-accent-soft: rgba(51, 230, 255, 0.16);
+    border-color: rgba(51, 230, 255, 0.32);
+}
+
+.event-card[data-accent="aqua"]:hover {
+    box-shadow:
+        0 28px 70px rgba(0, 102, 255, 0.28),
+        0 0 32px rgba(51, 230, 255, 0.18);
+}
+
+.event-card[data-accent="aqua"] .event-card-date {
+    background: linear-gradient(45deg, #0066ff, #33e6ff);
+    box-shadow: 0 8px 22px rgba(0, 102, 255, 0.35);
+}
+
+.event-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Cabecera */
+.event-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.event-card-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    color: var(--white);
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    box-shadow: 0 8px 22px rgba(187, 17, 117, 0.35);
+}
+
+.event-card-tag {
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--card-accent);
+    border: 1px solid var(--card-accent);
+    border-radius: 999px;
+    padding: 0.32rem 0.7rem;
+    background: rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
+}
+
+.event-card-title {
+    font-size: clamp(1.45rem, 2.4vw, 1.9rem);
+    line-height: 1.08;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    margin: 0;
+    color: var(--white);
+    text-shadow: 0 0 22px rgba(244, 60, 184, 0.28);
+}
+
+.event-card[data-accent="aqua"] .event-card-title {
+    text-shadow: 0 0 22px rgba(51, 230, 255, 0.25);
+}
+
+.event-card-location {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.event-card-location svg {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    color: var(--card-accent);
+}
+
+/* Lineup */
+.event-card-lineup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.event-card-dj {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    padding: 0.42rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.event-card-dj-note {
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--card-accent);
+    opacity: 0.95;
+}
+
+/* Countdown */
+.event-card-countdown {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.event-countdown-unit {
+    text-align: center;
+    padding: 0.65rem 0.25rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+    transform: perspective(600px) rotateX(4deg);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.event-card:hover .event-countdown-unit {
+    border-color: rgba(244, 60, 184, 0.22);
+}
+
+.event-card[data-accent="aqua"]:hover .event-countdown-unit {
+    border-color: rgba(51, 230, 255, 0.22);
+}
+
+.event-countdown-value {
+    display: block;
+    font-size: 1.55rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--white);
+    text-shadow: 0 0 18px rgba(244, 60, 184, 0.28);
+}
+
+.event-card[data-accent="aqua"] .event-countdown-value {
+    text-shadow: 0 0 18px rgba(51, 230, 255, 0.28);
+}
+
+.event-countdown-label {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.54rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+/* Contador */
+.event-card-counter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.event-card-counter-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.event-card-counter-label.is-urgent {
+    color: #ff6b6b;
+}
+
+.event-card-counter-remain {
+    color: var(--card-accent);
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.event-progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    overflow: hidden;
+}
+
+.event-progress-fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    box-shadow: 0 0 14px rgba(244, 60, 184, 0.5);
+    transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.event-card[data-accent="aqua"] .event-progress-fill {
+    background: linear-gradient(90deg, #0066ff, #33e6ff, #a8f7ff);
+    box-shadow: 0 0 14px rgba(51, 230, 255, 0.45);
+}
+
+/* Pie: precio + CTA */
+.event-card-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.event-card-price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.event-card-price-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.52);
+}
+
+.event-card-price {
+    font-size: 2.1rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--white);
+}
+
+.event-card-cta {
+    position: relative;
+    width: 100%;
+    border: none;
+    border-radius: 999px;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 14px 34px rgba(187, 17, 117, 0.42);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.event-card[data-accent="aqua"] .event-card-cta {
+    background: linear-gradient(45deg, #0066ff, #33e6ff);
+    box-shadow: 0 14px 34px rgba(0, 102, 255, 0.4);
+}
+
+.event-card-cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.28) 50%, transparent 75%);
+    transform: translateX(-120%);
+    transition: transform 0.65s ease;
+}
+
+.event-card-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 42px rgba(187, 17, 117, 0.55);
+    filter: brightness(1.05);
+}
+
+.event-card[data-accent="aqua"] .event-card-cta:hover {
+    box-shadow: 0 18px 42px rgba(0, 102, 255, 0.5);
+}
+
+.event-card-cta:hover::after {
+    transform: translateX(120%);
+}
+
+.event-card-cta:focus-visible {
+    outline: 2px solid var(--white);
+    outline-offset: 3px;
+}
+
+.event-card-cta:disabled {
+    cursor: not-allowed;
+    background: linear-gradient(45deg, #555, #777);
+    box-shadow: none;
+    filter: grayscale(0.35);
+}
+
+.event-card-cta:disabled:hover {
+    transform: none;
+    filter: grayscale(0.35);
+}
+
+.event-card-cta:disabled::after {
+    display: none;
+}
+
+/* Agotado */
+.event-card.is-soldout {
+    border-color: rgba(255, 51, 102, 0.5);
+}
+
+.event-card.is-soldout .event-card-tag {
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+.event-card-soldout-note {
+    display: none;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ff6b6b;
+}
+
+.event-card.is-soldout .event-card-soldout-note {
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .events-showcase {
+        padding: 3.5rem 1.25rem;
+    }
+
+    .events-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .event-card {
+        padding: 1.5rem;
+    }
+
+    .event-card-title {
+        font-size: 1.45rem;
+    }
+
+    .event-countdown-value {
+        font-size: 1.3rem;
+    }
+
+    .event-card-price {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .events-showcase {
+        padding: 3rem 1rem;
+    }
+
+    .event-card {
+        padding: 1.25rem;
+    }
+
+    .event-countdown-value {
+        font-size: 1.15rem;
+    }
+
+    .event-countdown-label {
+        font-size: 0.48rem;
+    }
+
+    .event-card-cta {
+        font-size: 0.8rem;
+    }
+}
+
+/* Accesibilidad: reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+    .event-card,
+    .event-card::after,
+    .event-countdown-unit,
+    .event-card-cta,
+    .event-card-cta::after,
+    .event-progress-fill {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .event-card {
+        opacity: 1;
+        transform: none;
+    }
+}

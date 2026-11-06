@@ -158,7 +158,10 @@
 
         container.innerHTML = '';
 
+        // El hero muestra únicamente el evento destacado. Las tarjetas
+        // independientes se encargan de los demás eventos activos.
         window.LAMUBI_EVENTS.getAll()
+            .filter(event => event.ui?.featured)
             .filter(event => event.ui?.mode === 'active' || event.ui?.mode === 'info')
             .forEach(event => container.appendChild(createButton(event)));
     }

@@ -17,6 +17,9 @@
     
     <!-- Google Fonts - Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- Tarjetas de próximos eventos -->
+    <link rel="stylesheet" href="assets/events-cards.css">
     
     <style>
         * {
@@ -1110,6 +1113,15 @@
         </div>
     </section>
 
+    <!-- Upcoming Events Section -->
+    <section class="upcoming-events events-showcase" id="proximos-eventos">
+        <div class="container">
+            <h2 class="section-title">PRÓXIMOS EVENTOS</h2>
+            <p class="events-showcase-subtitle">Elige tu próxima experiencia LA MUBI</p>
+            <div id="events-cards" class="events-cards-grid" aria-live="polite"></div>
+        </div>
+    </section>
+
     <!-- Experience Section -->
     <section class="experience">
         <div class="container">
@@ -1142,14 +1154,14 @@
             
             <div class="tickets-grid">
                 <div class="ticket-card">
-                    <h3 class="ticket-type">GENERAL</h3>
-                    <div class="ticket-price" id="ticket-price-card">$5</div>
+                    <h3 class="ticket-type">PRÓXIMOS EVENTOS</h3>
+                    <div class="ticket-price" id="ticket-price-card">DESDE $3</div>
                     <ul class="ticket-features">
-                        <li>✓ Bar disponible</li>
-                        <li>✓ Zona principal</li>
-                        <li>✓ Experiencia completa La Mubi</li>
+                        <li>✓ Perreo Land · 14 NOV · $3</li>
+                        <li>✓ Pool Night Trujillo · 28 NOV · $5</li>
+                        <li>✓ Compra digital y QR inmediato</li>
                     </ul>
-                    <button class="ticket-button" id="general-ticket-button" type="button">COMPRAR ENTRADA GENERAL</button>
+                    <button class="ticket-button" id="general-ticket-button" type="button">VER PRÓXIMOS EVENTOS</button>
                 </div>
             </div>
         </div>
@@ -1159,6 +1171,7 @@
     <script src="config.js"></script>
     <script src="assets/events-config.js"></script>
     <script src="assets/events-ui.js"></script>
+    <script src="assets/events-cards.js"></script>
     <script>
         // Crear partículas dinámicas
         function createParticles() {
@@ -1213,27 +1226,48 @@
             });
         });
 
-        // Bloquear botón ENTRADAS GENERAL
+        // El botón de la sección ENTRADAS lleva a las tarjetas de eventos.
         const generalTicketButton = document.getElementById('general-ticket-button');
         if (generalTicketButton) {
             generalTicketButton.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                // No hacer nada
+
+                const section = document.getElementById('proximos-eventos');
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             });
         }
 
-        // Mantener el precio de la tarjeta de entradas sincronizado con la BD.
-        async function updateTicketPriceCard() {
-            try {
-                const price = await window.LAMUBI_UTILS?.getTicketPriceUSD?.();
-                if (typeof price !== 'number' || !Number.isFinite(price)) return;
+        // Mostrar el precio mínimo de los eventos activos.
+        function updateTicketPriceCard() {
+            const card = document.getElementById('ticket-price-card');
+            if (!card) return;
 
-                const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
-                const card = document.getElementById('ticket-price-card');
-                if (card) card.textContent = formatted;
+            try {
+                const activeEvents = window.LAMUBI_EVENTS?.getAll?.().filter(event =>
+                    event.ui?.mode === 'active' && Number(event.precioUsd) > 0
+                ) || [];
+
+                if (activeEvents.length > 0) {
+                    const minPrice = Math.min(...activeEvents.map(event => Number(event.precioUsd)));
+                    const formatted = `$${Math.round(minPrice) === minPrice ? minPrice.toFixed(0) : minPrice.toFixed(2)}`;
+                    card.textContent = `DESDE ${formatted}`;
+                    return;
+                }
+
+                // Respaldo: precio del evento General desde la BD.
+                window.LAMUBI_UTILS?.getTicketPriceUSD?.().then(price => {
+                    if (typeof price !== 'number' || !Number.isFinite(price)) return;
+
+                    const formatted = `$${Math.round(price) === price ? price.toFixed(0) : price.toFixed(2)}`;
+                    card.textContent = formatted;
+                }).catch(() => {
+                    // Mantener el texto actual si la consulta falla.
+                });
             } catch (error) {
-                // Mantener el precio fallback si la consulta falla.
+                // Mantener el texto actual si algo falla.
             }
         }
 

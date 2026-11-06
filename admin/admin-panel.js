@@ -444,7 +444,47 @@ class AdminPanel {
 
     // 📊 Cargar datos iniciales
     async loadInitialData() {
+        await this.loadEventFilter();
         await this.loadDashboardData();
+    }
+
+    // 🎪 Cargar dinámicamente el filtro de eventos.
+    // Si la consulta falla, se conservan las opciones del HTML.
+    async loadEventFilter() {
+        if (!this.currentUser) return;
+
+        const select = document.getElementById('filterTicketsEvent');
+        if (!select || !this.supabase) return;
+
+        try {
+            const { data, error } = await this.supabase
+                .from('eventos')
+                .select('id, nombre, fecha')
+                .eq('activo', true)
+                .order('fecha', { ascending: true });
+
+            if (error || !Array.isArray(data) || data.length === 0) return;
+
+            const currentValue = this.ticketsQueryState.evento;
+
+            select.innerHTML = '';
+
+            const allOption = document.createElement('option');
+            allOption.value = '';
+            allOption.textContent = 'Todos los eventos';
+            select.appendChild(allOption);
+
+            data.forEach((evento) => {
+                const option = document.createElement('option');
+                option.value = String(evento.id);
+                option.textContent = evento.nombre || `Evento ${evento.id}`;
+                option.selected = String(evento.id) === String(currentValue);
+                select.appendChild(option);
+            });
+        } catch (error) {
+            // Mantener las opciones de respaldo del HTML.
+            window.LAMUBI_UTILS?.debugLog?.('No se pudo cargar el filtro de eventos', error);
+        }
     }
 
     // 📊 Cargar datos de sección específica

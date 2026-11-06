@@ -62,13 +62,72 @@
             precioUsd: 5,
             ui: {
                 mode: 'closed', // Cambiar a 'active' para reactivar la venta
-                featured: true,
+                featured: false,
                 dateLabel: 'EVENTO PRÓXIMAMENTE',
                 buttonLabel: 'LA MUBI DEL TERROR - STUFFA - $5 - COMPRAR ENTRADA',
                 className: 'terror-button',
                 infoText: 'ENTRADAS DISPONIBLES SOLO EN PUERTA EN STUFFA',
                 countdownTarget: null, // null = mostrar 0; usar ISO con offset para activar
                 counter: { vendidas: 0, disponibles: 0 }
+            }
+        },
+
+        perreo: {
+            id: 6,
+            nombre: 'LA MUBI PERREO LAND',
+            fecha: '2026-11-14',
+            precioUsd: 3,
+            ui: {
+                mode: 'active',
+                featured: true,
+                dateLabel: 'SÁBADO 14 NOV · VALERA',
+                buttonLabel: 'COMPRAR ENTRADA - $3',
+                className: 'perreo-button',
+                infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI PERREO LAND',
+                countdownTarget: '2026-11-14T21:00:00-04:00',
+                counter: { vendidas: 0, disponibles: 700 },
+                card: {
+                    shortDate: '14 NOV',
+                    venue: 'Discoteca Vocas Bistro Bar',
+                    city: 'Valera',
+                    priceLabel: '$3',
+                    badge: 'PREVENTA',
+                    accent: 'pink',
+                    lineup: [
+                        { name: 'BJ TROCO', note: 'Dueño de La Mubi' },
+                        { name: 'DJ TOUCH' }
+                    ]
+                }
+            }
+        },
+
+        poolTrujillo: {
+            id: 7,
+            nombre: 'LA MUBI POOL NIGHT TRUJILLO',
+            fecha: '2026-11-28',
+            precioUsd: 5,
+            ui: {
+                mode: 'active',
+                featured: false,
+                dateLabel: 'SÁBADO 28 NOV · TRUJILLO',
+                buttonLabel: 'COMPRAR ENTRADA - $5',
+                className: 'pool-trujillo-button',
+                infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI POOL NIGHT TRUJILLO',
+                countdownTarget: '2026-11-28T21:00:00-04:00',
+                counter: { vendidas: 0, disponibles: 700 },
+                card: {
+                    shortDate: '28 NOV',
+                    venue: 'Trujillo, Venezuela',
+                    city: '',
+                    priceLabel: '$5',
+                    badge: 'POOL NIGHT',
+                    accent: 'aqua',
+                    lineup: [
+                        { name: 'ABRAHAN' },
+                        { name: 'TROCO' },
+                        { name: 'YEIBEAT' }
+                    ]
+                }
             }
         }
     };
