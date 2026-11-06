@@ -66,8 +66,8 @@ Panel administrativo (`admin/`) para aprobar/rechazar pagos, consultar tickets, 
 | `pago.html` | Resumen de compra, cálculo de precio híbrido y selección de método (actualmente Pago Móvil y Binance). |
 | `verificacion.html` | Formulario específico por método, validación de monto, subida de comprobante e inserción en BD. |
 | `confirmacion.html` | Carga el ticket por ID, muestra datos, genera el QR (contiene solo el ID numérico) y permite descargar. |
-| `validador.html` | Escáner QR estándar. Valida estado, descuenta usos y marca el ticket como usado. |
-| `validador-ios.html` | Variante optimizada para iOS. |
+| `validador.html` | Escáner QR alternativo (escritorio/Android). Valida estado, descuenta usos y marca el ticket como usado. |
+| `validador-ios.html` | **Validador principal usado en puerta**. Tiene login de administrador, detección con `qr-scanner` y fallback a `html5-qrcode` en iOS. |
 | `actualizar-ticket.html` | Utilidad de actualización manual de datos de ticket. |
 | `admin/index.html` | Panel administrativo (dashboard, pagos, tickets, configuración). |
 | `admin/login.html` | Login de administradores. |
@@ -146,6 +146,8 @@ El total es `precio_unitario × cantidad_entradas`.
   2. Busca el ticket en `verificaciones_pagos`.
   3. Rechaza si `qr_usado = true`, si `usos_restantes <= 0` o si `estado != 'aprobado'`.
   4. Al confirmar, decrementa `usos_restantes` y marca `qr_usado = true` cuando llega a cero.
+
+> El validador principal usado en puerta es `validador-ios.html`. `validador.html` queda como alternativa para escritorio/Android.
 
 ---
 
