@@ -19,6 +19,8 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 | `20261106_001_rollback.sql` | Revierte solo esos dos eventos, únicamente si no tienen tickets. |
 | `20261106_002_update_evento_7_ubicacion.sql` | Actualiza la ubicación del evento 7 a 11:11 Good Vibes - Snack and Bar. |
 | `20261106_002_rollback.sql` | Restaura la ubicación anterior del evento 7. |
+| `20261106_003_add_qr_token.sql` | Agrega el token aleatorio `qr_token` para los QR seguros. |
+| `20261106_003_rollback.sql` | Elimina `qr_token` si se decide volver al QR numérico. |
 | `consultar-contadores-eventos.sql` | Consulta de solo lectura para actualizar los contadores estáticos. |
 
 ## Cómo ejecutar
@@ -29,6 +31,10 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 2. Ejecutar `20261106_001_add_eventos_perreo_pool_trujillo.sql`.
 3. Revisar las consultas de verificación incluidas al final.
 4. Confirmar que los eventos 6 y 7 existen con los datos correctos.
+5. Ejecutar `20261106_003_add_qr_token.sql` **antes** de publicar el frontend con QR por token.
+6. Confirmar que todos los tickets tienen `qr_token` único.
+
+> La migración 003 es obligatoria antes de desplegar el frontend con QR por token. Si el frontend se publica sin ella, la confirmación y los validadores fallarán al buscar `qr_token`.
 
 La migración inserta IDs explícitos (6 y 7) y luego sincroniza la secuencia `eventos_id_seq` solo si está por detrás del máximo ID. Así los próximos eventos no chocan con estos IDs.
 

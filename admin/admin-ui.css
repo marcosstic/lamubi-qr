@@ -1,0 +1,19 @@
+/* ============================================================
+   LA MUBI - Ajustes visuales del panel admin
+   Corrige el fondo blanco de los selects nativos en tema oscuro.
+   ============================================================ */
+
+select {
+    color-scheme: dark;
+}
+
+select option {
+    background-color: #111;
+    color: #ffffff;
+}
+
+select option:checked,
+select option:hover {
+    background-color: #bb1175;
+    color: #ffffff;
+}

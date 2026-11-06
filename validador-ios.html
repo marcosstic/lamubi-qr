@@ -375,6 +375,7 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
     <script src="config.js"></script>
+    <script src="assets/qr-token.js"></script>
     <script src="ios-camera-helper.js"></script>
     <script src="android-camera-helper.js"></script>
     <script src="universal-camera-helper.js"></script>
@@ -937,15 +938,18 @@
                     this.showStatus('🎫 QR detectado: ' + qrText + ' - Procesando...', 'warning');
                     this.addConsoleLog('🎫 QR detectado: ' + qrText + ' - Procesando...');
                     
-                    // Extraer ID numérico del QR
-                    const ticketId = qrText.replace(/[^0-9]/g, '');
-                    console.log('🎯 Ticket ID extraído:', ticketId);
-                    this.addConsoleLog('🎯 Ticket ID extraído: ' + ticketId);
-                    
-                    if (!ticketId) {
-                        console.log('❌ QR inválido: no contiene ID válido');
-                        this.addConsoleLog('❌ QR inválido: no contiene ID válido', 'error');
-                        this.showStatus('❌ QR inválido: no contiene ID válido', 'error');
+                    // El QR debe contener un token aleatorio, no el ID numérico.
+                    const qrToken = window.LAMUBI_QR_TOKEN?.extractToken(qrText);
+                    console.log('🎯 Token QR extraído:', qrToken);
+                    this.addConsoleLog('🎯 Token QR extraído: ' + (qrToken || 'ninguno'));
+
+                    if (!qrToken) {
+                        const message = window.LAMUBI_QR_TOKEN?.isLegacyNumeric(qrText)
+                            ? 'QR antiguo no válido. Usa el ticket actualizado.'
+                            : 'QR inválido: no contiene un token válido';
+                        console.log('❌ ' + message);
+                        this.addConsoleLog('❌ ' + message, 'error');
+                        this.showStatus('❌ ' + message, 'error');
                         // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS
                         setTimeout(() => {
                             this.isProcessingQR = false;
@@ -955,14 +959,14 @@
                         return;
                     }
                     
-                    console.log('🔍 Buscando ticket en Supabase con ID:', ticketId);
-                    this.addConsoleLog('🔍 Buscando ticket en Supabase con ID: ' + ticketId);
+                    console.log('🔍 Buscando ticket en Supabase con token QR');
+                    this.addConsoleLog('🔍 Buscando ticket en Supabase con token QR');
                     
                     // Validar en Supabase
                     const { data, error } = await window.supabaseClient
                         .from('verificaciones_pagos')
                         .select('*')
-                        .eq('id', ticketId)
+                        .eq('qr_token', qrToken)
                         .single();
                     
                     console.log('📊 Resultado Supabase:', { data, error });
@@ -970,9 +974,9 @@
                     
                     if (error) {
                         console.log('❌ Error Supabase:', error);
-                        this.addConsoleLog('❌ Ticket no encontrado en Supabase: ' + ticketId, 'error');
+                        this.addConsoleLog('❌ Ticket no encontrado en Supabase', 'error');
                         this.addConsoleLog('❌ Error Supabase: ' + error.message, 'error');
-                        this.showStatus('❌ Ticket no encontrado: ' + ticketId, 'error');
+                        this.showStatus('❌ Ticket no encontrado', 'error');
                         // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS
                         setTimeout(() => {
                             this.isProcessingQR = false;
@@ -985,7 +989,7 @@
                     if (!data) {
                         console.log('❌ No data returned from Supabase');
                         this.addConsoleLog('❌ No data returned from Supabase', 'error');
-                        this.showStatus('❌ Ticket no encontrado: ' + ticketId, 'error');
+                        this.showStatus('❌ Ticket no encontrado', 'error');
                         // 🔓 LIBERAR BLOQUEO DESPUÉS DE 2 SEGUNDOS
                         setTimeout(() => {
                             this.isProcessingQR = false;

@@ -355,6 +355,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="config.js"></script>
+    <script src="assets/qr-token.js"></script>
     <script src="mubi-scanner.js"></script>
     
     <!-- Verificación de carga -->
@@ -486,18 +487,21 @@
                     
                     this.showStatus('Validando ticket...', 'warning');
                     
-                    // Validar ticket en Supabase
-                    const ticketId = qrText.replace(/[^0-9]/g, '');
-                    
-                    if (!ticketId) {
-                        this.showResult('invalid', null, 'QR inválido');
+                    // El QR debe contener un token aleatorio, no el ID numérico.
+                    const qrToken = window.LAMUBI_QR_TOKEN?.extractToken(qrText);
+
+                    if (!qrToken) {
+                        const message = window.LAMUBI_QR_TOKEN?.isLegacyNumeric(qrText)
+                            ? 'QR antiguo no válido. Usa el ticket actualizado.'
+                            : 'QR inválido';
+                        this.showResult('invalid', null, message);
                         return;
                     }
-                    
+
                     const { data, error } = await window.supabaseClient
                         .from('verificaciones_pagos')
                         .select('*')
-                        .eq('id', ticketId)
+                        .eq('qr_token', qrToken)
                         .single();
                     
                     if (error) {

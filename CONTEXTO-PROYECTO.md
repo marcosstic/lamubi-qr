@@ -139,15 +139,18 @@ El total es `precio_unitario × cantidad_entradas`.
 
 ### 5.5 Ticket y validación
 
-- El QR contiene **solo el ID numérico** del ticket.
-- `confirmacion.html` carga la fila por ID y muestra el estado del pago y del QR.
+- El QR contiene un **token aleatorio UUID** con formato `LAMUBI:<uuid>`, no el ID numérico.
+- `confirmacion.html` carga la fila por ID, lee `qr_token` y genera el QR con ese token.
 - El validador:
-  1. Extrae los dígitos del QR.
-  2. Busca el ticket en `verificaciones_pagos`.
-  3. Rechaza si `qr_usado = true`, si `usos_restantes <= 0` o si `estado != 'aprobado'`.
-  4. Al confirmar, decrementa `usos_restantes` y marca `qr_usado = true` cuando llega a cero.
+  1. Extrae el token del QR.
+  2. Busca el ticket en `verificaciones_pagos` por `qr_token`.
+  3. Rechaza QR numéricos antiguos y tokens inválidos.
+  4. Rechaza si `qr_usado = true`, si `usos_restantes <= 0` o si `estado != 'aprobado'`.
+  5. Al confirmar, decrementa `usos_restantes` y marca `qr_usado = true` cuando llega a cero.
 
 > El validador principal usado en puerta es `validador-ios.html`. `validador.html` queda como alternativa para escritorio/Android.
+>
+> La seguridad completa de RLS queda pendiente y documentada en `RLS-PENDIENTE.md`.
 
 ---
 
@@ -244,6 +247,7 @@ Comportamiento actual de la landing:
 | `documentacion-lamubi-28-marzo-2026/` | Arquitectura, lógica de negocio, BD, diseño y guía de desarrollo. Es la documentación más completa, pero previa al multi-evento. |
 | `documentacion-eventos/` | Guía para agregar y reactivar eventos. |
 | `multi-evento-documentacion/` | Plan por fases y análisis del panel admin multi-evento. |
+| `RLS-PENDIENTE.md` | Plan por fases para migrar Auth, RPCs, RLS y Storage seguro. |
 | `PLANIFICACION-TELEGRAM-NOTIFICATIONS.md` | Diseño de notificaciones Telegram; no implementado. |
 | `PLAN-MODULO-LICOR-SIMPLE-30-marzo-2026.md` | Propuesta de mesas/licor por WhatsApp; no implementada. |
 | `bd-documentacion/`, `ESTRUCTURA-*`, `MVP-*`, `PROGRESO-*` | Snapshots históricos; algunos desactualizados. |

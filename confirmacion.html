@@ -15,6 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/qr-token.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -575,6 +576,11 @@
                 }
 
                 ticketData = data;
+
+                if (!ticketData.qr_token) {
+                    showError('Este ticket no tiene un token de seguridad válido. Contacta a soporte.');
+                    return;
+                }
                 
                 // Cargar nombre del evento
                 await loadEventoNombre();
@@ -770,12 +776,20 @@
                 return;
             }
 
+            const qrPayload = window.LAMUBI_QR_TOKEN?.getPayloadForTicket(ticketData);
+            if (!qrPayload) {
+                showError('Este ticket no tiene un token de seguridad válido. Contacta a soporte.');
+                return;
+            }
+
             // Limpiar contenido anterior
             qrElement.innerHTML = '';
+            qrElement.dataset.qrPayload = qrPayload;
 
-            // Usar configuración óptima LA MUBI para móviles
+            // Usar configuración óptima LA MUBI para móviles.
+            // El QR contiene un token aleatorio, no el ID numérico.
             new QRCode(qrElement, {
-                text: ticketData.id.toString(),  // ID numérico simple
+                text: qrPayload,
                 width: size,                     // 🎯 Tamaño controlado por parámetro
                 height: size,                    // 🎯 Cuadrado perfecto y escaneable
                 colorDark: '#000000',           // Negro puro (máximo contraste)
