@@ -237,7 +237,8 @@ Comportamiento actual de la landing:
   - **Verificación de pagos:** pendientes, búsqueda, filtro por método, ver comprobante, detalle, aprobar y rechazar.
   - **Gestión de tickets:** todos los tickets, búsqueda, filtros por estado/método/evento, orden y exportación a Excel.
   - **Configuración:** tasa del dólar y precio del ticket (precio restringido a `super_admin`).
-- El filtro de eventos del admin está **hardcodeado** con los IDs 1, 3, 4 y 5.
+- El filtro de eventos del admin se carga dinámicamente desde `eventos`.
+- `admin/event-name-service.js` mantiene en caché los nombres de eventos para mostrarlos en pagos pendientes, lista de tickets, detalle y exportación a Excel.
 
 ---
 

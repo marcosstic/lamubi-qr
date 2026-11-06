@@ -5,6 +5,7 @@ class AdminPanel {
     constructor() {
         // Usar el cliente de Supabase desde LAMUBI_UTILS
         this.supabase = window.LAMUBI_UTILS.supabase;
+        this.eventNames = new EventNameService(this.supabase);
         this.currentUser = null;
         this.currentSection = 'dashboard';
 
@@ -37,6 +38,16 @@ class AdminPanel {
         };
         
         this.init();
+    }
+
+    escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[character]));
     }
 
     ensureTicketDetailModalStyles() {
@@ -234,6 +245,7 @@ class AdminPanel {
         const fechaVerif = record.fecha_verificacion ? window.LAMUBI_UTILS.formatDateVenezuela(record.fecha_verificacion) : 'N/A';
 
         const buyer = this.getBuyerInfo(record);
+        const eventName = this.escapeHtml(this.eventNames.getLabel(record.evento_id));
         const comprobanteUrl = record.comprobante_url || null;
         const comprobanteNombre = record.comprobante_nombre || '';
 
@@ -244,6 +256,10 @@ class AdminPanel {
                     <button id="lamubiDetailClose" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">Cerrar</button>
                 </div>
                 <div class="lamubi-ticket-detail-grid">
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Evento</div>
+                        <div style="font-weight: 700;">${eventName}</div>
+                    </div>
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Email</div>
                         <div style="font-weight: 700;">${safe(record.email_temporal)}</div>
@@ -461,13 +477,10 @@ class AdminPanel {
         if (!select || !this.supabase) return;
 
         try {
-            const { data, error } = await this.supabase
-                .from('eventos')
-                .select('id, nombre, fecha')
-                .eq('activo', true)
-                .order('fecha', { ascending: true });
+            await this.eventNames.ensureLoaded();
 
-            if (error || !Array.isArray(data) || data.length === 0) return;
+            const activeEvents = this.eventNames.getActive();
+            if (activeEvents.length === 0) return; // Mantener opciones de respaldo.
 
             const currentValue = this.ticketsQueryState.evento;
 
@@ -478,7 +491,7 @@ class AdminPanel {
             allOption.textContent = 'Todos los eventos';
             select.appendChild(allOption);
 
-            data.forEach((evento) => {
+            activeEvents.forEach((evento) => {
                 const option = document.createElement('option');
                 option.value = String(evento.id);
                 option.textContent = evento.nombre || `Evento ${evento.id}`;
@@ -764,6 +777,7 @@ class AdminPanel {
         const html = purchases.map(purchase => {
             const multi = this.getMultiInfo(purchase);
             const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes} • H: ${multi.hombres} • M: ${multi.mujeres}`;
+            const eventName = this.escapeHtml(this.eventNames.getLabel(purchase.evento_id));
             const montoTexto = (() => {
                 if (purchase.monto === null || typeof purchase.monto === 'undefined') return '0';
                 if (purchase.metodo_pago === 'pago-movil') {
@@ -779,6 +793,9 @@ class AdminPanel {
                         <strong>${purchase.email_temporal || 'Usuario no registrado'}</strong>
                         <div style="color: var(--gray); font-size: 0.9rem;">
                             ${purchase.metodo_pago}
+                        </div>
+                        <div style="color: var(--gray); font-size: 0.85rem;">
+                            Evento: ${eventName}
                         </div>
                         <div style="color: var(--gray); font-size: 0.85rem;">
                             Código: ${purchase.public_code || '—'}
@@ -904,6 +921,7 @@ class AdminPanel {
         const html = tickets.map(ticket => {
             const multi = this.getMultiInfo(ticket);
             const multiLine = `Entradas: ${multi.cantidadEntradas} • Quedan: ${multi.usosRestantes} • H: ${multi.hombres} • M: ${multi.mujeres}`;
+            const eventName = this.escapeHtml(this.eventNames.getLabel(ticket.evento_id));
             const referenciaText = (ticket.referencia && String(ticket.referencia).trim()) ? String(ticket.referencia).trim() : '—';
             const confirmacionZelleText = (ticket.confirmacion_zelle && String(ticket.confirmacion_zelle).trim()) ? String(ticket.confirmacion_zelle).trim() : '—';
             const confirmacionBinanceText = (ticket.confirmacion_binance && String(ticket.confirmacion_binance).trim()) ? String(ticket.confirmacion_binance).trim() : '—';
@@ -933,6 +951,9 @@ class AdminPanel {
                         </div>
                         <div style="color: var(--gray); font-size: 0.9rem;">
                             ${ticket.metodo_pago} • ${ticket.estado}
+                        </div>
+                        <div style="color: var(--gray); font-size: 0.85rem;">
+                            Evento: ${eventName}
                         </div>
                         <div style="color: var(--gray); font-size: 0.85rem;">
                             Código: ${ticket.public_code || '—'}
@@ -1139,6 +1160,10 @@ window.exportApprovedTicketsToExcel = async function() {
         button.innerHTML = '<i class=\'fas fa-spinner fa-spin\'></i> Exportando...';
         button.disabled = true;
         
+        if (window.adminPanel?.eventNames) {
+            await window.adminPanel.eventNames.ensureLoaded();
+        }
+
         // Consultar tickets aprobados ordenados por fecha_creacion
         const { data, error } = await window.LAMUBI_UTILS.supabase
             .from('verificaciones_pagos')
@@ -1158,6 +1183,7 @@ window.exportApprovedTicketsToExcel = async function() {
         // Preparar datos para Excel
         const excelData = data.map(ticket => ({
             'ID': ticket.id,
+            'Evento': window.adminPanel ? window.adminPanel.eventNames.getLabel(ticket.evento_id) : 'N/A',
             'Email': ticket.email_temporal || 'N/A',
             'Cantidad Entradas': (typeof ticket.cantidad_entradas !== 'undefined' && ticket.cantidad_entradas !== null) ? ticket.cantidad_entradas : (window.adminPanel ? window.adminPanel.getMultiInfo(ticket).cantidadEntradas : 1),
             'Usos Restantes': (typeof ticket.usos_restantes !== 'undefined' && ticket.usos_restantes !== null) ? ticket.usos_restantes : (window.adminPanel ? window.adminPanel.getMultiInfo(ticket).usosRestantes : 1),
