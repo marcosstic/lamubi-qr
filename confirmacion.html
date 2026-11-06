@@ -626,8 +626,8 @@
         // Cargar nombre del evento desde tabla eventos
         async function loadEventoNombre() {
             try {
-                if (ticketData.evento_id && window.LAMUBI_UTILS?.supabase) {
-                    const { data, error } = await window.LAMUBI_UTILS.supabase
+                if (ticketData.evento_id && lamubiSupabase) {
+                    const { data, error } = await lamubiSupabase
                         .from('eventos')
                         .select('nombre')
                         .eq('id', ticketData.evento_id)
