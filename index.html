@@ -36,25 +36,30 @@
             --white: #FFFFFF;
         }
 
+        html {
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Montserrat', sans-serif;
             background: var(--black);
             color: var(--white);
+            width: 100%;
             overflow-x: hidden;
         }
 
         /* Hero Section */
         .hero {
-            min-height: 100vh;
+            min-height: auto;
             height: auto;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            overflow-y: auto;
+            overflow: visible;
             padding-top: 3rem;
-            padding-bottom: 2rem;
+            padding-bottom: 0;
         }
 
         /* Partículas 3D */
@@ -1082,35 +1087,6 @@
         <div class="logo-container">
             <img src="LaMubiMCBOLogo1.png" alt="LA MUBI" class="logo-img">
         </div>
-        
-        <p class="subtitle">EXPERIENCIA INOLVIDABLE</p>
-        <p class="event-date" id="event-date-label">EVENTO PRÓXIMAMENTE</p>
-        
-        <div class="countdown">
-            <div class="countdown-item">
-                <span class="countdown-number" id="days">0</span>
-                <span class="countdown-label">DÍAS</span>
-            </div>
-            <div class="countdown-item">
-                <span class="countdown-number" id="hours">0</span>
-                <span class="countdown-label">HORAS</span>
-            </div>
-            <div class="countdown-item">
-                <span class="countdown-number" id="minutes">0</span>
-                <span class="countdown-label">MIN</span>
-            </div>
-            <div class="countdown-item">
-                <span class="countdown-number" id="seconds">0</span>
-                <span class="countdown-label">SEG</span>
-            </div>
-        </div>
-        
-        <div class="main-cta-container">
-            <div class="availability-counter" id="pool-counter">
-                <span class="counter-label counter-label-urgency" id="event-counter-label">0 vendidas de 0 disponibles</span>
-            </div>
-            <div id="event-actions" class="event-actions"></div>
-        </div>
     </section>
 
     <!-- Upcoming Events Section -->
@@ -1170,7 +1146,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="assets/events-config.js"></script>
-    <script src="assets/events-ui.js"></script>
     <script src="assets/events-cards.js"></script>
     <script>
         // Crear partículas dinámicas

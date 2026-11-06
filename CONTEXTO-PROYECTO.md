@@ -78,7 +78,7 @@ Panel administrativo (`admin/`) para aprobar/rechazar pagos, consultar tickets, 
 |---|---|
 | `config.js` | Credenciales Supabase, cliente global, helpers de fecha/moneda, precio del ticket, feature flags. |
 | `assets/events-config.js` | Fuente de verdad de la configuración de eventos. |
-| `assets/events-ui.js` | Renderiza fecha, contador, countdown y botón del evento destacado en el hero. |
+| `assets/events-ui.js` | Módulo legacy del hero. Ya no se carga en la landing; la landing muestra solo el logo y las tarjetas. |
 | `assets/events-cards.js` | Renderiza las tarjetas de eventos activos con countdown y contador propios. |
 | `assets/events-cards.css` | Estilos aislados de las tarjetas de eventos. |
 | `validacion-campos.js` | Validaciones de formularios y lógica híbrida de precio. |
@@ -214,8 +214,9 @@ Estado de los eventos nuevos:
 
 Comportamiento actual de la landing:
 
-- El hero usa el evento destacado (`featured`), que ahora es Perreo Land.
-- Las tarjetas de “PRÓXIMOS EVENTOS” se renderizan desde `assets/events-cards.js` para todos los eventos `active`.
+- El hero muestra únicamente el logo de LA MUBI, sin fecha, countdown, contador ni botón.
+- Justo debajo del logo aparece la sección “PRÓXIMOS EVENTOS” con las tarjetas de `assets/events-cards.js`.
+- Cada tarjeta tiene su propio countdown, contador, precio y botón de compra.
 - Los contadores son **estáticos** y se editan en `events-config.js`; no se calculan desde la base de datos.
 - Para actualizar los contadores reales se usa `migrations/consultar-contadores-eventos.sql` y se copia el valor de `vendidas` en la configuración.
 
