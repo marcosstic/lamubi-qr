@@ -140,7 +140,8 @@ El total es `precio_unitario × cantidad_entradas`.
 ### 5.5 Ticket y validación
 
 - El QR contiene un **token aleatorio UUID** con formato `LAMUBI:<uuid>`, no el ID numérico.
-- `confirmacion.html` carga la fila por ID, lee `qr_token` y genera el QR con ese token.
+- El ticket muestra un **código público aleatorio** `LM-XXXXXXXXXXXX` como referencia humana. Ese código no valida la entrada.
+- `confirmacion.html` carga la fila por ID, lee `qr_token` y `public_code`, y genera el QR con el token.
 - El validador:
   1. Extrae el token del QR.
   2. Busca el ticket en `verificaciones_pagos` por `qr_token`.

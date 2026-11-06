@@ -441,7 +441,7 @@
                         <span class="info-value" id="ticketEvento">-</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">ID Ticket:</span>
+                        <span class="info-label">Código de ticket:</span>
                         <span class="info-value" id="ticketId">-</span>
                     </div>
                     <div class="info-item">
@@ -472,9 +472,12 @@
             </div>
 
             <div class="qr-container">
-                <div class="ticket-id">TICKET LA MUBI: <span id="qrTicketId">-</span></div>
+                <div class="ticket-id">TICKET LA MUBI</div>
                 <div id="qrcode-grande" class="qr-code"></div>
-                <p style="font-size: var(--font-size-lg); font-weight: 600; color: #333;">Código: <span id="qrCodeText">-</span></p>
+                <p style="font-size: 1rem; font-weight: 700; color: #333; letter-spacing: 0.03em;">Código de ticket: <span id="qrCodeText">-</span></p>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 8px; text-align: center;">
+                    El QR es el único válido para el ingreso.
+                </p>
             </div>
 
             <div class="important-notice">
@@ -489,7 +492,7 @@
                     🎟️ Este QR permite <span id="qrCantidadEntradas">1</span> entradas
                 </p>
                 <p style="text-align: center; color: #ff6b6b; font-weight: 600; font-size: 0.9rem;">
-                    ⚠️ Este ticket es válido para UNA SOLA PERSONA y debe presentarse al momento del ingreso al evento.
+                    ⚠️ Este ticket es válido para las entradas indicadas y debe presentarse al momento del ingreso al evento.
                 </p>
 
                 <p style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: 600; font-size: 1.1rem;">
@@ -652,10 +655,16 @@
         function updateTicketDisplay() {
             if (!ticketData) return;
 
+            const publicCode = ticketData.public_code || String(ticketData.id);
+
             document.getElementById('ticketEvento').textContent = eventoNombre;
-            document.getElementById('ticketId').textContent = ticketData.id;
-            document.getElementById('qrTicketId').textContent = ticketData.id;
-            document.getElementById('qrCodeText').textContent = ticketData.id;
+            document.getElementById('ticketId').textContent = publicCode;
+
+            const qrTicketIdEl = document.getElementById('qrTicketId');
+            if (qrTicketIdEl) qrTicketIdEl.textContent = publicCode;
+
+            const qrCodeTextEl = document.getElementById('qrCodeText');
+            if (qrCodeTextEl) qrCodeTextEl.textContent = publicCode;
 
             // Cantidad de entradas (multi-tickets)
             let cantidadEntradas = 1;

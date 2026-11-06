@@ -21,6 +21,8 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 | `20261106_002_rollback.sql` | Restaura la ubicación anterior del evento 7. |
 | `20261106_003_add_qr_token.sql` | Agrega el token aleatorio `qr_token` para los QR seguros. |
 | `20261106_003_rollback.sql` | Elimina `qr_token` si se decide volver al QR numérico. |
+| `20261106_004_add_public_ticket_code.sql` | Agrega el código público `LM-XXXXXXXXXXXX` para mostrar en el ticket. |
+| `20261106_004_rollback.sql` | Elimina el código público si se decide volver al ID visible. |
 | `consultar-contadores-eventos.sql` | Consulta de solo lectura para actualizar los contadores estáticos. |
 
 ## Cómo ejecutar
@@ -33,8 +35,10 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 4. Confirmar que los eventos 6 y 7 existen con los datos correctos.
 5. Ejecutar `20261106_003_add_qr_token.sql` **antes** de publicar el frontend con QR por token.
 6. Confirmar que todos los tickets tienen `qr_token` único.
+7. Ejecutar `20261106_004_add_public_ticket_code.sql` **antes** de publicar el ticket con código público.
+8. Confirmar que todos los tickets tienen `public_code` único.
 
-> La migración 003 es obligatoria antes de desplegar el frontend con QR por token. Si el frontend se publica sin ella, la confirmación y los validadores fallarán al buscar `qr_token`.
+> Las migraciones 003 y 004 son obligatorias antes de desplegar el frontend nuevo. Si el frontend se publica sin ellas, la confirmación y los validadores fallarán al buscar `qr_token` o `public_code`.
 
 La migración inserta IDs explícitos (6 y 7) y luego sincroniza la secuencia `eventos_id_seq` solo si está por detrás del máximo ID. Así los próximos eventos no chocan con estos IDs.
 

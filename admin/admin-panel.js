@@ -93,12 +93,12 @@ class AdminPanel {
         if (this.isNumericTerm(t)) {
             const idNum = parseInt(t, 10);
             if (Number.isFinite(idNum)) {
-                return query.or(`id.eq.${idNum},referencia.ilike.%${t}%,email_temporal.ilike.%${t}%`);
+                return query.or(`id.eq.${idNum},referencia.ilike.%${t}%,email_temporal.ilike.%${t}%,public_code.ilike.%${t}%`);
             }
         }
 
         const escaped = t.replace(/,/g, '');
-        return query.or(`email_temporal.ilike.%${escaped}%,referencia.ilike.%${escaped}%`);
+        return query.or(`email_temporal.ilike.%${escaped}%,referencia.ilike.%${escaped}%,public_code.ilike.%${escaped}%`);
     }
 
     setLoadMoreButtonVisible(buttonId, isVisible) {
@@ -247,6 +247,10 @@ class AdminPanel {
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Email</div>
                         <div style="font-weight: 700;">${safe(record.email_temporal)}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Código público</div>
+                        <div style="font-weight: 700;">${safe(record.public_code)}</div>
                     </div>
                     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Estado</div>
@@ -777,6 +781,9 @@ class AdminPanel {
                             ${purchase.metodo_pago}
                         </div>
                         <div style="color: var(--gray); font-size: 0.85rem;">
+                            Código: ${purchase.public_code || '—'}
+                        </div>
+                        <div style="color: var(--gray); font-size: 0.85rem;">
                             ${multiLine}
                         </div>
                         <div style="color: var(--gray); font-size: 0.8rem;">
@@ -926,6 +933,9 @@ class AdminPanel {
                         </div>
                         <div style="color: var(--gray); font-size: 0.9rem;">
                             ${ticket.metodo_pago} • ${ticket.estado}
+                        </div>
+                        <div style="color: var(--gray); font-size: 0.85rem;">
+                            Código: ${ticket.public_code || '—'}
                         </div>
                         <div style="color: var(--gray); font-size: 0.85rem;">
                             ${refLabel}: ${refValue}
