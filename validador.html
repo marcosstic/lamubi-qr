@@ -74,6 +74,21 @@
             color: #6c757d;
         }
 
+        #reader {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            overflow: hidden;
+        }
+
+        #reader video,
+        #reader canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
+            display: block;
+        }
+
         .scanner-icon {
             font-size: 4rem;
             margin-bottom: 15px;
@@ -545,25 +560,29 @@
                             confirmBtn.style.display = 'inline-flex';
                             newScanBtn.style.display = 'none';
                             
-                            // Mostrar datos del ticket
-                            document.getElementById('ticketId').textContent = ticketData.id;
-                            {
-                                const entradasRaw = (typeof ticketData.cantidad_entradas !== 'undefined' && ticketData.cantidad_entradas !== null)
-                                    ? parseInt(ticketData.cantidad_entradas, 10)
-                                    : 1;
-                                const quedanRaw = (typeof ticketData.usos_restantes !== 'undefined' && ticketData.usos_restantes !== null)
-                                    ? parseInt(ticketData.usos_restantes, 10)
-                                    : 1;
-                                const entradas = Number.isFinite(entradasRaw) && entradasRaw >= 1 ? entradasRaw : 1;
-                                const quedan = Number.isFinite(quedanRaw) && quedanRaw >= 0 ? quedanRaw : 1;
-                                document.getElementById('ticketEntradas').textContent = `${entradas}`;
-                                document.getElementById('ticketQuedan').textContent = `${quedan}`;
+                            // Mostrar datos del ticket (solo si vienen datos).
+                            // En la confirmación se llama con null porque el ticket
+                            // ya fue validado y no debe volver a mostrarse.
+                            if (ticketData) {
+                                document.getElementById('ticketId').textContent = ticketData.id;
+                                {
+                                    const entradasRaw = (typeof ticketData.cantidad_entradas !== 'undefined' && ticketData.cantidad_entradas !== null)
+                                        ? parseInt(ticketData.cantidad_entradas, 10)
+                                        : 1;
+                                    const quedanRaw = (typeof ticketData.usos_restantes !== 'undefined' && ticketData.usos_restantes !== null)
+                                        ? parseInt(ticketData.usos_restantes, 10)
+                                        : 1;
+                                    const entradas = Number.isFinite(entradasRaw) && entradasRaw >= 1 ? entradasRaw : 1;
+                                    const quedan = Number.isFinite(quedanRaw) && quedanRaw >= 0 ? quedanRaw : 1;
+                                    document.getElementById('ticketEntradas').textContent = `${entradas}`;
+                                    document.getElementById('ticketQuedan').textContent = `${quedan}`;
+                                }
+                                document.getElementById('ticketEmail').textContent = ticketData.email_temporal || 'N/A';
+                                document.getElementById('ticketMonto').textContent = `Bs. ${ticketData.monto.toLocaleString('es-VE')}`;
+                                document.getElementById('ticketMetodo').textContent = ticketData.metodo_pago.replace('-', ' ').toUpperCase();
+
+                                this.currentTicket = ticketData;
                             }
-                            document.getElementById('ticketEmail').textContent = ticketData.email_temporal || 'N/A';
-                            document.getElementById('ticketMonto').textContent = `Bs. ${ticketData.monto.toLocaleString('es-VE')}`;
-                            document.getElementById('ticketMetodo').textContent = ticketData.metodo_pago.replace('-', ' ').toUpperCase();
-                            
-                            this.currentTicket = ticketData;
                             this.showStatus('Ticket válido', 'success');
                             break;
                             

@@ -83,7 +83,7 @@ class MubiScanner {
                             console.log('🔄 Último intento con cámara por defecto...');
                             try {
                                 await this.scanner.start(
-                                    undefined,
+                                    { facingMode: 'environment' },
                                     this.config,
                                     (decodedText) => {
                                         console.log('🎫 QR detectado:', decodedText);
@@ -166,9 +166,22 @@ class MubiScanner {
                 return { facingMode: "environment" };
             }
             
-            // Para desktop: cualquier cámara
-            console.log('💻 Desktop: cámara por defecto');
-            return undefined;
+            // Para desktop: usar la primera cámara disponible.
+            // Html5Qrcode no acepta undefined como cameraIdOrConfig.
+            try {
+                const cameras = await Html5Qrcode.getCameras();
+                console.log('📹 Cámaras detectadas en desktop:', cameras.length);
+
+                if (cameras.length > 0) {
+                    console.log('💻 Desktop: usando cámara:', cameras[0].label || cameras[0].id);
+                    return { deviceId: { exact: cameras[0].id } };
+                }
+            } catch (error) {
+                console.log('⚠️ Error detectando cámaras desktop:', error);
+            }
+
+            console.log('💻 Desktop: usando facingMode environment');
+            return { facingMode: 'environment' };
             
         } catch (error) {
             console.log('⚠️ Error detectando cámara, usando por defecto:', error);
