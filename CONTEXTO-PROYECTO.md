@@ -209,8 +209,8 @@ Esto es aceptable para el MVP actual, pero debe corregirse antes de escalar.
 
 Estado de los eventos nuevos:
 
-- **Evento 6 — LA MUBI PERREO LAND:** sábado 14/11/2026, 9:00 PM, Discoteca Vocas Bistro Bar, Valera. Precio de preventa: **$3**. Capacidad: 700. DJs: BJ Troco (dueño de La Mubi) y DJ Touch.
-- **Evento 7 — LA MUBI POOL NIGHT TRUJILLO:** sábado 28/11/2026, 9:00 PM, Trujillo. Precio: **$5**. Capacidad: 700. DJs: Abrahan, Troco y Yeibeat. La sede exacta queda pendiente.
+- **Evento 6 — LA MUBI PERREO LAND:** sábado 14/11/2026, 9:00 PM, Discoteca Vocas Bistro Bar, Valera. Precio de preventa: **$3**. Capacidad: 700. DJs: BJ, Troco y Touch.
+- **Evento 7 — LA MUBI POOL NIGHT TRUJILLO:** sábado 28/11/2026, 9:00 PM, Trujillo. Precio de preventa: **$5**. Capacidad: 700. DJs: Abrahan, Troco y Yeibeat. La sede exacta queda pendiente.
 
 Comportamiento actual de la landing:
 

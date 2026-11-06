@@ -15,7 +15,7 @@ Documento operativo de los dos eventos habilitados en la landing.
 | Lugar | Discoteca Vocas Bistro Bar |
 | Precio | $3 preventa |
 | Capacidad | 700 |
-| DJs | BJ Troco (dueño de La Mubi) y DJ Touch |
+| DJs | BJ, Troco y Touch |
 | Estado | `active` y `featured` |
 
 - Countdown: `2026-11-14T21:00:00-04:00`.
@@ -33,7 +33,7 @@ Documento operativo de los dos eventos habilitados en la landing.
 | Hora | 9:00 PM (America/Caracas, UTC-4) |
 | Ciudad | Trujillo |
 | Lugar | Trujillo (sede exacta pendiente) |
-| Precio | $5 |
+| Precio | $5 preventa |
 | Capacidad | 700 |
 | DJs | Abrahan, Troco y Yeibeat |
 | Estado | `active` |

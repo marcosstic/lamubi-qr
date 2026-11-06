@@ -235,6 +235,13 @@
         locationText.textContent = city ? `${venue}, ${city}` : venue;
         location.appendChild(locationText);
 
+        const lineupBlock = document.createElement('div');
+        lineupBlock.className = 'event-card-lineup-block';
+
+        const lineupLabel = document.createElement('span');
+        lineupLabel.className = 'event-card-lineup-label';
+        lineupLabel.textContent = 'LINE UP';
+
         const lineup = document.createElement('div');
         lineup.className = 'event-card-lineup';
 
@@ -254,6 +261,8 @@
 
             lineup.appendChild(chip);
         });
+
+        lineupBlock.append(lineupLabel, lineup);
 
         const countdown = document.createElement('div');
         countdown.className = 'event-card-countdown';
@@ -306,7 +315,7 @@
 
         footer.append(priceRow, button, soldOutNote);
 
-        card.append(top, title, location, lineup, countdown, counter.wrapper, footer);
+        card.append(top, title, location, lineupBlock, countdown, counter.wrapper, footer);
 
         setupTilt(card);
 

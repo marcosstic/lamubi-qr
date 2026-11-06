@@ -80,22 +80,23 @@
             ui: {
                 mode: 'active',
                 featured: true,
-                dateLabel: 'SÁBADO 14 NOV · VALERA',
+                dateLabel: 'SÁBADO 14 DE NOVIEMBRE · VALERA',
                 buttonLabel: 'COMPRAR ENTRADA - $3',
                 className: 'perreo-button',
                 infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI PERREO LAND',
                 countdownTarget: '2026-11-14T21:00:00-04:00',
                 counter: { vendidas: 0, disponibles: 700 },
                 card: {
-                    shortDate: '14 NOV',
+                    shortDate: '14 DE NOVIEMBRE',
                     venue: 'Discoteca Vocas Bistro Bar',
                     city: 'Valera',
                     priceLabel: '$3',
                     badge: 'PREVENTA',
                     accent: 'pink',
                     lineup: [
-                        { name: 'BJ TROCO', note: 'Dueño de La Mubi' },
-                        { name: 'DJ TOUCH' }
+                        { name: 'BJ' },
+                        { name: 'TROCO' },
+                        { name: 'TOUCH' }
                     ]
                 }
             }
@@ -109,18 +110,18 @@
             ui: {
                 mode: 'active',
                 featured: false,
-                dateLabel: 'SÁBADO 28 NOV · TRUJILLO',
+                dateLabel: 'SÁBADO 28 DE NOVIEMBRE · TRUJILLO',
                 buttonLabel: 'COMPRAR ENTRADA - $5',
                 className: 'pool-trujillo-button',
                 infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI POOL NIGHT TRUJILLO',
                 countdownTarget: '2026-11-28T21:00:00-04:00',
                 counter: { vendidas: 0, disponibles: 700 },
                 card: {
-                    shortDate: '28 NOV',
+                    shortDate: '28 DE NOVIEMBRE',
                     venue: 'Trujillo, Venezuela',
                     city: '',
                     priceLabel: '$5',
-                    badge: 'POOL NIGHT',
+                    badge: 'PREVENTA',
                     accent: 'aqua',
                     lineup: [
                         { name: 'ABRAHAN' },

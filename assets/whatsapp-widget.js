@@ -33,7 +33,8 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    .root{position:fixed;right:20px;bottom:max(20px,env(safe-area-inset-bottom));font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;pointer-events:none}
+    .root{position:fixed;right:20px;bottom:max(20px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;pointer-events:none}
+    .hint{pointer-events:none;white-space:nowrap;background:rgba(11,11,15,.92);border:1px solid rgba(244,60,184,.28);color:#fff;font-size:12px;font-weight:600;padding:8px 12px;border-radius:999px;box-shadow:0 10px 25px rgba(0,0,0,.25);backdrop-filter:blur(8px)}
     .fab{pointer-events:auto;width:60px;height:60px;border:0;border-radius:999px;background:#25D366;color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 25px rgba(0,0,0,.25);transition:transform .16s ease,box-shadow .22s ease;animation:pulse 2.2s ease-in-out infinite}
     .fab:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 14px 35px rgba(0,0,0,.28)}
     .icon{width:28px;height:28px;display:block}
@@ -50,17 +51,23 @@
     .b1{font-weight:800}
     .b2{font-size:12px;opacity:.8}
     @media(min-width:768px){.overlay{align-items:flex-end;justify-content:flex-end;padding:0 20px 96px;background:rgba(0,0,0,.35);backdrop-filter:blur(4px)}.sheet{border-radius:18px}}
-    @media(max-width:480px){.root{right:15px}.fab{width:56px;height:56px}}
+    @media(max-width:480px){.root{right:15px;bottom:max(110px,calc(env(safe-area-inset-bottom) + 96px))}.hint{display:none}.fab{width:48px;height:48px}.icon{width:24px;height:24px}}
   `;
   shadow.appendChild(style);
 
   const root = document.createElement('div');
   root.className = 'root';
 
+  const hint = document.createElement('div');
+  hint.className = 'hint';
+  hint.setAttribute('aria-hidden', 'true');
+  hint.textContent = '¿Dudas? Escríbenos';
+
   const fab = document.createElement('button');
   fab.type = 'button';
   fab.className = 'fab';
-  fab.setAttribute('aria-label', 'WhatsApp Soporte');
+  fab.setAttribute('aria-label', '¿Dudas? Escríbenos por WhatsApp');
+  fab.setAttribute('title', '¿Dudas? Escríbenos por WhatsApp');
   fab.innerHTML = '<svg class="icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M19.11 17.18c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.8-1.68-2.1-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.07-.15-.68-1.64-.93-2.25-.24-.58-.48-.5-.68-.5h-.58c-.2 0-.53.07-.8.38-.27.3-1.05 1.03-1.05 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.08 1.78-.73 2.03-1.44.25-.71.25-1.32.18-1.44-.07-.12-.27-.2-.57-.35z"/><path fill="currentColor" d="M16.04 3C9.4 3 4 8.27 4 14.76c0 2.3.68 4.43 1.85 6.24L4 29l8.32-1.79a12.4 12.4 0 0 0 3.72.57c6.64 0 12.04-5.27 12.04-11.76S22.68 3 16.04 3zm0 22.5c-1.23 0-2.43-.23-3.54-.68l-.45-.18-4.94 1.06 1.05-4.74-.2-.44a10.35 10.35 0 0 1-1.32-5.06c0-5.71 4.76-10.36 10.4-10.36 5.63 0 10.4 4.65 10.4 10.36 0 5.71-4.77 10.36-10.4 10.36z"/></svg>';
 
   const overlay = document.createElement('div');
@@ -106,6 +113,7 @@
   sheet.appendChild(body);
   overlay.appendChild(sheet);
 
+  root.appendChild(hint);
   root.appendChild(fab);
   shadow.appendChild(root);
   shadow.appendChild(overlay);
