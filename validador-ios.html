@@ -1193,7 +1193,20 @@
                                 ? parseInt(ticketData.cantidad_entradas, 10)
                                 : 1;
 
-                            let updatePayload = {};
+                            let validadorNombre = 'Validador MUBI';
+                            try {
+                                const sesion = JSON.parse(localStorage.getItem('lamubi_admin_user') || 'null');
+                                validadorNombre = sesion?.nombre || sesion?.correo || validadorNombre;
+                            } catch (error) {
+                                // Mantener el nombre por defecto.
+                            }
+
+                            let updatePayload = {
+                                fecha_uso: new Date().toISOString(),
+                                validador_nombre: validadorNombre,
+                                ubicacion_validacion: 'Entrada Principal'
+                            };
+
                             if (hasUsosRestantes && Number.isFinite(usosActuales)) {
                                 const nuevosUsos = usosActuales - 1;
                                 updatePayload.usos_restantes = nuevosUsos;
