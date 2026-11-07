@@ -23,6 +23,8 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 | `20261106_003_rollback.sql` | Elimina `qr_token` si se decide volver al QR numérico. |
 | `20261106_004_add_public_ticket_code.sql` | Agrega el código público `LM-XXXXXXXXXXXX` para mostrar en el ticket. |
 | `20261106_004_rollback.sql` | Elimina el código público si se decide volver al ID visible. |
+| `20261107_005_update_evento_7_precio.sql` | Cambia el precio del evento 7 de $5 a $3. |
+| `20261107_005_rollback.sql` | Restaura el precio del evento 7 a $5. |
 | `consultar-contadores-eventos.sql` | Consulta de solo lectura para actualizar los contadores estáticos. |
 
 ## Cómo ejecutar
@@ -39,6 +41,8 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 8. Confirmar que todos los tickets tienen `public_code` único.
 
 > Las migraciones 003 y 004 son obligatorias antes de desplegar el frontend nuevo. Si el frontend se publica sin ellas, la confirmación y los validadores fallarán al buscar `qr_token` o `public_code`.
+
+> La migración 005 debe ejecutarse antes de publicar la landing con el precio de Pool Night Trujillo en $3. Si se publica antes, la landing mostraría $3 pero el pago seguiría cobrando $5.
 
 La migración inserta IDs explícitos (6 y 7) y luego sincroniza la secuencia `eventos_id_seq` solo si está por detrás del máximo ID. Así los próximos eventos no chocan con estos IDs.
 

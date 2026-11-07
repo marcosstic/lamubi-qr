@@ -19,7 +19,7 @@ Documento operativo de los dos eventos habilitados en la landing.
 | Estado | `active` y `featured` |
 
 - Countdown: `2026-11-14T21:00:00-04:00`.
-- Contador estático inicial: `0 vendidas de 700 disponibles`.
+- Contador estático de marketing: `104 vendidas de 700 disponibles`.
 - Botón: `COMPRAR ENTRADA - $3`.
 
 ---
@@ -33,14 +33,15 @@ Documento operativo de los dos eventos habilitados en la landing.
 | Hora | 9:00 PM (America/Caracas, UTC-4) |
 | Ciudad | Trujillo |
 | Lugar | 11:11 Good Vibes - Snack and Bar, Trujillo |
-| Precio | $5 preventa |
+| Precio | $3 preventa |
 | Capacidad | 700 |
 | DJs | Abrahan, Troco y Yeibeat |
 | Estado | `active` |
 
 - Countdown: `2026-11-28T21:00:00-04:00`.
-- Contador estático inicial: `0 vendidas de 700 disponibles`.
-- Botón: `COMPRAR ENTRADA - $5`.
+- Contador estático de marketing: `56 vendidas de 700 disponibles`.
+- Botón: `COMPRAR ENTRADA - $3`.
+- El ticket 1325, ya aprobado antes del cambio, conserva su monto original de $5.
 
 ---
 
