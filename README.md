@@ -10,7 +10,7 @@ El flujo completo es: landing → datos del comprador → selección de pago →
 - **Backend:** Supabase (PostgreSQL + Storage).
 - **QR:** `qrcodejs` para generar y `html5-qrcode` para escanear.
 - **Reportes:** SheetJS (`xlsx.min.js`) para exportar tickets aprobados.
-- **Hosting:** sitio estático (Netlify / Vercel / Cloudflare Pages).
+- **Hosting:** Vercel (sitio estático, sin build).
 
 ## Estado actual
 
@@ -58,7 +58,11 @@ Abre `http://localhost:8000`.
 
 ## Despliegue
 
-El archivo `netlify.toml` publica la raíz del proyecto y desactiva la caché. Para Netlify basta con conectar el repositorio; no hay comando de build.
+El proyecto se despliega en **Vercel** como sitio estático. No requiere build ni comando de instalación: se publica la raíz del repositorio.
+
+`vercel.json` fuerza `no-cache` para que los cambios de eventos y precios se vean de inmediato.
+
+> `netlify.toml` y la carpeta `lamubi-netlify/` son legado de una alternativa anterior. El despliegue operativo actual es Vercel.
 
 ## Documentación
 

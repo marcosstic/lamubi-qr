@@ -142,6 +142,64 @@
     box-shadow: 0 8px 22px rgba(0, 102, 255, 0.35);
 }
 
+/* Acento Coco Bar: amarillo + verde del logo */
+.event-card[data-accent="coco"] {
+    --card-accent: #9bff3c;
+    --card-accent-soft: rgba(255, 214, 0, 0.18);
+    border-color: rgba(155, 255, 60, 0.38);
+    background:
+        radial-gradient(120% 90% at 15% 0%, rgba(255, 214, 0, 0.16), transparent 58%),
+        linear-gradient(145deg, rgba(34, 148, 45, 0.2), rgba(8, 8, 8, 0.95) 60%),
+        #050505;
+}
+
+.event-card[data-accent="coco"]:hover {
+    box-shadow:
+        0 28px 70px rgba(72, 180, 40, 0.3),
+        0 0 32px rgba(255, 214, 0, 0.2);
+}
+
+.event-card[data-accent="coco"] .event-card-date {
+    background: linear-gradient(45deg, #ffd600, #9bff3c);
+    color: #10230a;
+    box-shadow: 0 8px 22px rgba(120, 200, 40, 0.35);
+}
+
+.event-card[data-accent="coco"] .event-card-eyebrow {
+    color: #d9ff8a;
+}
+
+.event-card[data-accent="coco"] .event-card-title {
+    text-shadow: 0 0 22px rgba(155, 255, 60, 0.28);
+}
+
+.event-card[data-accent="coco"]:hover .event-countdown-unit {
+    border-color: rgba(155, 255, 60, 0.26);
+}
+
+.event-card[data-accent="coco"] .event-countdown-value {
+    text-shadow: 0 0 18px rgba(155, 255, 60, 0.3);
+}
+
+.event-card[data-accent="coco"] .event-progress-fill {
+    background: linear-gradient(90deg, #ffd600, #9bff3c, #dcff8f);
+    box-shadow: 0 0 14px rgba(155, 255, 60, 0.48);
+}
+
+.event-card[data-accent="coco"] .event-card-cta {
+    background: linear-gradient(45deg, #ffd600, #9bff3c);
+    color: #10230a;
+    box-shadow: 0 14px 34px rgba(120, 200, 40, 0.4);
+}
+
+.event-card[data-accent="coco"] .event-card-cta:hover {
+    box-shadow: 0 18px 42px rgba(120, 200, 40, 0.5);
+}
+
+.event-card[data-accent="coco"] .event-card-cta:disabled {
+    color: var(--white);
+}
+
 .event-card > * {
     position: relative;
     z-index: 1;
@@ -182,6 +240,21 @@
     padding: 0.32rem 0.7rem;
     background: rgba(0, 0, 0, 0.35);
     white-space: nowrap;
+}
+
+.event-card-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.event-card-eyebrow {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--card-accent);
+    opacity: 0.95;
 }
 
 .event-card-title {

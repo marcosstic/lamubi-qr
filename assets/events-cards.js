@@ -221,9 +221,21 @@
             top.appendChild(tag);
         }
 
+        const heading = document.createElement('div');
+        heading.className = 'event-card-heading';
+
+        const eyebrowText = event.ui?.card?.eyebrow;
+        if (eyebrowText) {
+            const eyebrow = document.createElement('span');
+            eyebrow.className = 'event-card-eyebrow';
+            eyebrow.textContent = eyebrowText;
+            heading.appendChild(eyebrow);
+        }
+
         const title = document.createElement('h3');
         title.className = 'event-card-title';
-        title.textContent = event.nombre || 'EVENTO LA MUBI';
+        title.textContent = event.ui?.card?.title || event.nombre || 'EVENTO LA MUBI';
+        heading.appendChild(title);
 
         const location = document.createElement('p');
         location.className = 'event-card-location';
@@ -315,7 +327,7 @@
 
         footer.append(priceRow, button, soldOutNote);
 
-        card.append(top, title, location, lineupBlock, countdown, counter.wrapper, footer);
+        card.append(top, heading, location, lineupBlock, countdown, counter.wrapper, footer);
 
         setupTilt(card);
 

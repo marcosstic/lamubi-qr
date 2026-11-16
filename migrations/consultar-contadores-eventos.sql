@@ -19,7 +19,7 @@ SELECT
 FROM public.eventos e
 LEFT JOIN public.verificaciones_pagos vp
     ON vp.evento_id = e.id
-WHERE e.id IN (6, 7)
+WHERE e.id IN (6, 7, 8)
 GROUP BY e.id, e.nombre, e.capacidad
 ORDER BY e.id;
 

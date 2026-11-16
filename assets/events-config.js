@@ -1,6 +1,8 @@
 // 🎯 LA MUBI - Configuración modular de eventos (solo frontend)
 // Para activar un evento: cambiar ui.mode a 'active' y ajustar dateLabel,
 // buttonLabel, countdownTarget y counter. No hace falta tocar HTML/CSS.
+// Campos opcionales de ui.card: eyebrow, title, venue, city, priceLabel,
+// badge, accent (pink | aqua | coco) y lineup.
 
 (function () {
     'use strict';
@@ -78,12 +80,12 @@
             fecha: '2026-11-14',
             precioUsd: 3,
             ui: {
-                mode: 'active',
-                featured: true,
+                mode: 'closed', // Evento finalizado (14/11/2026). Se conserva la configuración y su fila en la BD.
+                featured: false,
                 dateLabel: 'SÁBADO 14 DE NOVIEMBRE · VALERA',
                 buttonLabel: 'COMPRAR ENTRADA - $3',
                 className: 'perreo-button',
-                infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI PERREO LAND',
+                infoText: 'EVENTO FINALIZADO - YA NO HAY ENTRADAS DISPONIBLES',
                 countdownTarget: '2026-11-14T21:00:00-04:00',
                 counter: { vendidas: 104, disponibles: 700 },
                 card: {
@@ -127,6 +129,39 @@
                         { name: 'ABRAHAN' },
                         { name: 'TROCO' },
                         { name: 'YEIBEAT' }
+                    ]
+                }
+            }
+        },
+
+        cocoBar: {
+            id: 8,
+            nombre: 'PLATINIUM CLUB x COCO BAR - LA MUBI POOL NIGHT',
+            fecha: '2026-12-12',
+            precioUsd: 5,
+            ui: {
+                mode: 'active',
+                featured: true,
+                dateLabel: 'SÁBADO 12 DE DICIEMBRE · MARACAIBO',
+                buttonLabel: 'COMPRAR ENTRADA - $5',
+                className: 'coco-button',
+                infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI POOL NIGHT EN PLATINIUM CLUB',
+                countdownTarget: '2026-12-12T19:00:00-04:00',
+                counter: { vendidas: 36, disponibles: 1500 },
+                card: {
+                    shortDate: '12 DE DICIEMBRE',
+                    eyebrow: 'LA MUBI POOL NIGHT',
+                    title: 'PLATINIUM CLUB x COCO BAR',
+                    venue: 'Platinium Club · Coco Bar',
+                    city: 'Maracaibo',
+                    priceLabel: '$5',
+                    badge: 'PREVENTA',
+                    accent: 'coco',
+                    lineup: [
+                        { name: 'TROCO' },
+                        { name: 'DIEGO HAZZE' },
+                        { name: 'TOUCH' },
+                        { name: 'RODERICK POTELLA' }
                     ]
                 }
             }
