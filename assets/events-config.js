@@ -136,7 +136,7 @@
 
         cocoBar: {
             id: 8,
-            nombre: 'PLATINIUM CLUB x COCO BAR - LA MUBI POOL NIGHT',
+            nombre: 'PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT',
             fecha: '2026-12-12',
             precioUsd: 5,
             ui: {
@@ -151,7 +151,7 @@
                 card: {
                     shortDate: '12 DE DICIEMBRE',
                     eyebrow: 'LA MUBI POOL NIGHT',
-                    title: 'PLATINIUM CLUB x COCO BAR',
+                    title: 'PLATINIUM CLUB · COCO BAR',
                     venue: 'Platinium Club · Coco Bar',
                     city: 'Maracaibo',
                     priceLabel: '$5',

@@ -213,13 +213,13 @@ Esto es aceptable para el MVP actual, pero debe corregirse antes de escalar.
 | 5 | LA MUBI DEL TERROR - STUFFA | `closed` | No |
 | 6 | LA MUBI PERREO LAND | `closed` | No |
 | 7 | LA MUBI POOL NIGHT TRUJILLO | `active` | No |
-| 8 | PLATINIUM CLUB x COCO BAR - LA MUBI POOL NIGHT | `active` | Sí |
+| 8 | PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT | `active` | Sí |
 
 Estado de los eventos nuevos:
 
 - **Evento 6 — LA MUBI PERREO LAND:** finalizó el sábado 14/11/2026 en Discoteca Vocas Bistro Bar, Valera. Se cambió a `closed` para ocultar su tarjeta y bloquear nuevas compras. Su configuración, su fila en `eventos` y sus tickets históricos se conservan.
 - **Evento 7 — LA MUBI POOL NIGHT TRUJILLO:** sábado 28/11/2026, 9:00 PM, 11:11 Good Vibes - Snack and Bar, Trujillo. Precio de preventa: **$3**. Capacidad: 700. DJs: Abrahan, Troco y Yeibeat. El ticket 1325, aprobado antes del cambio, conserva su monto original de $5.
-- **Evento 8 — PLATINIUM CLUB x COCO BAR - LA MUBI POOL NIGHT:** sábado 12/12/2026, 7:00 PM, Platinium Club - Coco Bar, Maracaibo. Precio de preventa: **$5**. Capacidad: 1500. DJs: Troco, Diego Hazze, Touch y Roderick Potella. Tarjeta con acento visual amarillo/verde del logo Coco Bar.
+- **Evento 8 — PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT:** sábado 12/12/2026, 7:00 PM, Platinium Club - Coco Bar, Maracaibo. Precio de preventa: **$5**. Capacidad: 1500. DJs: Troco, Diego Hazze, Touch y Roderick Potella. Tarjeta con acento visual amarillo/verde del logo Coco Bar.
 - **Contadores de marketing:** Pool Night Trujillo muestra **56** y Coco Bar **36** vendidas. Son valores estáticos de la landing y no reflejan necesariamente los tickets aprobados del admin. El contador de Perreo Land se conserva en la configuración, pero su tarjeta ya no se renderiza.
 
 Comportamiento actual de la landing:

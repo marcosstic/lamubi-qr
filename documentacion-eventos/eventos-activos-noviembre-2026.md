@@ -46,7 +46,7 @@ Documento operativo de los eventos configurados en la landing.
 
 ---
 
-## Evento 8 — PLATINIUM CLUB x COCO BAR - LA MUBI POOL NIGHT
+## Evento 8 — PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT
 
 | Campo | Valor |
 |---|---|
@@ -65,6 +65,7 @@ Documento operativo de los eventos configurados en la landing.
 - Botón: `COMPRAR ENTRADA - $5`.
 - Acento visual: `coco` (amarillo y verde del logo Coco Bar).
 - La migración `migrations/20261116_001_add_evento_coco_bar.sql` debe ejecutarse **antes** de publicar la tarjeta.
+- La migración `migrations/20261116_002_rename_evento_8.sql` actualiza el nombre del evento a `PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT`.
 
 ---
 

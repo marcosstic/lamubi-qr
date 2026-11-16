@@ -25,8 +25,10 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 | `20261106_004_rollback.sql` | Elimina el código público si se decide volver al ID visible. |
 | `20261107_005_update_evento_7_precio.sql` | Cambia el precio del evento 7 de $5 a $3. |
 | `20261107_005_rollback.sql` | Restaura el precio del evento 7 a $5. |
-| `20261116_001_add_evento_coco_bar.sql` | Inserta el evento 8: Platinium Club x Coco Bar - La Mubi Pool Night. |
+| `20261116_001_add_evento_coco_bar.sql` | Inserta el evento 8: Platinium Club · Coco Bar - La Mubi Pool Night. |
 | `20261116_001_rollback.sql` | Revierte solo el evento 8, únicamente si no tiene tickets. |
+| `20261116_002_rename_evento_8.sql` | Cambia el nombre del evento 8 a `PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT`. |
+| `20261116_002_rollback.sql` | Restaura el nombre anterior del evento 8. |
 | `consultar-contadores-eventos.sql` | Consulta de solo lectura para actualizar los contadores estáticos. |
 
 ## Cómo ejecutar
@@ -41,14 +43,16 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 6. Confirmar que todos los tickets tienen `qr_token` único.
 7. Ejecutar `20261106_004_add_public_ticket_code.sql` **antes** de publicar el ticket con código público.
 8. Confirmar que todos los tickets tienen `public_code` único.
-9. Ejecutar `20261116_001_add_evento_coco_bar.sql` **antes** de publicar la tarjeta de Platinium Club x Coco Bar.
+9. Ejecutar `20261116_001_add_evento_coco_bar.sql` **antes** de publicar la tarjeta de Platinium Club · Coco Bar.
 10. Confirmar que el evento 8 existe con los datos correctos y que el evento 6 sigue intacto.
+11. Ejecutar `20261116_002_rename_evento_8.sql` para cambiar el nombre del evento 8 a `PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT`.
+12. Confirmar que el evento 8 ya no muestra la "x" en el nombre.
 
 > Las migraciones 003 y 004 son obligatorias antes de desplegar el frontend nuevo. Si el frontend se publica sin ellas, la confirmación y los validadores fallarán al buscar `qr_token` o `public_code`.
 
 > La migración 005 debe ejecutarse antes de publicar la landing con el precio de Pool Night Trujillo en $3. Si se publica antes, la landing mostraría $3 pero el pago seguiría cobrando $5.
 
-> La migración 20261116_001 debe ejecutarse antes de publicar la tarjeta de Platinium Club x Coco Bar. Si se publica antes, el pago usaría el precio por defecto y el ticket podría quedar sin un evento válido.
+> La migración 20261116_001 debe ejecutarse antes de publicar la tarjeta de Platinium Club · Coco Bar. Si se publica antes, el pago usaría el precio por defecto y el ticket podría quedar sin un evento válido.
 
 La migración 20261106_001 inserta IDs explícitos (6 y 7) y luego sincroniza la secuencia `eventos_id_seq` solo si está por detrás del máximo ID. Así los próximos eventos no chocan con estos IDs.
 
@@ -62,6 +66,7 @@ Solo si es necesario:
 2. Si hay tickets asociados, el script se detendrá y no borrará nada.
 3. Revisar que los eventos 6 y 7 ya no existan.
 4. Para el evento 8, ejecutar `20261116_001_rollback.sql`. También se detendrá si ya tiene tickets.
+5. Si solo se quiere restaurar el nombre anterior del evento 8, ejecutar `20261116_002_rollback.sql`.
 
 ## Contadores estáticos
 
