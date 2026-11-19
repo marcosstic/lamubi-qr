@@ -202,55 +202,55 @@
 
 /* Acento rojo: TU ERES MALA - Stuffa */
 .event-card[data-accent="red"] {
-    --card-accent: #ff4757;
-    --card-accent-soft: rgba(255, 30, 45, 0.2);
-    border-color: rgba(255, 71, 87, 0.38);
+    --card-accent: #ff1e2d;
+    --card-accent-soft: rgba(227, 6, 19, 0.22);
+    border-color: rgba(255, 30, 45, 0.42);
     background:
-        radial-gradient(120% 90% at 15% 0%, rgba(255, 30, 45, 0.18), transparent 58%),
-        linear-gradient(145deg, rgba(80, 8, 14, 0.42), rgba(8, 8, 8, 0.96) 62%),
+        radial-gradient(120% 90% at 15% 0%, rgba(227, 6, 19, 0.16), transparent 58%),
+        linear-gradient(145deg, rgba(95, 0, 8, 0.5), rgba(8, 8, 8, 0.96) 62%),
         #050505;
 }
 
 .event-card[data-accent="red"]:hover {
     box-shadow:
-        0 28px 70px rgba(180, 20, 35, 0.3),
-        0 0 32px rgba(255, 71, 87, 0.2);
+        0 28px 70px rgba(155, 0, 15, 0.34),
+        0 0 32px rgba(255, 30, 45, 0.22);
 }
 
 .event-card[data-accent="red"] .event-card-date {
-    background: linear-gradient(45deg, #b3061a, #ff2d3f);
+    background: linear-gradient(45deg, #8e0010, #e30613);
     color: var(--white);
-    box-shadow: 0 8px 22px rgba(180, 20, 35, 0.4);
+    box-shadow: 0 8px 22px rgba(155, 0, 15, 0.42);
 }
 
 .event-card[data-accent="red"] .event-card-eyebrow {
-    color: #ff9aa2;
+    color: #ff5c68;
 }
 
 .event-card[data-accent="red"] .event-card-title {
-    text-shadow: 0 0 22px rgba(255, 71, 87, 0.3);
+    text-shadow: 0 0 22px rgba(227, 6, 19, 0.35);
 }
 
 .event-card[data-accent="red"]:hover .event-countdown-unit {
-    border-color: rgba(255, 71, 87, 0.26);
+    border-color: rgba(255, 30, 45, 0.28);
 }
 
 .event-card[data-accent="red"] .event-countdown-value {
-    text-shadow: 0 0 18px rgba(255, 71, 87, 0.3);
+    text-shadow: 0 0 18px rgba(255, 30, 45, 0.32);
 }
 
 .event-card[data-accent="red"] .event-progress-fill {
-    background: linear-gradient(90deg, #b3061a, #ff2d3f, #ff9aa2);
-    box-shadow: 0 0 14px rgba(255, 71, 87, 0.45);
+    background: linear-gradient(90deg, #7a000d, #e30613, #ff5c68);
+    box-shadow: 0 0 14px rgba(227, 6, 19, 0.5);
 }
 
 .event-card[data-accent="red"] .event-card-cta {
-    background: linear-gradient(45deg, #b3061a, #ff2d3f);
-    box-shadow: 0 14px 34px rgba(180, 20, 35, 0.4);
+    background: linear-gradient(45deg, #8e0010, #e30613);
+    box-shadow: 0 14px 34px rgba(155, 0, 15, 0.42);
 }
 
 .event-card[data-accent="red"] .event-card-cta:hover {
-    box-shadow: 0 18px 42px rgba(180, 20, 35, 0.5);
+    box-shadow: 0 18px 42px rgba(155, 0, 15, 0.55);
 }
 
 .event-card > * {
