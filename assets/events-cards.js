@@ -18,6 +18,13 @@
         return Number.isFinite(parsed) ? parsed : fallback;
     }
 
+    function getEventTime(event) {
+        if (!event?.fecha) return Number.POSITIVE_INFINITY;
+
+        const timestamp = Date.parse(`${event.fecha}T00:00:00`);
+        return Number.isFinite(timestamp) ? timestamp : Number.POSITIVE_INFINITY;
+    }
+
     function setText(element, text) {
         if (element) element.textContent = text;
     }
@@ -371,7 +378,13 @@
         if (!container || !window.LAMUBI_EVENTS?.getAll) return;
 
         const events = window.LAMUBI_EVENTS.getAll()
-            .filter((event) => event.ui?.mode === 'active' && event.ui?.card);
+            .filter((event) => event.ui?.mode === 'active' && event.ui?.card)
+            .sort((a, b) => {
+                const timeA = getEventTime(a);
+                const timeB = getEventTime(b);
+                if (timeA === timeB) return 0;
+                return timeA - timeB;
+            });
 
         container.innerHTML = '';
 

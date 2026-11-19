@@ -46,6 +46,28 @@ Documento operativo de los eventos configurados en la landing.
 
 ---
 
+## Evento 9 — TU ERES MALA - STUFFA
+
+| Campo | Valor |
+|---|---|
+| ID | 9 |
+| Fecha | Sábado 05/12/2026 |
+| Hora | 9:00 PM (America/Caracas, UTC-4) |
+| Ciudad | Maracaibo |
+| Lugar | Stuffa - Av. 5 de Julio con Calle 77 |
+| Precio | $5 preventa |
+| Capacidad | 700 |
+| Lineup | Valero (artista invitado), Diego Hazze, Royrf, Troco y Touch |
+| Estado | `active` |
+
+- Countdown: `2026-12-05T21:00:00-04:00`.
+- Contador estático de marketing: `6 vendidas de 700 disponibles`.
+- Botón: `COMPRAR ENTRADA - $5`.
+- Acento visual: `red` (rojo/negro/blanco del flyer).
+- La migración `migrations/20261119_001_add_evento_tu_eres_mala.sql` debe ejecutarse **antes** de publicar la tarjeta.
+
+---
+
 ## Evento 8 — PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT
 
 | Campo | Valor |

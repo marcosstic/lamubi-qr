@@ -29,6 +29,8 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 | `20261116_001_rollback.sql` | Revierte solo el evento 8, únicamente si no tiene tickets. |
 | `20261116_002_rename_evento_8.sql` | Cambia el nombre del evento 8 a `PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT`. |
 | `20261116_002_rollback.sql` | Restaura el nombre anterior del evento 8. |
+| `20261119_001_add_evento_tu_eres_mala.sql` | Inserta el evento 9: Tu Eres Mala - Stuffa (05/12/2026, Maracaibo). |
+| `20261119_001_rollback.sql` | Revierte solo el evento 9, únicamente si no tiene tickets. |
 | `consultar-contadores-eventos.sql` | Consulta de solo lectura para actualizar los contadores estáticos. |
 
 ## Cómo ejecutar
@@ -47,6 +49,8 @@ Esta carpeta contiene los cambios de base de datos del proyecto.
 10. Confirmar que el evento 8 existe con los datos correctos y que el evento 6 sigue intacto.
 11. Ejecutar `20261116_002_rename_evento_8.sql` para cambiar el nombre del evento 8 a `PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT`.
 12. Confirmar que el evento 8 ya no muestra la "x" en el nombre.
+13. Ejecutar `20261119_001_add_evento_tu_eres_mala.sql` **antes** de publicar la tarjeta de Tu Eres Mala.
+14. Confirmar que el evento 9 existe con fecha 05/12/2026, hora 21:00 y precio $5.
 
 > Las migraciones 003 y 004 son obligatorias antes de desplegar el frontend nuevo. Si el frontend se publica sin ellas, la confirmación y los validadores fallarán al buscar `qr_token` o `public_code`.
 
@@ -67,6 +71,7 @@ Solo si es necesario:
 3. Revisar que los eventos 6 y 7 ya no existan.
 4. Para el evento 8, ejecutar `20261116_001_rollback.sql`. También se detendrá si ya tiene tickets.
 5. Si solo se quiere restaurar el nombre anterior del evento 8, ejecutar `20261116_002_rollback.sql`.
+6. Para el evento 9, ejecutar `20261119_001_rollback.sql`. También se detendrá si ya tiene tickets.
 
 ## Contadores estáticos
 

@@ -2,7 +2,7 @@
 // Para activar un evento: cambiar ui.mode a 'active' y ajustar dateLabel,
 // buttonLabel, countdownTarget y counter. No hace falta tocar HTML/CSS.
 // Campos opcionales de ui.card: eyebrow, title, venue, city, priceLabel,
-// badge, accent (pink | aqua | coco) y lineup.
+// badge, accent (pink | aqua | coco | red) y lineup.
 
 (function () {
     'use strict';
@@ -129,6 +129,40 @@
                         { name: 'ABRAHAN' },
                         { name: 'TROCO' },
                         { name: 'YEIBEAT' }
+                    ]
+                }
+            }
+        },
+
+        tuEresMala: {
+            id: 9,
+            nombre: 'TU ERES MALA - STUFFA',
+            fecha: '2026-12-05',
+            precioUsd: 5,
+            ui: {
+                mode: 'active',
+                featured: false,
+                dateLabel: 'SÁBADO 05 DE DICIEMBRE · MARACAIBO',
+                buttonLabel: 'COMPRAR ENTRADA - $5',
+                className: 'tu-eres-mala-button',
+                infoText: 'ENTRADAS DISPONIBLES PARA TU ERES MALA EN STUFFA',
+                countdownTarget: '2026-12-05T21:00:00-04:00',
+                counter: { vendidas: 6, disponibles: 700 },
+                card: {
+                    shortDate: '05 DE DICIEMBRE',
+                    eyebrow: 'MARACAIBO',
+                    title: 'TU ERES MALA',
+                    venue: 'Stuffa · Av. 5 de Julio con Calle 77',
+                    city: 'Maracaibo',
+                    priceLabel: '$5',
+                    badge: 'PREVENTA',
+                    accent: 'red',
+                    lineup: [
+                        { name: 'VALERO', note: 'Artista invitado' },
+                        { name: 'DIEGO HAZZE' },
+                        { name: 'ROYRF' },
+                        { name: 'TROCO' },
+                        { name: 'TOUCH' }
                     ]
                 }
             }
