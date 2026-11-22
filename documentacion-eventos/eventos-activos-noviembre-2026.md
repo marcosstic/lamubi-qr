@@ -40,7 +40,7 @@ Documento operativo de los eventos configurados en la landing.
 | Estado | `active` |
 
 - Countdown: `2026-11-28T21:00:00-04:00`.
-- Contador estático de marketing: `39 vendidas de 700 disponibles`.
+- Contador estático de marketing: `76 vendidas de 700 disponibles`.
 - Botón: `COMPRAR ENTRADA - $3`.
 - El ticket 1325, ya aprobado antes del cambio, conserva su monto original de $5.
 

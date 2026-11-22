@@ -117,7 +117,7 @@
                 className: 'pool-trujillo-button',
                 infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI POOL NIGHT TRUJILLO',
                 countdownTarget: '2026-11-28T21:00:00-04:00',
-                counter: { vendidas: 39, disponibles: 700 },
+                counter: { vendidas: 76, disponibles: 700 },
                 card: {
                     shortDate: '28 DE NOVIEMBRE',
                     venue: '11:11 Good Vibes - Snack and Bar',
