@@ -117,7 +117,7 @@
                 className: 'pool-trujillo-button',
                 infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI POOL NIGHT TRUJILLO',
                 countdownTarget: '2026-11-28T21:00:00-04:00',
-                counter: { vendidas: 56, disponibles: 700 },
+                counter: { vendidas: 39, disponibles: 700 },
                 card: {
                     shortDate: '28 DE NOVIEMBRE',
                     venue: '11:11 Good Vibes - Snack and Bar',
@@ -147,7 +147,7 @@
                 className: 'tu-eres-mala-button',
                 infoText: 'ENTRADAS DISPONIBLES PARA TU ERES MALA EN STUFFA',
                 countdownTarget: '2026-12-05T21:00:00-04:00',
-                counter: { vendidas: 6, disponibles: 700 },
+                counter: { vendidas: 27, disponibles: 700 },
                 card: {
                     shortDate: '05 DE DICIEMBRE',
                     eyebrow: 'MARACAIBO',
@@ -181,7 +181,7 @@
                 className: 'coco-button',
                 infoText: 'ENTRADAS DISPONIBLES PARA LA MUBI POOL NIGHT EN PLATINIUM CLUB',
                 countdownTarget: '2026-12-12T19:00:00-04:00',
-                counter: { vendidas: 36, disponibles: 1500 },
+                counter: { vendidas: 114, disponibles: 1500 },
                 card: {
                     shortDate: '12 DE DICIEMBRE',
                     eyebrow: 'LA MUBI POOL NIGHT',

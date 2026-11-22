@@ -223,7 +223,7 @@ Estado de los eventos nuevos:
 - **Evento 7 — LA MUBI POOL NIGHT TRUJILLO:** sábado 28/11/2026, 9:00 PM, 11:11 Good Vibes - Snack and Bar, Trujillo. Precio de preventa: **$3**. Capacidad: 700. DJs: Abrahan, Troco y Yeibeat. El ticket 1325, aprobado antes del cambio, conserva su monto original de $5.
 - **Evento 8 — PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT:** sábado 12/12/2026, 7:00 PM, Platinium Club - Coco Bar, Maracaibo. Precio de preventa: **$5**. Capacidad: 1500. DJs: Troco, Diego Hazze, Touch y Roderick Potella. Tarjeta con acento visual amarillo/verde del logo Coco Bar.
 - **Evento 9 — TU ERES MALA - STUFFA:** sábado 05/12/2026, 9:00 PM, Stuffa - Av. 5 de Julio con Calle 77, Maracaibo. Precio de preventa: **$5**. Capacidad: 700. Lineup: Valero (artista invitado), Diego Hazze, Royrf, Troco y Touch. Tarjeta con acento rojo/negro del flyer.
-- **Contadores de marketing:** Pool Night Trujillo muestra **56** y Coco Bar **36** vendidas. Son valores estáticos de la landing y no reflejan necesariamente los tickets aprobados del admin. El contador de Perreo Land se conserva en la configuración, pero su tarjeta ya no se renderiza.
+- **Contadores de marketing:** Pool Night Trujillo muestra **39**, Tu Eres Mala **27** y Coco Bar **114** vendidas. Son valores estáticos de la landing y no reflejan necesariamente los tickets aprobados del admin. El contador de Perreo Land se conserva en la configuración, pero su tarjeta ya no se renderiza.
 
 Comportamiento actual de la landing:
 

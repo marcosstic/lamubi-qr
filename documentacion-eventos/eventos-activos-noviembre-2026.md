@@ -40,7 +40,7 @@ Documento operativo de los eventos configurados en la landing.
 | Estado | `active` |
 
 - Countdown: `2026-11-28T21:00:00-04:00`.
-- Contador estático de marketing: `56 vendidas de 700 disponibles`.
+- Contador estático de marketing: `39 vendidas de 700 disponibles`.
 - Botón: `COMPRAR ENTRADA - $3`.
 - El ticket 1325, ya aprobado antes del cambio, conserva su monto original de $5.
 
@@ -61,7 +61,7 @@ Documento operativo de los eventos configurados en la landing.
 | Estado | `active` |
 
 - Countdown: `2026-12-05T21:00:00-04:00`.
-- Contador estático de marketing: `6 vendidas de 700 disponibles`.
+- Contador estático de marketing: `27 vendidas de 700 disponibles`.
 - Botón: `COMPRAR ENTRADA - $5`.
 - Acento visual: `red` (rojo/negro/blanco del flyer).
 - La migración `migrations/20261119_001_add_evento_tu_eres_mala.sql` debe ejecutarse **antes** de publicar la tarjeta.
@@ -83,7 +83,7 @@ Documento operativo de los eventos configurados en la landing.
 | Estado | `active` y `featured` |
 
 - Countdown: `2026-12-12T19:00:00-04:00`.
-- Contador estático de marketing: `36 vendidas de 1500 disponibles`.
+- Contador estático de marketing: `114 vendidas de 1500 disponibles`.
 - Botón: `COMPRAR ENTRADA - $5`.
 - Acento visual: `coco` (amarillo y verde del logo Coco Bar).
 - La migración `migrations/20261116_001_add_evento_coco_bar.sql` debe ejecutarse **antes** de publicar la tarjeta.

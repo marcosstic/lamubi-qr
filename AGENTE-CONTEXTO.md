@@ -154,9 +154,9 @@ ORDER BY e.id;
 | 4 | I LOVE REGGAETON - STUFFA | 2026-09-19 | $4 | `hidden` | Su botón se llamaba “Reggaeton Life - Club Quimico”. |
 | 5 | LA MUBI DEL TERROR - STUFFA | 2026-10-24 | $5 | `closed` | Finalizado. |
 | 6 | LA MUBI PERREO LAND | 2026-11-14 | $3 | `closed` | Vocas, Valera. BD y tickets conservados. |
-| 7 | LA MUBI POOL NIGHT TRUJILLO | 2026-11-28 | $3 | `active` | Contador 56/700. |
-| 8 | PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT | 2026-12-12 | $5 | `active` | Contador 36/1500. Acento `coco`. |
-| 9 | TU ERES MALA - STUFFA | 2026-12-05 | $5 | `active` | Contador 6/700. Acento `red`. |
+| 7 | LA MUBI POOL NIGHT TRUJILLO | 2026-11-28 | $3 | `active` | Contador 39/700. |
+| 8 | PLATINIUM CLUB · COCO BAR - LA MUBI POOL NIGHT | 2026-12-12 | $5 | `active` | Contador 114/1500. Acento `coco`. |
+| 9 | TU ERES MALA - STUFFA | 2026-12-05 | $5 | `active` | Contador 27/700. Acento `red`. |
 
 Orden visible actual de la landing:
 
