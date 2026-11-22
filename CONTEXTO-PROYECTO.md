@@ -1,7 +1,8 @@
 # CONTEXTO DEL PROYECTO — LA MUBI QR
 
 > Documento de referencia rápida para retomar el proyecto sin tener que reconstruir el contexto.
-> Última actualización: 6 de noviembre de 2026.
+> Para el procedimiento operativo completo, leer [`AGENTE-CONTEXTO.md`](./AGENTE-CONTEXTO.md).
+> Última actualización: 22 de noviembre de 2026.
 
 ---
 

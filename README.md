@@ -1,5 +1,8 @@
 # LA MUBI QR
 
+> **Si retomas el proyecto o eres un agente de IA, lee primero [`AGENTE-CONTEXTO.md`](./AGENTE-CONTEXTO.md).**
+> Ahí está el contexto operativo, el estado de los eventos, cómo agregar uno nuevo, cómo desplegar y cómo recuperar sesiones.
+
 Sistema de venta y validación de tickets digitales con códigos QR para eventos **LA MUBI**.
 
 El flujo completo es: landing → datos del comprador → selección de pago → verificación con comprobante → ticket QR → validación en puerta. Incluye panel de administración para aprobar/rechazar pagos, gestionar tickets y configurar la tasa del dólar y el precio de la entrada.
@@ -66,6 +69,7 @@ El proyecto se despliega en **Vercel** como sitio estático. No requiere build n
 
 ## Documentación
 
+- `AGENTE-CONTEXTO.md`: contexto maestro para retomar el proyecto o pedir cambios a un agente.
 - `CONTEXTO-PROYECTO.md`: resumen técnico y funcional del estado actual.
 - `REGLAS-DESARROLLO.md`: reglas obligatorias para cualquier cambio.
 - `documentacion-lamubi-28-marzo-2026/`: arquitectura, lógica de negocio y diseño.
